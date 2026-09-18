@@ -1,0 +1,8 @@
+{
+  "name": "Remix Remix FinanSmart - Gestão Financeira",
+  "description": "Aplicativo de finanças para controle de entradas, saídas e investimentos, análise gráfica comparativa, saúde financeira, sincronização bancária e dicas inteligentes com IA.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
