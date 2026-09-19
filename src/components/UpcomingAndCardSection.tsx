@@ -72,7 +72,8 @@ export const UpcomingAndCardSection: React.FC<UpcomingAndCardSectionProps> = ({
   const paidBills = bills.filter((b) => b.isPaid);
 
   const totalToPayPending = pendingBills.reduce((acc, b) => acc + b.amount, 0);
-  const totalReceivables = upcomingIncomes.reduce((acc, r) => acc + r.amount, 0);
+  const pendingIncomesList = incomeTxs.filter((t) => t.isPaid === false);
+  const totalReceivables = pendingIncomesList.reduce((acc, r) => acc + r.amount, 0);
 
   return (
     <div className="space-y-4">
@@ -230,14 +231,14 @@ export const UpcomingAndCardSection: React.FC<UpcomingAndCardSectionProps> = ({
             <div className="bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/70 dark:border-emerald-900/50 rounded-2xl p-3 flex items-center justify-between">
               <div>
                 <span className="text-[10px] font-extrabold text-emerald-800 dark:text-emerald-300">
-                  Total Previsto
+                  Total a Receber
                 </span>
                 <div className="text-lg sm:text-xl font-black text-emerald-950 dark:text-emerald-100">
                   {formatCurrency(totalReceivables)}
                 </div>
               </div>
               <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-white/80 dark:bg-slate-800/80 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800">
-                100% mapeado
+                {pendingIncomesList.length > 0 ? `${pendingIncomesList.length} pendente(s)` : 'Tudo recebido'}
               </span>
             </div>
 

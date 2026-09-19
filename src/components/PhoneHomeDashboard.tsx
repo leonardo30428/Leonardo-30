@@ -75,7 +75,7 @@ export const PhoneHomeDashboard: React.FC<PhoneHomeDashboardProps> = ({
 
   // Pendencias values
   const pendenciasPagar = bills.filter(b => !b.isPaid).reduce((acc, b) => acc + b.amount, 0);
-  const pendenciasReceber = 0;
+  const pendenciasReceber = transactions.filter(t => t.type === 'income' && t.isPaid === false).reduce((acc, t) => acc + t.amount, 0);
   const pendenciasFaturas = 0;
 
   // Formatter that respects hideValues toggle

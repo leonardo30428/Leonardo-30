@@ -31,12 +31,10 @@ export const ContasSection: React.FC<ContasSectionProps> = ({
   const totalToPay = pendingExpenses.reduce((sum, t) => sum + t.amount, 0);
   const countToPay = pendingExpenses.length;
 
-  // Cálculos para o cartão "Receber"
+  // Cálculos para o cartão "Receber" - apenas o valor que ainda vai receber (sem contar com valores já recebidos)
   const pendingIncomes = incomeAccounts.filter((t) => t.isPaid === false);
-  const totalToReceive = pendingIncomes.length > 0 
-    ? pendingIncomes.reduce((sum, t) => sum + t.amount, 0)
-    : incomeAccounts.reduce((sum, t) => sum + t.amount, 0);
-  const countToReceive = pendingIncomes.length > 0 ? pendingIncomes.length : incomeAccounts.length;
+  const totalToReceive = pendingIncomes.reduce((sum, t) => sum + t.amount, 0);
+  const countToReceive = pendingIncomes.length;
 
   // Saídas recentes: somente as que foram pagas (isPaid !== false e não pendentes)
   const paidExpenses = expenseAccounts.filter((t) => !isTransactionPending(t) && t.isPaid !== false);
@@ -106,7 +104,7 @@ export const ContasSection: React.FC<ContasSectionProps> = ({
           </span>
 
           <div className="flex items-center gap-1 mt-1 text-[10px] sm:text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
-            <span className="truncate">{countToReceive > 0 ? `${countToReceive} previsto(s)` : 'Nenhum'}</span>
+            <span className="truncate">{countToReceive > 0 ? `${countToReceive} a receber` : 'Tudo recebido'}</span>
           </div>
         </button>
 

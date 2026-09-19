@@ -176,7 +176,7 @@ export const ContasTab: React.FC<ContasTabProps> = ({
       <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-xs transition-colors">
         <div>
           <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
-            {isPagar ? 'Total a Pagar (Pendente)' : 'Total a Receber (Pendente)'}
+            {isPagar ? 'Total a Pagar (Pendente)' : 'Total a Receber'}
           </span>
           <span className={`text-2xl sm:text-3xl font-black tracking-tight ${
             isPagar ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'
@@ -184,7 +184,9 @@ export const ContasTab: React.FC<ContasTabProps> = ({
             {formatCurrency(totalPending)}
           </span>
           <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
-            Total geral do mês ({currentMonthName}): {formatCurrency(totalAll)}
+            {isPagar 
+              ? `Total geral do mês (${currentMonthName}): ${formatCurrency(totalAll)}`
+              : `Total já recebido no mês: ${formatCurrency(paidItems.reduce((sum, t) => sum + t.amount, 0))}`}
           </p>
         </div>
       </div>
@@ -210,14 +212,14 @@ export const ContasTab: React.FC<ContasTabProps> = ({
               {paidItems.length > 0 && (
                 <div className="flex items-center gap-2 pb-1">
                   <span className="text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-300">
-                    {isPagar ? 'Contas a Pagar' : 'Contas a Receber'} ({pendingItems.length})
+                    {isPagar ? 'Contas a Pagar' : 'Valores a Receber'} ({pendingItems.length})
                   </span>
                 </div>
               )}
 
               {pendingItems.length === 0 ? (
                 <div className="py-4 text-center text-xs text-slate-400 dark:text-slate-500 bg-slate-50/50 dark:bg-slate-800/30 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
-                  Tudo pago e em dia por aqui!
+                  {isPagar ? 'Tudo pago e em dia por aqui!' : 'Tudo recebido e em dia por aqui! Nenhum valor pendente.'}
                 </div>
               ) : (
                 pendingItems.map((item) => renderTransactionRow(item, false))
