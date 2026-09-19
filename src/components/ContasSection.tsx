@@ -163,11 +163,6 @@ export const ContasSection: React.FC<ContasSectionProps> = ({
                         <span className="font-extrabold text-xs sm:text-[13px] text-slate-900 dark:text-white group-hover:text-rose-700 dark:group-hover:text-rose-400 transition-colors block leading-tight truncate">
                           {expense.category || (isInv ? 'Investimento' : 'Outros')}
                         </span>
-                        {isInv && (
-                          <span className="px-1.5 py-0.2 text-[9px] font-bold rounded-md bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300">
-                            Invest.
-                          </span>
-                        )}
                       </div>
                       {/* Data e banco em baixo da categoria */}
                       <span className="text-[10.5px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-medium block mt-0.5 truncate">

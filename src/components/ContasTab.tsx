@@ -89,12 +89,6 @@ export const ContasTab: React.FC<ContasTabProps> = ({
                 {item.description}
               </span>
 
-              {isInv && (
-                <span className="px-1.5 py-0.2 text-[9px] font-bold rounded-md bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 shrink-0">
-                  Investimento
-                </span>
-              )}
-
               {isRecurring && (
                 <span 
                   title="Conta Recorrente"
