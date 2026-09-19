@@ -6,7 +6,7 @@ import {
   Receipt
 } from 'lucide-react';
 import { Transaction } from '../types';
-import { formatCurrency } from '../utils/finance';
+import { formatCurrency, isTransactionPending } from '../utils/finance';
 import { getCategoryVisual, formatShortDateWithMonth } from '../utils/categoryIcons';
 
 interface ContasSectionProps {
@@ -38,8 +38,9 @@ export const ContasSection: React.FC<ContasSectionProps> = ({
     : incomeAccounts.reduce((sum, t) => sum + t.amount, 0);
   const countToReceive = pendingIncomes.length > 0 ? pendingIncomes.length : incomeAccounts.length;
 
-  // Despesas recentes ordenadas por data decrescente (as mais recentes primeiro)
-  const recentExpenses = [...expenseAccounts]
+  // Saídas recentes: somente as que foram pagas (isPaid !== false e não pendentes)
+  const paidExpenses = expenseAccounts.filter((t) => !isTransactionPending(t) && t.isPaid !== false);
+  const recentExpenses = [...paidExpenses]
     .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
     .slice(0, 4);
 
@@ -111,20 +112,20 @@ export const ContasSection: React.FC<ContasSectionProps> = ({
 
       </div>
 
-      {/* Seção "Despesas recentes" abaixo dos dois cartões pagar e receber */}
+      {/* Seção "Saídas recentes" abaixo dos dois cartões pagar e receber */}
       <div className="mt-4 pt-3.5 border-t border-slate-100 dark:border-slate-800">
         <div className="flex items-center justify-between mb-2.5 px-0.5">
           <h3 className="text-xs sm:text-sm font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-1.5">
             <Receipt className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
-            <span>Despesas e saídas recentes</span>
+            <span>Saídas recentes</span>
           </h3>
-          {expenseAccounts.length > 0 && (
+          {paidExpenses.length > 0 && (
             <button
               type="button"
               onClick={() => onSelectTab('pagar')}
               className="text-[11px] font-bold text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 hover:underline transition-all cursor-pointer"
             >
-              Ver todas ({expenseAccounts.length})
+              Ver todas ({paidExpenses.length})
             </button>
           )}
         </div>
@@ -132,7 +133,7 @@ export const ContasSection: React.FC<ContasSectionProps> = ({
         {recentExpenses.length === 0 ? (
           <div className="py-4 px-3 text-center bg-slate-50/70 dark:bg-slate-800/40 border border-dashed border-slate-200 dark:border-slate-700 rounded-2xl">
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-              Nenhuma despesa ou saída recente registrada neste mês.
+              Nenhuma saída paga registrada neste mês.
             </p>
           </div>
         ) : (

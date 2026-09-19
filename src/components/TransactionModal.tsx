@@ -106,14 +106,23 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     return `${parseInt(day, 10)} ${monthsShort[m] || ''} ${year}`;
   };
 
+  const handleDateChange = (newDateStr: string) => {
+    setDate(newDateStr);
+    const today = getTodayDateString();
+    // Se a data for alterada para depois de hoje, o botão de pago ou recebido NÃO se ativa sem o usuário apertar
+    if (newDateStr > today) {
+      setIsPaid(false);
+    }
+  };
+
   const handleAdjustDay = (delta: number) => {
-    const parts = (date || new Date().toISOString().split('T')[0]).split('-');
+    const parts = (date || getTodayDateString()).split('-');
     const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
     d.setDate(d.getDate() + delta);
     const y = d.getFullYear();
     const m = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
-    setDate(`${y}-${m}-${day}`);
+    handleDateChange(`${y}-${m}-${day}`);
   };
 
   // Categorias personalizadas e modal de categorias
@@ -160,8 +169,14 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         setAmount(editingTransaction.amount ? editingTransaction.amount.toString() : '');
         setCategory(editingTransaction.category || '');
         setBankName(editingTransaction.bankName || '');
-        setDate(editingTransaction.date || defaultDate || new Date().toISOString().split('T')[0]);
-        setIsPaid(editingTransaction.isPaid !== false);
+        const initialDate = editingTransaction.date || defaultDate || getTodayDateString();
+        const today = getTodayDateString();
+        setDate(initialDate);
+        if (initialDate > today && editingTransaction.isPaid !== true) {
+          setIsPaid(false);
+        } else {
+          setIsPaid(editingTransaction.isPaid !== false);
+        }
         const hasExtra = Boolean(editingTransaction.notes || editingTransaction.isRecurring || editingTransaction.recurrence || editingTransaction.installments);
         setShowMoreDetails(hasExtra);
         setRepetitionMode(
@@ -183,7 +198,6 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         setCategorySearch('');
         setNewCategoryName('');
         setIsCustomDatePickerOpen(false);
-        const initialDate = editingTransaction.date || defaultDate || new Date().toISOString().split('T')[0];
         const parts = initialDate.split('-');
         setCalendarViewDate({
           year: parseInt(parts[0], 10) || new Date().getFullYear(),
@@ -195,8 +209,15 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         setAmount('');
         setCategory('');
         setBankName('');
-        setDate(defaultDate || new Date().toISOString().split('T')[0]);
-        setIsPaid(true);
+        const initialDate = defaultDate || getTodayDateString();
+        const today = getTodayDateString();
+        setDate(initialDate);
+        // Se a data inicial for depois de hoje, o botão de pago/recebido não se ativa sem o usuário apertar
+        if (initialDate > today) {
+          setIsPaid(false);
+        } else {
+          setIsPaid(true);
+        }
         setShowMoreDetails(false);
         setRepetitionMode('uma_vez');
         setInstallmentsCount(2);
@@ -208,7 +229,6 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         setCategorySearch('');
         setNewCategoryName('');
         setIsCustomDatePickerOpen(false);
-        const initialDate = defaultDate || new Date().toISOString().split('T')[0];
         const parts = initialDate.split('-');
         setCalendarViewDate({
           year: parseInt(parts[0], 10) || new Date().getFullYear(),
@@ -514,7 +534,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                   type="date"
                   required
                   value={date}
-                  onChange={(e) => setDate(e.target.value)}
+                  onChange={(e) => handleDateChange(e.target.value)}
                   className="sr-only"
                 />
 
@@ -1074,7 +1094,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                       key={d}
                       type="button"
                       onClick={() => {
-                        setDate(dateIso);
+                        handleDateChange(dateIso);
                         setIsCustomDatePickerOpen(false);
                       }}
                       className={`h-9 w-9 mx-auto rounded-xl text-xs font-bold transition-all flex items-center justify-center cursor-pointer ${
@@ -1101,8 +1121,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               <button
                 type="button"
                 onClick={() => {
-                  const todayIso = new Date().toISOString().split('T')[0];
-                  setDate(todayIso);
+                  const todayIso = getTodayDateString();
+                  handleDateChange(todayIso);
                   setIsCustomDatePickerOpen(false);
                 }}
                 className={`text-xs font-bold transition-colors cursor-pointer ${
