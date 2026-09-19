@@ -35,6 +35,18 @@ textarea::placeholder {
   opacity: 0.65;
 }
 
+/* Previne zoom automático e indesejado ao focar em inputs no celular */
+@media screen and (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Previne zoom acidental por duplo toque em botões e elementos interativos */
+button, input, a, [role="button"] {
+  touch-action: manipulation;
+}
+
 /* Evitar títulos forçados para CAIXA ALTA (MAIÚSCULAS) */
 .uppercase {
   text-transform: none !important;

@@ -358,7 +358,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     >
       <div 
         id="transaction-modal"
-        className="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-150 max-h-[92vh] flex flex-col mx-auto"
+        className="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-fadeIn max-h-[92vh] flex flex-col mx-auto"
       >
         {/* Header - Título centralizado, com ícone < no canto superior esquerdo e escaner no canto superior direito */}
         <div className="relative p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/70 shrink-0">
@@ -832,7 +832,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               <button
                 type="submit"
                 id="btn-submit-new-transaction"
-                className={`flex items-center justify-center gap-2 px-6 py-3 rounded-2xl text-white font-black text-sm shadow-md active:scale-95 hover:scale-102 transition-all cursor-pointer ${
+                className={`flex items-center justify-center gap-2 px-6 py-3 rounded-2xl text-white font-black text-sm shadow-md transition-colors cursor-pointer ${
                   type === 'expense'
                     ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-600/30'
                     : type === 'investment'
@@ -848,7 +848,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               <button
                 type="submit"
                 id="btn-submit-new-transaction"
-                className={`w-13 h-13 sm:w-14 sm:h-14 rounded-full text-white flex items-center justify-center shadow-lg active:scale-95 hover:scale-105 transition-all cursor-pointer ${
+                className={`w-13 h-13 sm:w-14 sm:h-14 rounded-full text-white flex items-center justify-center shadow-lg transition-colors cursor-pointer ${
                   type === 'expense'
                     ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-600/30'
                     : type === 'investment'
@@ -869,7 +869,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       {/* Modal / Sheet Interno de Seleção e Criação de Categorias */}
       {isCategoryPickerOpen && (
         <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-950/50 backdrop-blur-xs animate-in fade-in duration-100 overflow-x-hidden">
-          <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[85vh] animate-in zoom-in-95 duration-150">
+          <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[85vh] animate-fadeIn">
             
             {/* Header do Picker de Categorias */}
             <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
@@ -994,7 +994,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       {/* Modal de Calendário Direto (Totalmente compatível com Vercel, iOS, Android e Web) */}
       {isCustomDatePickerOpen && (
         <div className="fixed inset-0 z-70 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-100">
-          <div className="bg-white w-full max-w-sm rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col p-4 sm:p-5 animate-in zoom-in-95 duration-150">
+          <div className="bg-white w-full max-w-sm rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col p-4 sm:p-5 animate-fadeIn">
             
             {/* Header do Calendário: Mês/Ano e setas para navegar */}
             <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">

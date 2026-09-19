@@ -169,7 +169,7 @@ export const ContasTab: React.FC<ContasTabProps> = ({
           <button
             type="button"
             onClick={() => onOpenNewTransaction(isPagar ? 'expense' : 'income')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-white shadow-xs cursor-pointer active:scale-95 transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-white shadow-xs cursor-pointer transition-colors ${
               isPagar
                 ? 'bg-rose-600 hover:bg-rose-700'
                 : 'bg-emerald-600 hover:bg-emerald-700'

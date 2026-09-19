@@ -174,7 +174,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto overflow-x-hidden touch-pan-y">
       <div 
         id="receipt-scanner-modal"
-        className="bg-white w-full max-w-xl rounded-2xl shadow-xl border border-slate-200 overflow-x-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-150 mx-auto"
+        className="bg-white w-full max-w-xl rounded-2xl shadow-xl border border-slate-200 overflow-x-hidden flex flex-col max-h-[90vh] animate-fadeIn mx-auto"
       >
         {/* Header */}
         <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">

@@ -118,7 +118,7 @@ export const CardInvoiceConnectionModal: React.FC<CardInvoiceConnectionModalProp
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto overflow-x-hidden touch-pan-y">
       <div 
         id="card-connection-modal"
-        className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl border border-slate-200 overflow-x-hidden flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-150 mx-auto"
+        className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl border border-slate-200 overflow-x-hidden flex flex-col max-h-[90vh] animate-fadeIn mx-auto"
       >
         {/* Top Header */}
         <div className="p-5 sm:p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">

@@ -39,7 +39,7 @@ export const TransactionTypeChoiceModal: React.FC<TransactionTypeChoiceModalProp
       onClick={onClose}
     >
       <div 
-        className="w-full max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-slideUp sm:animate-zoomIn"
+        className="w-full max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-fadeIn"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -71,10 +71,10 @@ export const TransactionTypeChoiceModal: React.FC<TransactionTypeChoiceModalProp
             type="button"
             id="btn-opcao-receita"
             onClick={() => onSelectType('income')}
-            className="w-full flex items-center justify-between p-4 rounded-2xl bg-emerald-50/70 hover:bg-emerald-100/90 border border-emerald-200/90 hover:border-emerald-400 text-left transition-all group cursor-pointer"
+            className="w-full flex items-center justify-between p-4 rounded-2xl bg-emerald-50/70 hover:bg-emerald-100/90 border border-emerald-200/90 hover:border-emerald-400 text-left transition-colors group cursor-pointer"
           >
             <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-xs shadow-emerald-200 group-hover:scale-105 transition-transform shrink-0">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-xs shadow-emerald-200 shrink-0">
                 <TrendingUp className="w-6 h-6 stroke-[2.5]" />
               </div>
               <div>
@@ -94,10 +94,10 @@ export const TransactionTypeChoiceModal: React.FC<TransactionTypeChoiceModalProp
             type="button"
             id="btn-opcao-gasto"
             onClick={() => onSelectType('expense')}
-            className="w-full flex items-center justify-between p-4 rounded-2xl bg-rose-50/70 hover:bg-rose-100/90 border border-rose-200/90 hover:border-rose-400 text-left transition-all group cursor-pointer"
+            className="w-full flex items-center justify-between p-4 rounded-2xl bg-rose-50/70 hover:bg-rose-100/90 border border-rose-200/90 hover:border-rose-400 text-left transition-colors group cursor-pointer"
           >
             <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-rose-600 text-white flex items-center justify-center shadow-xs shadow-rose-200 group-hover:scale-105 transition-transform shrink-0">
+              <div className="w-12 h-12 rounded-2xl bg-rose-600 text-white flex items-center justify-center shadow-xs shadow-rose-200 shrink-0">
                 <TrendingDown className="w-6 h-6 stroke-[2.5]" />
               </div>
               <div>
@@ -117,10 +117,10 @@ export const TransactionTypeChoiceModal: React.FC<TransactionTypeChoiceModalProp
             type="button"
             id="btn-opcao-investimento"
             onClick={() => onSelectType('investment')}
-            className="w-full flex items-center justify-between p-4 rounded-2xl bg-indigo-50/70 hover:bg-indigo-100/90 border border-indigo-200/90 hover:border-indigo-400 text-left transition-all group cursor-pointer"
+            className="w-full flex items-center justify-between p-4 rounded-2xl bg-indigo-50/70 hover:bg-indigo-100/90 border border-indigo-200/90 hover:border-indigo-400 text-left transition-colors group cursor-pointer"
           >
             <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-xs shadow-indigo-200 group-hover:scale-105 transition-transform shrink-0">
+              <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-xs shadow-indigo-200 shrink-0">
                 <PiggyBank className="w-6 h-6 stroke-[2.5]" />
               </div>
               <div>

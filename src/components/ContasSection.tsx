@@ -54,7 +54,7 @@ export const ContasSection: React.FC<ContasSectionProps> = ({
           type="button"
           id="card-filtro-pagar"
           onClick={() => onSelectTab('pagar')}
-          className="flex flex-col items-start p-3 sm:p-3.5 rounded-2xl border border-slate-200/90 bg-rose-50/40 hover:bg-rose-50/90 hover:border-rose-300 hover:shadow-xs text-left transition-all cursor-pointer relative group active:scale-98"
+          className="flex flex-col items-start p-3 sm:p-3.5 rounded-2xl border border-slate-200/90 bg-rose-50/40 hover:bg-rose-50/90 hover:border-rose-300 hover:shadow-xs text-left transition-colors cursor-pointer relative group"
           title="Ver contas a pagar em aba dedicada"
         >
           {/* Topo do card: Ícone menor + Título */}
@@ -84,7 +84,7 @@ export const ContasSection: React.FC<ContasSectionProps> = ({
           type="button"
           id="card-filtro-receber"
           onClick={() => onSelectTab('receber')}
-          className="flex flex-col items-start p-3 sm:p-3.5 rounded-2xl border border-slate-200/90 bg-emerald-50/40 hover:bg-emerald-50/90 hover:border-emerald-300 hover:shadow-xs text-left transition-all cursor-pointer relative group active:scale-98"
+          className="flex flex-col items-start p-3 sm:p-3.5 rounded-2xl border border-slate-200/90 bg-emerald-50/40 hover:bg-emerald-50/90 hover:border-emerald-300 hover:shadow-xs text-left transition-colors cursor-pointer relative group"
           title="Ver contas a receber em aba dedicada"
         >
           {/* Topo do card: Ícone menor + Título */}
