@@ -104,23 +104,23 @@ export const MonthlyReportModal: React.FC<MonthlyReportModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-fadeIn">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-xs animate-fadeIn">
       <div 
-        className="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh] animate-scaleUp"
+        className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[90vh] animate-scaleUp transition-colors"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
+        <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-800/60">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-sm shadow-emerald-200">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-sm shadow-emerald-200 dark:shadow-none">
               <FileText className="w-5 h-5 stroke-[2.2]" />
             </div>
             <div>
-              <h3 className="font-extrabold text-slate-900 text-base sm:text-lg leading-tight">
+              <h3 className="font-extrabold text-slate-900 dark:text-white text-base sm:text-lg leading-tight">
                 Relatório do Mês em PDF
               </h3>
-              <p className="text-xs text-slate-500 font-medium">
-                Mês de Referência: <span className="font-bold text-slate-800">{monthName}</span>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                Mês de Referência: <span className="font-bold text-slate-800 dark:text-slate-200">{monthName}</span>
               </p>
             </div>
           </div>
@@ -128,7 +128,7 @@ export const MonthlyReportModal: React.FC<MonthlyReportModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-xl transition-colors cursor-pointer"
+            className="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
             title="Fechar"
           >
             <X className="w-5 h-5" />
@@ -139,14 +139,14 @@ export const MonthlyReportModal: React.FC<MonthlyReportModalProps> = ({
         <div className="p-4 sm:p-6 overflow-y-auto space-y-4">
           
           {successMessage && (
-            <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center gap-2.5 text-xs font-bold text-emerald-800 animate-fadeIn">
-              <Check className="w-4 h-4 text-emerald-600 shrink-0 stroke-[3]" />
+            <div className="p-3 bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800 rounded-2xl flex items-center gap-2.5 text-xs font-bold text-emerald-800 dark:text-emerald-300 animate-fadeIn">
+              <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 stroke-[3]" />
               <span>{successMessage}</span>
             </div>
           )}
 
           {/* Card Resumo que irá no PDF */}
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 text-white shadow-md">
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700/60 text-white shadow-md">
             <div className="flex items-center justify-between pb-3 border-b border-slate-700/60">
               <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
                 Resumo do Documento
@@ -184,12 +184,12 @@ export const MonthlyReportModal: React.FC<MonthlyReportModalProps> = ({
             </div>
           </div>
 
-          <div className="text-xs text-slate-500 bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5 space-y-1.5">
-            <p className="font-bold text-slate-700 flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+          <div className="text-xs text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-3.5 space-y-1.5">
+            <p className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
               O PDF gerado inclui:
             </p>
-            <ul className="list-disc list-inside space-y-0.5 text-slate-600 pl-1 text-[11px]">
+            <ul className="list-disc list-inside space-y-0.5 text-slate-600 dark:text-slate-400 pl-1 text-[11px]">
               <li>Cabeçalho com data de emissão e referência do mês</li>
               <li>Quadro executivo com total de receitas, despesas e saldo</li>
               <li>Distribuição percentual de gastos por categoria</li>
@@ -219,10 +219,10 @@ export const MonthlyReportModal: React.FC<MonthlyReportModalProps> = ({
                 id="btn-compartilhar-pdf"
                 onClick={handleShare}
                 disabled={isGenerating}
-                className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs shadow-xs transition-all cursor-pointer"
+                className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs shadow-xs transition-all cursor-pointer"
                 title="Compartilhar arquivo PDF"
               >
-                <Share2 className="w-3.5 h-3.5 text-indigo-600" />
+                <Share2 className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
                 <span>Compartilhar PDF</span>
               </button>
 
@@ -230,10 +230,10 @@ export const MonthlyReportModal: React.FC<MonthlyReportModalProps> = ({
                 type="button"
                 id="btn-enviar-whatsapp"
                 onClick={handleWhatsAppSend}
-                className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-2xl border border-emerald-200 bg-emerald-50/70 hover:bg-emerald-100/70 text-emerald-800 font-bold text-xs transition-all cursor-pointer"
+                className="flex items-center justify-center gap-2 py-2.5 px-3 rounded-2xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50/70 dark:bg-emerald-950/50 hover:bg-emerald-100/70 dark:hover:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 font-bold text-xs transition-all cursor-pointer"
                 title="Enviar resumo formatado via WhatsApp"
               >
-                <Send className="w-3.5 h-3.5 text-emerald-600" />
+                <Send className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                 <span>Enviar no WhatsApp</span>
               </button>
             </div>
@@ -242,7 +242,7 @@ export const MonthlyReportModal: React.FC<MonthlyReportModalProps> = ({
             <button
               type="button"
               onClick={handleEmailSend}
-              className="w-full py-2 text-center text-xs font-semibold text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+              className="w-full py-2 text-center text-xs font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer"
             >
               Enviar resumo por E-mail
             </button>
@@ -252,11 +252,11 @@ export const MonthlyReportModal: React.FC<MonthlyReportModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-3 border-t border-slate-100 bg-slate-50/50 flex justify-end">
+        <div className="p-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 flex justify-end">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-900 rounded-xl hover:bg-slate-200/60 transition-colors cursor-pointer"
+            className="px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-xl hover:bg-slate-200/60 dark:hover:bg-slate-800 transition-colors cursor-pointer"
           >
             Fechar
           </button>

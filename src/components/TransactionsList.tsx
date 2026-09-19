@@ -52,7 +52,7 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
     } else if (activeFilter === 'investment') {
       matchesFilter = isInvest;
     } else if (activeFilter === 'expense') {
-      matchesFilter = tx.type === 'expense';
+      matchesFilter = tx.type === 'expense' || isInvest;
     } else if (activeFilter === 'income') {
       matchesFilter = tx.type === 'income';
     }
@@ -86,8 +86,8 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
         onClick={() => onEditTransaction?.(tx)}
         className={`p-3 sm:p-4 rounded-2xl border transition-all cursor-pointer flex items-center justify-between gap-3 group ${
           isConcluded
-            ? 'bg-slate-50/60 border-slate-200/70 opacity-60 hover:opacity-90 hover:bg-slate-50'
-            : 'bg-white border-slate-200/90 hover:border-slate-300 hover:shadow-xs'
+            ? 'bg-slate-50/60 dark:bg-slate-800/40 border-slate-200/70 dark:border-slate-800 opacity-50 dark:opacity-45 hover:opacity-90 hover:bg-slate-50 dark:hover:bg-slate-800/80'
+            : 'bg-white dark:bg-slate-900 border-slate-200/90 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-xs'
         }`}
         title="Clique para editar este lançamento"
       >
@@ -102,15 +102,15 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
           <div className="min-w-0 flex-1">
             {/* Descrição */}
             <h4
-              className={`text-sm sm:text-base font-extrabold text-slate-900 break-words leading-snug ${
-                isConcluded ? 'line-through text-slate-500' : ''
+              className={`text-sm sm:text-base font-extrabold text-slate-900 dark:text-white break-words leading-snug ${
+                isConcluded ? 'line-through text-slate-500 dark:text-slate-400' : ''
               }`}
             >
               {tx.description}
             </h4>
 
             {/* Embaixo: categoria - banco */}
-            <span className="text-xs text-slate-500 font-medium block mt-0.5 break-words">
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium block mt-0.5 break-words">
               {tx.category || 'Outros'} - {bankNameClean}
             </span>
           </div>
@@ -120,7 +120,7 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
         <div className="flex items-center shrink-0 text-right">
           <div className="flex flex-col items-end">
             {/* Data: ex 18 de set */}
-            <span className="text-[11px] sm:text-xs font-semibold text-slate-500">
+            <span className="text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-slate-400">
               {dateText}
             </span>
 
@@ -128,10 +128,10 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
             <span
               className={`text-sm sm:text-base font-black tracking-tight whitespace-nowrap ${
                 isIncome
-                  ? 'text-emerald-600'
+                  ? 'text-emerald-600 dark:text-emerald-400'
                   : isInvestment
-                  ? 'text-indigo-600'
-                  : 'text-rose-600'
+                  ? 'text-indigo-600 dark:text-indigo-400'
+                  : 'text-rose-600 dark:text-rose-400'
               }`}
             >
               {isIncome ? '+' : '-'} {formatCurrency(tx.amount)}
@@ -143,15 +143,15 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
   };
 
   return (
-    <div id="extrato-transacoes" className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200/80 shadow-xs">
+    <div id="extrato-transacoes" className="bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-6 border border-slate-200/80 dark:border-slate-800 shadow-xs transition-colors">
       
       {/* Header and Controls */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-slate-100">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b border-slate-100 dark:border-slate-800">
         <div>
-          <h3 className="text-base sm:text-lg font-bold text-slate-900">
+          <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
             Extrato de Movimentações
           </h3>
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
             Entradas, saídas e investimentos sincronizados e manuais
           </p>
         </div>
@@ -165,45 +165,28 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
               placeholder="Buscar movimentação..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-8.5 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900 w-full sm:w-52"
+              className="pl-8.5 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:bg-white dark:focus:bg-slate-850 focus:outline-none focus:ring-2 focus:ring-slate-900 dark:focus:ring-emerald-500 w-full sm:w-52 transition-colors"
             />
           </div>
 
-          {/* Filter Pills */}
-          <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200/60 overflow-x-auto">
+          {/* Filter Pills: Sem "Pendente" ou "Pago" */}
+          <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200/60 dark:border-slate-700 overflow-x-auto transition-colors">
             <button
               onClick={() => onChangeFilter('all')}
               className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
                 activeFilter === 'all'
-                  ? 'bg-white text-slate-900 shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               Todas
-            </button>
-            <button
-              onClick={() => onChangeFilter('pending')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
-                activeFilter === 'pending'
-                  ? 'bg-amber-500 text-white shadow-xs font-bold'
-                  : 'text-slate-600 hover:text-amber-800'
-              }`}
-            >
-              <span>Pendentes</span>
-              {pendingCount > 0 && (
-                <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
-                  activeFilter === 'pending' ? 'bg-amber-600 text-white' : 'bg-amber-200 text-amber-900'
-                }`}>
-                  {pendingCount}
-                </span>
-              )}
             </button>
             <button
               onClick={() => onChangeFilter('income')}
               className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
                 activeFilter === 'income'
                   ? 'bg-emerald-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               Entradas
@@ -213,7 +196,7 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
               className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
                 activeFilter === 'expense'
                   ? 'bg-rose-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               Saídas
@@ -223,7 +206,7 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
               className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap ${
                 activeFilter === 'investment'
                   ? 'bg-indigo-600 text-white shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                  : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               Investimentos
@@ -234,10 +217,10 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
           {onOpenMonthlyPdfReport && transactions.length > 0 && (
             <button
               onClick={onOpenMonthlyPdfReport}
-              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 hover:text-emerald-900 border border-emerald-200 rounded-xl transition-all shadow-2xs whitespace-nowrap cursor-pointer"
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 border border-emerald-200 dark:border-emerald-800 rounded-xl transition-all shadow-2xs whitespace-nowrap cursor-pointer"
               title="Gerar e enviar relatório do mês em PDF"
             >
-              <FileText className="w-3.5 h-3.5 text-emerald-600" />
+              <FileText className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
               <span>Relatório PDF</span>
             </button>
           )}
@@ -246,10 +229,10 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
           {onClearHistory && transactions.length > 0 && (
             <button
               onClick={() => setShowClearModal(true)}
-              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 hover:text-rose-800 border border-rose-200 rounded-xl transition-all shadow-2xs whitespace-nowrap cursor-pointer"
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/40 border border-rose-200 dark:border-rose-800 rounded-xl transition-all shadow-2xs whitespace-nowrap cursor-pointer"
               title="Opção de apagar histórico"
             >
-              <Trash2 className="w-3.5 h-3.5 text-rose-600" />
+              <Trash2 className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
               <span>Apagar Histórico</span>
             </button>
           )}
@@ -259,22 +242,22 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
       {/* Modal de Confirmação para Apagar Histórico */}
       {showClearModal && onClearHistory && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fadeIn">
-          <div className="bg-white rounded-3xl p-6 max-w-md w-full border border-slate-200 shadow-2xl space-y-4">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 max-w-md w-full border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-2xl bg-rose-100 dark:bg-rose-950/60 text-rose-600 dark:text-rose-400 flex items-center justify-center shrink-0">
                 <Trash2 className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="font-bold text-slate-900 text-base">
+                <h4 className="font-bold text-slate-900 dark:text-white text-base">
                   Apagar Histórico de Transações
                 </h4>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   Escolha o escopo de limpeza do histórico
                 </p>
               </div>
             </div>
 
-            <p className="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-200/70">
+            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-200/70 dark:border-slate-700">
               Esta ação removerá os registros selecionados. Você pode optar por apagar somente as contas de {currentMonthName} ou todo o histórico geral.
             </p>
 
@@ -284,10 +267,10 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
                   onClearHistory('currentMonth');
                   setShowClearModal(false);
                 }}
-                className="w-full py-2.5 px-4 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-xl text-xs font-bold transition-all text-left flex items-center justify-between group cursor-pointer"
+                className="w-full py-2.5 px-4 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 rounded-xl text-xs font-bold transition-all text-left flex items-center justify-between group cursor-pointer"
               >
                 <span>Apagar apenas contas de {currentMonthName}</span>
-                <span className="text-[11px] font-semibold text-rose-600 group-hover:translate-x-0.5 transition-transform">→</span>
+                <span className="text-[11px] font-semibold text-rose-600 dark:text-rose-400 group-hover:translate-x-0.5 transition-transform">→</span>
               </button>
 
               <button
@@ -301,10 +284,10 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
               </button>
             </div>
 
-            <div className="pt-2 border-t border-slate-100 flex justify-end">
+            <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex justify-end">
               <button
                 onClick={() => setShowClearModal(false)}
-                className="px-4 py-2 text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-all"
+                className="px-4 py-2 text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all cursor-pointer"
               >
                 Cancelar
               </button>
@@ -316,22 +299,14 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
       {/* Transactions Table / List */}
       <div className="mt-4">
         {filtered.length === 0 ? (
-          <div className="py-12 text-center text-slate-400 text-xs">
+          <div className="py-12 text-center text-slate-400 dark:text-slate-500 text-xs">
             Nenhuma movimentação encontrada com os filtros atuais.
           </div>
         ) : (
           <div className="space-y-4">
-            {/* Movimentações Pendentes / Em Aberto */}
+            {/* Movimentações em aberto */}
             {pendingTransactions.length > 0 && (
               <div className="space-y-2.5">
-                {concludedTransactions.length > 0 && (
-                  <div className="flex items-center gap-2 pb-1">
-                    <span className="text-xs font-black uppercase tracking-wider text-slate-600">
-                      Movimentações ({pendingTransactions.length})
-                    </span>
-                    <div className="flex-1 h-px bg-slate-200/70 ml-1" />
-                  </div>
-                )}
                 {pendingTransactions.map((tx) => renderTransactionRow(tx, false))}
               </div>
             )}
@@ -339,11 +314,11 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
             {/* Sessão de Concluídas (Ofuscadas) */}
             {concludedTransactions.length > 0 && (
               <div className="space-y-2.5 pt-2">
-                <div className="flex items-center gap-2 pb-1 pt-1 border-t border-slate-100">
-                  <span className="text-xs font-black uppercase tracking-wider text-slate-500">
+                <div className="flex items-center gap-2 pb-1 pt-1 border-t border-slate-100 dark:border-slate-800">
+                  <span className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     Concluídas ({concludedTransactions.length})
                   </span>
-                  <div className="flex-1 h-px bg-slate-200/70 ml-1" />
+                  <div className="flex-1 h-px bg-slate-200/70 dark:bg-slate-800 ml-1" />
                 </div>
                 {concludedTransactions.map((tx) => renderTransactionRow(tx, true))}
               </div>

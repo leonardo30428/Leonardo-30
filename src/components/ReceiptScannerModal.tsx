@@ -174,24 +174,24 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto overflow-x-hidden touch-pan-y">
       <div 
         id="receipt-scanner-modal"
-        className="bg-white w-full max-w-xl rounded-2xl shadow-xl border border-slate-200 overflow-x-hidden flex flex-col max-h-[90vh] animate-fadeIn mx-auto"
+        className="bg-white dark:bg-slate-900 w-full max-w-xl rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-x-hidden flex flex-col max-h-[90vh] animate-fadeIn mx-auto transition-colors"
       >
         {/* Header */}
-        <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+        <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/80">
           <div className="flex items-center gap-2.5">
             <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-xs">
               <Camera className="w-5 h-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-slate-900 text-base sm:text-lg">
+                <h3 className="font-bold text-slate-900 dark:text-white text-base sm:text-lg">
                   Leitor de Comprovantes com IA
                 </h3>
-                <span className="text-[10px] font-bold bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full">
+                <span className="text-[10px] font-bold bg-indigo-100 dark:bg-indigo-950/60 text-indigo-800 dark:text-indigo-300 px-2 py-0.5 rounded-full">
                   Gemini Vision
                 </span>
               </div>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 Envie a foto de uma nota fiscal, cupom ou comprovante de pagamento
               </p>
             </div>
@@ -199,7 +199,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
 
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors"
+            className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -213,15 +213,15 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
             <div>
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className="border-2 border-dashed border-slate-300 hover:border-indigo-500 bg-slate-50/60 hover:bg-indigo-50/30 rounded-2xl p-8 text-center cursor-pointer transition-all flex flex-col items-center justify-center"
+                className="border-2 border-dashed border-slate-300 dark:border-slate-700 hover:border-indigo-500 dark:hover:border-indigo-400 bg-slate-50/60 dark:bg-slate-800/50 hover:bg-indigo-50/30 dark:hover:bg-indigo-950/30 rounded-2xl p-8 text-center cursor-pointer transition-all flex flex-col items-center justify-center"
               >
-                <div className="w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mb-3">
+                <div className="w-12 h-12 rounded-full bg-indigo-100 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center mb-3">
                   <Upload className="w-6 h-6" />
                 </div>
-                <span className="text-sm font-bold text-slate-800">
+                <span className="text-sm font-bold text-slate-800 dark:text-slate-200">
                   Clique ou arraste a foto do comprovante aqui
                 </span>
-                <p className="text-xs text-slate-500 mt-1 max-w-sm">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-sm">
                   Formatos aceitos: JPG, PNG, WEBP ou PDF de notas fiscais e comprovantes PIX
                 </p>
               </div>
@@ -236,28 +236,28 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
 
               {/* Sample test receipts */}
               <div className="mt-4">
-                <span className="text-xs font-semibold text-slate-500 block mb-2">
+                <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 block mb-2">
                   Ou teste imediatamente com um comprovante de exemplo:
                 </span>
                 <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
                     onClick={() => handleSampleReceipt('supermercado')}
-                    className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 border border-slate-200 transition-colors"
+                    className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 hover:text-indigo-700 dark:hover:text-indigo-300 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
                   >
                     Supermercado (R$ 342,80)
                   </button>
                   <button
                     type="button"
                     onClick={() => handleSampleReceipt('posto')}
-                    className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 border border-slate-200 transition-colors"
+                    className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 hover:text-indigo-700 dark:hover:text-indigo-300 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
                   >
                     Combustível (R$ 230,00)
                   </button>
                   <button
                     type="button"
                     onClick={() => handleSampleReceipt('restaurante')}
-                    className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-indigo-50 hover:text-indigo-700 text-slate-700 border border-slate-200 transition-colors"
+                    className="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-indigo-50 dark:hover:bg-indigo-950/50 hover:text-indigo-700 dark:hover:text-indigo-300 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition-colors cursor-pointer"
                   >
                     Restaurante (R$ 98,50)
                   </button>
@@ -266,7 +266,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="relative rounded-xl border border-slate-200 bg-slate-50 p-2 overflow-hidden flex items-center justify-center max-h-56">
+              <div className="relative rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 p-2 overflow-hidden flex items-center justify-center max-h-56">
                 <img
                   src={selectedImage}
                   alt="Comprovante"
@@ -277,7 +277,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                     setSelectedImage(null);
                     setParsedData(null);
                   }}
-                  className="absolute top-3 right-3 bg-slate-900/80 hover:bg-slate-900 text-white p-1.5 rounded-lg text-xs"
+                  className="absolute top-3 right-3 bg-slate-900/80 hover:bg-slate-900 text-white p-1.5 rounded-lg text-xs cursor-pointer"
                   title="Trocar imagem"
                 >
                   Trocar Imagem
@@ -289,7 +289,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                   id="btn-trigger-analyze-receipt"
                   onClick={handleAnalyze}
                   disabled={isAnalyzing}
-                  className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-sm transition-all disabled:opacity-50"
+                  className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-sm transition-all disabled:opacity-50 cursor-pointer"
                 >
                   {isAnalyzing ? (
                     <RefreshCw className="w-4 h-4 animate-spin" />
@@ -303,53 +303,53 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
           )}
 
           {errorMsg && (
-            <div className="p-3 bg-amber-50 border border-amber-300 rounded-xl text-amber-800 text-xs flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+            <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-300 dark:border-amber-800 rounded-xl text-amber-800 dark:text-amber-300 text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
               <span>{errorMsg}</span>
             </div>
           )}
 
           {/* Parsed Output Form */}
           {parsedData && (
-            <div className="p-4 bg-emerald-50/50 rounded-2xl border border-emerald-200 space-y-3.5 animate-in fade-in">
-              <div className="flex items-center justify-between pb-2 border-b border-emerald-200/60">
-                <div className="flex items-center gap-2 text-xs font-bold text-emerald-900">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <div className="p-4 bg-emerald-50/50 dark:bg-emerald-950/20 rounded-2xl border border-emerald-200 dark:border-emerald-800/60 space-y-3.5 animate-in fade-in">
+              <div className="flex items-center justify-between pb-2 border-b border-emerald-200/60 dark:border-emerald-800/60">
+                <div className="flex items-center gap-2 text-xs font-bold text-emerald-900 dark:text-emerald-200">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                   Dados Extraídos com Sucesso
                 </div>
-                <span className="text-[10px] bg-emerald-200/80 text-emerald-900 font-bold px-2 py-0.5 rounded-full">
+                <span className="text-[10px] bg-emerald-200/80 dark:bg-emerald-900/60 text-emerald-900 dark:text-emerald-200 font-bold px-2 py-0.5 rounded-full">
                   Pronto para lançar
                 </span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                 <div>
-                  <label className="font-semibold text-slate-700 block mb-1">Estabelecimento</label>
+                  <label className="font-semibold text-slate-700 dark:text-slate-300 block mb-1">Estabelecimento</label>
                   <input
                     type="text"
                     value={parsedData.merchant}
                     onChange={(e) => setParsedData({ ...parsedData, merchant: e.target.value })}
-                    className="w-full p-2 border border-slate-300 rounded-lg bg-white font-medium"
+                    className="w-full p-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-medium"
                   />
                 </div>
 
                 <div>
-                  <label className="font-semibold text-slate-700 block mb-1">Valor Total (R$)</label>
+                  <label className="font-semibold text-slate-700 dark:text-slate-300 block mb-1">Valor Total (R$)</label>
                   <input
                     type="number"
                     step="0.01"
                     value={parsedData.amount}
                     onChange={(e) => setParsedData({ ...parsedData, amount: parseFloat(e.target.value) || 0 })}
-                    className="w-full p-2 border border-slate-300 rounded-lg bg-white font-bold text-emerald-800"
+                    className="w-full p-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 font-bold text-emerald-800 dark:text-emerald-300"
                   />
                 </div>
 
                 <div>
-                  <label className="font-semibold text-slate-700 block mb-1">Categoria Sugerida</label>
+                  <label className="font-semibold text-slate-700 dark:text-slate-300 block mb-1">Categoria Sugerida</label>
                   <select
                     value={parsedData.category}
                     onChange={(e) => setParsedData({ ...parsedData, category: e.target.value })}
-                    className="w-full p-2 border border-slate-300 rounded-lg bg-white"
+                    className="w-full p-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
                   >
                     <option value="Alimentação">Alimentação</option>
                     <option value="Transporte">Transporte</option>
@@ -363,23 +363,23 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                 </div>
 
                 <div>
-                  <label className="font-semibold text-slate-700 block mb-1">Data</label>
+                  <label className="font-semibold text-slate-700 dark:text-slate-300 block mb-1">Data</label>
                   <input
                     type="date"
                     value={parsedData.date}
                     onChange={(e) => setParsedData({ ...parsedData, date: e.target.value })}
-                    className="w-full p-2 border border-slate-300 rounded-lg bg-white"
+                    className="w-full p-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="font-semibold text-slate-700 block mb-1 text-xs">Descrição / Itens</label>
+                <label className="font-semibold text-slate-700 dark:text-slate-300 block mb-1 text-xs">Descrição / Itens</label>
                 <input
                   type="text"
                   value={parsedData.description}
                   onChange={(e) => setParsedData({ ...parsedData, description: e.target.value })}
-                  className="w-full p-2 border border-slate-300 rounded-lg bg-white text-xs"
+                  className="w-full p-2 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-xs"
                 />
               </div>
 
@@ -387,7 +387,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setParsedData(null)}
-                  className="px-3 py-2 text-xs text-slate-600 hover:text-slate-800"
+                  className="px-3 py-2 text-xs text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 cursor-pointer"
                 >
                   Descartar
                 </button>
@@ -395,7 +395,7 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
                   type="button"
                   id="btn-confirm-receipt-transaction"
                   onClick={handleConfirmTransaction}
-                  className="px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-xs"
+                  className="px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-xs cursor-pointer"
                 >
                   Confirmar e Lançar no Extrato
                 </button>
@@ -406,13 +406,13 @@ export const ReceiptScannerModal: React.FC<ReceiptScannerModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
-          <span className="text-[11px] text-slate-500">
+        <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 flex items-center justify-between">
+          <span className="text-[11px] text-slate-500 dark:text-slate-400">
             A IA extrai automaticamente data, valor e estabelecimento
           </span>
           <button
             onClick={onClose}
-            className="px-4 py-2 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors"
+            className="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 rounded-lg transition-colors cursor-pointer"
           >
             Fechar
           </button>

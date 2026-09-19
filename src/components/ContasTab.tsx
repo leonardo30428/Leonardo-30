@@ -29,8 +29,8 @@ export const ContasTab: React.FC<ContasTabProps> = ({
   onEditTransaction,
   onOpenMonthlyPdfReport,
 }) => {
-  // Contas de Saídas/Gastos (Despesas) - NUNCA inclui receitas
-  const expenseAccounts = transactions.filter((t) => t.type === 'expense');
+  // Contas de Saídas/Gastos (Despesas e Investimentos) - NUNCA inclui receitas
+  const expenseAccounts = transactions.filter((t) => t.type === 'expense' || t.type === 'investment');
 
   // Entradas/Receitas
   const incomeAccounts = transactions.filter((t) => t.type === 'income');
@@ -54,12 +54,13 @@ export const ContasTab: React.FC<ContasTabProps> = ({
 
   // Renderizador de um item da lista
   const renderTransactionRow = (item: Transaction, isConcluded: boolean) => {
+    const isInv = item.type === 'investment';
     const visual = getCategoryVisual(item.category);
     const CategoryIcon = visual.icon;
     const isRecurring = Boolean(item.recurrence || item.isRecurring);
     const dateText = getDisplayDate(item);
     const bankNameClean = (item.bankName || 'nubank').toLowerCase();
-    const categoryClean = (item.category || 'outros').toLowerCase();
+    const categoryClean = (item.category || (isInv ? 'investimento' : 'outros')).toLowerCase();
 
     return (
       <div
@@ -67,10 +68,10 @@ export const ContasTab: React.FC<ContasTabProps> = ({
         onClick={() => onEditTransaction?.(item)}
         className={`group relative flex items-center justify-between p-3.5 sm:p-4 rounded-2xl border transition-all cursor-pointer gap-3 ${
           isConcluded
-            ? 'bg-slate-50/60 border-slate-200/70 opacity-60 hover:opacity-90 hover:bg-slate-50'
-            : 'bg-white border-slate-200/90 hover:border-slate-300 hover:shadow-xs'
+            ? 'bg-slate-50/60 dark:bg-slate-800/40 border-slate-200/70 dark:border-slate-800 opacity-60 hover:opacity-90 hover:bg-slate-50 dark:hover:bg-slate-800/60'
+            : 'bg-white dark:bg-slate-900 border-slate-200/90 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-xs'
         }`}
-        title="Clique para editar este gasto"
+        title="Clique para editar este lançamento"
       >
         {/* Lado Esquerdo: Ícone da Categoria + Descrição como Título (com ícone recorrente) + Subtítulo (categoria - banco) */}
         <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -82,16 +83,22 @@ export const ContasTab: React.FC<ContasTabProps> = ({
           <div className="min-w-0 flex-1">
             {/* Título: Descrição completa + Apenas o Ícone de Recorrência (sem a palavra "Recorrente") */}
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className={`font-extrabold text-sm sm:text-base text-slate-900 break-words leading-snug ${
-                isConcluded ? 'line-through text-slate-500' : ''
+              <span className={`font-extrabold text-sm sm:text-base text-slate-900 dark:text-white break-words leading-snug ${
+                isConcluded ? 'line-through text-slate-400 dark:text-slate-500' : ''
               }`}>
                 {item.description}
               </span>
 
+              {isInv && (
+                <span className="px-1.5 py-0.2 text-[9px] font-bold rounded-md bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 shrink-0">
+                  Investimento
+                </span>
+              )}
+
               {isRecurring && (
                 <span 
                   title="Conta Recorrente"
-                  className="inline-flex items-center p-0.5 text-indigo-600 shrink-0"
+                  className="inline-flex items-center p-0.5 text-indigo-600 dark:text-indigo-400 shrink-0"
                 >
                   <Repeat className="w-3.5 h-3.5 stroke-[2.5]" />
                 </span>
@@ -99,7 +106,7 @@ export const ContasTab: React.FC<ContasTabProps> = ({
             </div>
 
             {/* Subtítulo: categoria e banco ex: (alimentação - nubank) */}
-            <div className="text-xs text-slate-500 font-medium truncate mt-0.5">
+            <div className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate mt-0.5">
               {categoryClean} - {bankNameClean}
             </div>
           </div>
@@ -110,14 +117,14 @@ export const ContasTab: React.FC<ContasTabProps> = ({
           <div className="flex flex-col items-end">
             {/* Data: "Hoje" ou data como "16 de set" */}
             <span className={`text-[11px] sm:text-xs font-bold ${
-              dateText === 'Hoje' ? 'text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200/60' : 'text-slate-400'
+              dateText === 'Hoje' ? 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 px-1.5 py-0.5 rounded-md border border-emerald-200/60 dark:border-emerald-800/60' : 'text-slate-400 dark:text-slate-500'
             }`}>
               {dateText}
             </span>
 
             {/* Embaixo da data o valor */}
             <span className={`text-sm sm:text-base font-black tracking-tight whitespace-nowrap mt-0.5 ${
-              isConcluded ? 'text-slate-400 line-through' : isPagar ? 'text-rose-700' : 'text-emerald-700'
+              isConcluded ? 'text-slate-400 dark:text-slate-500 line-through' : isPagar ? 'text-rose-700 dark:text-rose-400' : 'text-emerald-700 dark:text-emerald-400'
             }`}>
               {formatCurrency(item.amount)}
             </span>
@@ -131,13 +138,13 @@ export const ContasTab: React.FC<ContasTabProps> = ({
   return (
     <div className="space-y-5 animate-fadeIn">
       {/* Top Header com Botão Voltar à esquerda, Título centralizado e Botão Adicionar à direita */}
-      <div className="relative flex items-center justify-between bg-white p-4 sm:p-5 rounded-3xl border border-slate-200/90 shadow-2xs">
+      <div className="relative flex items-center justify-between bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-2xs transition-colors">
         {/* Lado Esquerdo: Voltar */}
         <div className="flex items-center z-10">
           <button
             type="button"
             onClick={onGoBackToPlanning}
-            className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer flex items-center gap-1 font-bold text-xs"
+            className="p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer flex items-center gap-1 font-bold text-xs"
             title="Voltar para a página inicial"
           >
             <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
@@ -147,7 +154,7 @@ export const ContasTab: React.FC<ContasTabProps> = ({
 
         {/* Centro: Título centralizado sem bolinha e sem subtítulo */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none px-16">
-          <h2 className="text-base sm:text-lg font-black text-slate-900 text-center tracking-tight pointer-events-auto">
+          <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white text-center tracking-tight pointer-events-auto">
             Transações do mês
           </h2>
         </div>
@@ -158,10 +165,10 @@ export const ContasTab: React.FC<ContasTabProps> = ({
             <button
               type="button"
               onClick={onOpenMonthlyPdfReport}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-700 hover:text-emerald-700 bg-slate-100 hover:bg-emerald-50 border border-slate-200/80 shadow-2xs cursor-pointer active:scale-95 transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-emerald-700 dark:hover:text-emerald-400 bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 border border-slate-200/80 dark:border-slate-700 shadow-2xs cursor-pointer active:scale-95 transition-all"
               title="Gerar e enviar relatório do mês via PDF"
             >
-              <FileText className="w-4 h-4 text-emerald-600" />
+              <FileText className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               <span className="hidden md:inline">Relatório PDF</span>
             </button>
           )}
@@ -171,8 +178,8 @@ export const ContasTab: React.FC<ContasTabProps> = ({
             onClick={() => onOpenNewTransaction(isPagar ? 'expense' : 'income')}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-white shadow-xs cursor-pointer transition-colors ${
               isPagar
-                ? 'bg-rose-600 hover:bg-rose-700'
-                : 'bg-emerald-600 hover:bg-emerald-700'
+                ? 'bg-rose-600 hover:bg-rose-700 dark:bg-rose-600 dark:hover:bg-rose-500'
+                : 'bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500'
             }`}
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
@@ -182,32 +189,32 @@ export const ContasTab: React.FC<ContasTabProps> = ({
       </div>
 
       {/* Card de Resumo do Sub-Total */}
-      <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200/90 shadow-xs">
+      <div className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-xs transition-colors">
         <div>
-          <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+          <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
             {isPagar ? 'Total a Pagar (Pendente)' : 'Total a Receber (Pendente)'}
           </span>
           <span className={`text-2xl sm:text-3xl font-black tracking-tight ${
-            isPagar ? 'text-rose-600' : 'text-emerald-600'
+            isPagar ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'
           }`}>
             {formatCurrency(totalPending)}
           </span>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
             Total geral do mês ({currentMonthName}): {formatCurrency(totalAll)}
           </p>
         </div>
       </div>
 
       {/* Lista de Contas */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs p-5 sm:p-6 space-y-4">
+      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-xs p-5 sm:p-6 space-y-4 transition-colors">
         {baseList.length === 0 ? (
-          <div className="text-center py-10 px-4 bg-slate-50/70 border border-dashed border-slate-200 rounded-2xl">
-            <p className="text-sm font-semibold text-slate-600">
+          <div className="text-center py-10 px-4 bg-slate-50/70 dark:bg-slate-800/40 border border-dashed border-slate-200 dark:border-slate-700 rounded-2xl">
+            <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">
               {isPagar 
-                ? 'Nenhuma despesa registrada neste mês.' 
+                ? 'Nenhuma despesa ou saída registrada neste mês.' 
                 : 'Nenhuma receita registrada neste mês.'}
             </p>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
               Clique em &quot;Adicionar {isPagar ? 'Gasto' : 'Receita'}&quot; para criar o primeiro registro.
             </p>
           </div>
@@ -218,14 +225,14 @@ export const ContasTab: React.FC<ContasTabProps> = ({
             <div className="space-y-2.5">
               {paidItems.length > 0 && (
                 <div className="flex items-center gap-2 pb-1">
-                  <span className="text-xs font-black uppercase tracking-wider text-slate-600">
+                  <span className="text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-300">
                     {isPagar ? 'Contas a Pagar' : 'Contas a Receber'} ({pendingItems.length})
                   </span>
                 </div>
               )}
 
               {pendingItems.length === 0 ? (
-                <div className="py-4 text-center text-xs text-slate-400 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+                <div className="py-4 text-center text-xs text-slate-400 dark:text-slate-500 bg-slate-50/50 dark:bg-slate-800/30 rounded-xl border border-dashed border-slate-200 dark:border-slate-700">
                   Tudo pago e em dia por aqui!
                 </div>
               ) : (
@@ -236,11 +243,11 @@ export const ContasTab: React.FC<ContasTabProps> = ({
             {/* Seção 2: Contas Pagas / Recebidas embaixo das contas a pagar */}
             {paidItems.length > 0 && (
               <div className="space-y-2.5 pt-2">
-                <div className="flex items-center gap-2 pt-2 pb-1 border-t border-slate-100">
-                  <span className="text-xs font-black uppercase tracking-wider text-slate-500">
-                    {isPagar ? 'Pagas' : 'Recebidas'} ({paidItems.length})
+                <div className="flex items-center gap-2 pt-2 pb-1 border-t border-slate-100 dark:border-slate-800">
+                  <span className="text-xs font-black uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    {isPagar ? 'Pagas / Concluídas' : 'Recebidas'} ({paidItems.length})
                   </span>
-                  <div className="flex-1 h-px bg-slate-200/70 ml-1" />
+                  <div className="flex-1 h-px bg-slate-200/70 dark:bg-slate-800 ml-1" />
                 </div>
 
                 {paidItems.map((item) => renderTransactionRow(item, true))}

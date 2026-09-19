@@ -20,7 +20,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
     <nav 
       id="bottom-navigation-bar"
       aria-label="Navegação Principal"
-      className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/90 shadow-lg"
+      className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200/90 dark:border-slate-800 shadow-lg transition-colors"
     >
       <div className="max-w-md sm:max-w-lg mx-auto px-4 py-1.5 flex items-center justify-between">
         
@@ -30,8 +30,8 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
           onClick={() => onChangeTab('planejamento')}
           className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors cursor-pointer ${
             activeTab === 'planejamento'
-              ? 'text-emerald-700 font-bold'
-              : 'text-slate-500 hover:text-slate-900 font-medium'
+              ? 'text-emerald-700 dark:text-emerald-400 font-bold'
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-medium'
           }`}
           title="Início - Planejamento & Contas"
         >
@@ -45,8 +45,8 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
           onClick={() => onChangeTab('balanceamento')}
           className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors cursor-pointer ${
             activeTab === 'balanceamento'
-              ? 'text-indigo-700 font-bold'
-              : 'text-slate-500 hover:text-slate-900 font-medium'
+              ? 'text-indigo-700 dark:text-indigo-400 font-bold'
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-medium'
           }`}
           title="Comparativos e Balanceamento dos Meses"
         >
@@ -59,12 +59,12 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
           <button
             id="btn-central-adicionar"
             onClick={onOpenNewTransaction}
-            className="w-12 h-12 sm:w-13 sm:h-13 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center shadow-lg shadow-emerald-600/35 border-3 border-white transition-colors cursor-pointer"
+            className="w-12 h-12 sm:w-13 sm:h-13 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center shadow-lg shadow-emerald-600/35 border-3 border-white dark:border-slate-900 transition-colors cursor-pointer"
             title="Adicionar Receita, Gasto ou Investimento"
           >
             <Plus className="w-6 h-6 stroke-[2.5]" />
           </button>
-          <span className="text-[10px] font-bold text-slate-700 mt-0.5">Novo</span>
+          <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300 mt-0.5">Novo</span>
         </div>
 
         {/* 4. Contas (Contas e vencimentos) */}
@@ -73,8 +73,8 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
           onClick={onViewPending}
           className={`flex-1 flex flex-col items-center justify-center py-1 relative transition-colors cursor-pointer ${
             activeTab === 'contas'
-              ? 'text-rose-600 font-bold'
-              : 'text-slate-500 hover:text-rose-700 font-medium'
+              ? 'text-rose-600 dark:text-rose-400 font-bold'
+              : 'text-slate-500 dark:text-slate-400 hover:text-rose-700 dark:hover:text-rose-300 font-medium'
           }`}
           title="Ver contas do mês"
         >
@@ -95,8 +95,8 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
           onClick={() => onChangeTab('historico')}
           className={`flex-1 flex flex-col items-center justify-center py-1 transition-colors cursor-pointer ${
             activeTab === 'historico'
-              ? 'text-slate-900 font-bold'
-              : 'text-slate-500 hover:text-slate-900 font-medium'
+              ? 'text-slate-900 dark:text-white font-bold'
+              : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-medium'
           }`}
           title="Histórico Completo de Transações"
         >

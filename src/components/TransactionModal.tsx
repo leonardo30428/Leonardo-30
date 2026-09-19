@@ -358,22 +358,22 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     >
       <div 
         id="transaction-modal"
-        className="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-fadeIn max-h-[92vh] flex flex-col mx-auto"
+        className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden animate-fadeIn max-h-[92vh] flex flex-col mx-auto transition-colors"
       >
         {/* Header - Título centralizado, com ícone < no canto superior esquerdo e escaner no canto superior direito */}
-        <div className="relative p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/70 shrink-0">
+        <div className="relative p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-800/80 shrink-0">
           {/* Canto superior esquerdo: somente o ícone < para voltar */}
           <button
             type="button"
             onClick={onClose}
-            className="p-2 text-slate-500 hover:text-slate-900 rounded-xl hover:bg-slate-200/70 transition-colors cursor-pointer z-10"
+            className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-xl hover:bg-slate-200/70 dark:hover:bg-slate-700 transition-colors cursor-pointer z-10"
             title="Voltar"
           >
             <ChevronLeft className="w-6 h-6 stroke-[2.5]" />
           </button>
 
           <div className="absolute inset-x-0 text-center pointer-events-none px-14">
-            <h3 className="font-extrabold text-slate-900 text-base sm:text-lg">
+            <h3 className="font-extrabold text-slate-900 dark:text-white text-base sm:text-lg">
               {editingTransaction
                 ? (editingTransaction.type === 'income' 
                     ? 'Editar receita' 
@@ -386,7 +386,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     ? 'Novo Investimento'
                     : 'Novo Gasto')}
             </h3>
-            <p className="text-xs text-slate-500 truncate mt-0.5">
+            <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
               {editingTransaction
                 ? 'Atualize as informações do seu gasto'
                 : (type === 'income' 
@@ -405,10 +405,10 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                 onClose();
                 onOpenReceiptScanner();
               }}
-              className={`p-2 text-slate-500 rounded-xl transition-colors cursor-pointer z-10 ml-auto ${
+              className={`p-2 text-slate-500 dark:text-slate-400 rounded-xl transition-colors cursor-pointer z-10 ml-auto ${
                 type === 'expense'
-                  ? 'hover:text-rose-700 hover:bg-rose-50'
-                  : 'hover:text-emerald-700 hover:bg-emerald-50'
+                  ? 'hover:text-rose-700 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40'
+                  : 'hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40'
               }`}
               title="Escanear conta ou cupom fiscal"
             >
@@ -425,8 +425,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
           <div className="p-5 sm:p-6 space-y-4 overflow-y-auto overflow-x-hidden flex-1">
           
           {/* Botão de Deslizar: PAGO (para gasto) / RECEBIDO (para receita) */}
-          <div className="flex items-center justify-between p-3 bg-slate-50 border border-slate-200/90 rounded-2xl">
-            <span className="text-sm sm:text-base font-extrabold text-slate-900">
+          <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200/90 dark:border-slate-700/80 rounded-2xl">
+            <span className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white">
               {type === 'income' ? 'Recebido' : type === 'investment' ? 'Aportado' : 'Pago'}
             </span>
             
@@ -443,7 +443,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     : type === 'investment' 
                     ? 'bg-indigo-600' 
                     : 'bg-emerald-600' 
-                  : 'bg-slate-300'
+                  : 'bg-slate-300 dark:bg-slate-700'
               }`}
               title={isPaid ? 'Marcar como pendente' : 'Marcar como concluído'}
             >
@@ -458,7 +458,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
           {/* Amount and Date */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm sm:text-[15px] font-bold text-slate-800 mb-1.5">
+              <label className="block text-sm sm:text-[15px] font-bold text-slate-800 dark:text-slate-200 mb-1.5">
                 Valor (R$) *
               </label>
               <input
@@ -468,18 +468,18 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                 placeholder="0,00"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="w-full text-sm placeholder:text-xs font-bold p-2.5 rounded-xl border border-slate-300 focus:outline-hidden focus:ring-2 focus:ring-slate-900"
+                className="w-full text-sm placeholder:text-xs font-bold p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-slate-900 dark:focus:ring-emerald-500 transition-colors"
               />
             </div>
 
             <div>
-              <label className="block text-sm sm:text-[15px] font-bold text-slate-800 mb-1.5 flex items-center gap-1.5">
-                <Calendar className="w-4 h-4 text-slate-500" />
+              <label className="block text-sm sm:text-[15px] font-bold text-slate-800 dark:text-slate-200 mb-1.5 flex items-center gap-1.5">
+                <Calendar className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                 Data *
               </label>
 
               {/* Caixa com formato '20 set 2026' e botões (< >) para passar o dia */}
-              <div className="relative flex items-center justify-between bg-white p-2 px-3 rounded-xl border border-slate-300 focus-within:ring-2 focus-within:ring-slate-900">
+              <div className="relative flex items-center justify-between bg-white dark:bg-slate-800 p-2 px-3 rounded-xl border border-slate-300 dark:border-slate-700 focus-within:ring-2 focus-within:ring-slate-900 dark:focus-within:ring-emerald-500 transition-colors">
                 {/* Clique no texto/ícone abre o calendário */}
                 <div 
                   onClick={() => {
@@ -503,7 +503,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                   <Calendar className={`w-4 h-4 shrink-0 ${
                     type === 'expense' ? 'text-rose-600' : type === 'investment' ? 'text-indigo-600' : 'text-emerald-600'
                   }`} />
-                  <span className="text-xs sm:text-sm font-bold text-slate-900 select-none">
+                  <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white select-none">
                     {formatBRDisplayDate(date)}
                   </span>
                 </div>
@@ -523,7 +523,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                   <button
                     type="button"
                     onClick={() => handleAdjustDay(-1)}
-                    className="p-1 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                    className="p-1 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors cursor-pointer"
                     title="Dia anterior"
                   >
                     <ChevronLeft className="w-4 h-4 stroke-[2.5]" />
@@ -531,7 +531,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                   <button
                     type="button"
                     onClick={() => handleAdjustDay(1)}
-                    className="p-1 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                    className="p-1 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors cursor-pointer"
                     title="Próximo dia"
                   >
                     <ChevronRight className="w-4 h-4 stroke-[2.5]" />
@@ -543,8 +543,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
           {/* Description - Título "Descrição" e placeholder "Descrição opcional" */}
           <div>
-            <label className="block text-sm sm:text-[15px] font-bold text-slate-800 mb-1.5 flex items-center gap-1.5">
-              <AlignLeft className="w-4 h-4 text-slate-500" />
+            <label className="block text-sm sm:text-[15px] font-bold text-slate-800 dark:text-slate-200 mb-1.5 flex items-center gap-1.5">
+              <AlignLeft className="w-4 h-4 text-slate-500 dark:text-slate-400" />
               Descrição
             </label>
             <input
@@ -552,23 +552,23 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               placeholder="Descrição opcional"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full text-xs placeholder:text-[11.5px] placeholder:text-slate-400 p-2.5 rounded-xl border border-slate-300 focus:outline-hidden focus:ring-2 focus:ring-slate-900 text-slate-800"
+              className="w-full text-xs placeholder:text-[11.5px] placeholder:text-slate-400 dark:placeholder:text-slate-500 p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:outline-hidden focus:ring-2 focus:ring-slate-900 dark:focus:ring-emerald-500 text-slate-800 dark:text-white transition-colors"
             />
           </div>
 
           {/* Categoria sem escrita direta: clique no campo ou no botão (+) abre as categorias e adicionar categoria */}
           <div>
-            <label className="block text-sm sm:text-[15px] font-bold text-slate-800 mb-1.5 flex items-center gap-1.5">
-              <Tag className="w-4 h-4 text-slate-500" />
+            <label className="block text-sm sm:text-[15px] font-bold text-slate-800 dark:text-slate-200 mb-1.5 flex items-center gap-1.5">
+              <Tag className="w-4 h-4 text-slate-500 dark:text-slate-400" />
               Categoria
             </label>
 
             <div 
               onClick={() => setIsCategoryPickerOpen(true)}
-              className="relative flex items-center justify-between bg-white p-2.5 px-3 rounded-xl border border-slate-300 hover:border-slate-400 cursor-pointer transition-colors"
+              className="relative flex items-center justify-between bg-white dark:bg-slate-800 p-2.5 px-3 rounded-xl border border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-600 cursor-pointer transition-colors"
               title="Clique para escolher ou adicionar categoria"
             >
-              <span className={`text-xs sm:text-sm font-semibold truncate ${category ? 'text-slate-900' : 'text-slate-400'}`}>
+              <span className={`text-xs sm:text-sm font-semibold truncate ${category ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500'}`}>
                 {category || 'Selecione uma categoria...'}
               </span>
 
@@ -578,10 +578,10 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                   e.stopPropagation();
                   setIsCategoryPickerOpen(true);
                 }}
-                className={`p-1 text-slate-500 rounded-lg transition-colors cursor-pointer ml-2 ${
+                className={`p-1 text-slate-500 dark:text-slate-400 rounded-lg transition-colors cursor-pointer ml-2 ${
                   type === 'expense'
-                    ? 'hover:text-rose-700 hover:bg-rose-50'
-                    : 'hover:text-emerald-700 hover:bg-emerald-50'
+                    ? 'hover:text-rose-700 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40'
+                    : 'hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40'
                 }`}
                 title="Abrir categorias e adicionar categoria"
               >
@@ -594,9 +594,9 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
           {/* Conta / Banco */}
           <div>
-            <label className="block text-sm sm:text-[15px] font-bold text-slate-800 mb-1.5 flex items-center justify-between">
+            <label className="block text-sm sm:text-[15px] font-bold text-slate-800 dark:text-slate-200 mb-1.5 flex items-center justify-between">
               <span className="flex items-center gap-1.5">
-                <Building2 className="w-4 h-4 text-slate-500" />
+                <Building2 className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                 Conta / Banco
               </span>
             </label>
@@ -605,41 +605,41 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               placeholder="Digite o banco ou conta (ex: Nubank, Itaú, Bradesco, Dinheiro...)"
               value={bankName}
               onChange={(e) => setBankName(e.target.value)}
-              className="w-full text-xs placeholder:text-[11.5px] placeholder:text-slate-400 p-2.5 rounded-xl border border-slate-300 focus:outline-hidden focus:ring-2 focus:ring-slate-900 text-slate-800"
+              className="w-full text-xs placeholder:text-[11.5px] placeholder:text-slate-400 dark:placeholder:text-slate-500 p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:outline-hidden focus:ring-2 focus:ring-slate-900 dark:focus:ring-emerald-500 text-slate-800 dark:text-white transition-colors"
             />
           </div>
 
           {/* Seção "Mais detalhes" */}
-          <div className="pt-2 border-t border-slate-100">
+          <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
             <button
               type="button"
               onClick={() => setShowMoreDetails(!showMoreDetails)}
-              className="w-full flex items-center justify-between py-2 text-sm font-bold text-slate-700 hover:text-slate-900 transition-colors cursor-pointer"
+              className="w-full flex items-center justify-between py-2 text-sm font-bold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
             >
               <span className="flex items-center gap-1.5">
-                <SlidersHorizontal className="w-4 h-4 text-slate-500" />
+                <SlidersHorizontal className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                 <span>Mais detalhes</span>
               </span>
               {showMoreDetails ? (
-                <ChevronUp className="w-4 h-4 text-slate-400" />
+                <ChevronUp className="w-4 h-4 text-slate-400 dark:text-slate-500" />
               ) : (
-                <ChevronDown className="w-4 h-4 text-slate-400" />
+                <ChevronDown className="w-4 h-4 text-slate-400 dark:text-slate-500" />
               )}
             </button>
 
             {/* Conteúdo de Mais Detalhes: "Uma vez", "Parcela" e "Recorrente" */}
             {showMoreDetails && (
-              <div className="mt-2.5 p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-4 animate-in fade-in duration-150">
+              <div className="mt-2.5 p-3.5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-4 animate-in fade-in duration-150">
                 
                 {/* Abas das opções */}
-                <div className="grid grid-cols-3 gap-1.5 p-1 bg-white rounded-xl border border-slate-200 shadow-2xs">
+                <div className="grid grid-cols-3 gap-1.5 p-1 bg-white dark:bg-slate-850 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xs">
                   <button
                     type="button"
                     onClick={() => setRepetitionMode('uma_vez')}
                     className={`py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                       repetitionMode === 'uma_vez'
-                        ? 'bg-slate-900 text-white shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900'
+                        ? 'bg-slate-900 dark:bg-slate-700 text-white shadow-xs'
+                        : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
                     Uma vez
@@ -650,8 +650,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     onClick={() => setRepetitionMode('parcela')}
                     className={`py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                       repetitionMode === 'parcela'
-                        ? 'bg-slate-900 text-white shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900'
+                        ? 'bg-slate-900 dark:bg-slate-700 text-white shadow-xs'
+                        : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
                     Parcela
@@ -662,8 +662,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     onClick={() => setRepetitionMode('recorrente')}
                     className={`py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                       repetitionMode === 'recorrente'
-                        ? 'bg-slate-900 text-white shadow-xs'
-                        : 'text-slate-600 hover:text-slate-900'
+                        ? 'bg-slate-900 dark:bg-slate-700 text-white shadow-xs'
+                        : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
                     Recorrente
@@ -672,11 +672,11 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
                 {/* Sub-opções quando for "Parcela" */}
                 {repetitionMode === 'parcela' && (
-                  <div className="space-y-3 pt-1 border-t border-slate-200/60">
+                  <div className="space-y-3 pt-1 border-t border-slate-200/60 dark:border-slate-700">
                     
                     {/* Parcelas: botões do lado - 2 + */}
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-700">Parcelas</span>
+                      <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Parcelas</span>
                       <div className="flex items-center gap-2">
                         <button
                           type="button"
@@ -685,18 +685,18 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                             setInstallmentsCount(next);
                             if (currentInstallment > next) setCurrentInstallment(next);
                           }}
-                          className="w-8 h-8 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 flex items-center justify-center font-bold text-slate-700 text-base shadow-2xs transition-colors cursor-pointer"
+                          className="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center justify-center font-bold text-slate-700 dark:text-slate-200 text-base shadow-2xs transition-colors cursor-pointer"
                           title="Diminuir quantidade de parcelas"
                         >
                           -
                         </button>
-                        <span className="w-8 text-center font-black text-slate-900 text-sm">
+                        <span className="w-8 text-center font-black text-slate-900 dark:text-white text-sm">
                           {installmentsCount}
                         </span>
                         <button
                           type="button"
                           onClick={() => setInstallmentsCount((prev) => prev + 1)}
-                          className="w-8 h-8 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 flex items-center justify-center font-bold text-slate-700 text-base shadow-2xs transition-colors cursor-pointer"
+                          className="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center justify-center font-bold text-slate-700 dark:text-slate-200 text-base shadow-2xs transition-colors cursor-pointer"
                           title="Aumentar quantidade de parcelas"
                         >
                           +
@@ -706,23 +706,23 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
                     {/* Embaixo: Parcela atual */}
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-slate-700">Parcela atual</span>
+                      <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Parcela atual</span>
                       <div className="flex items-center gap-2">
                         <button
                           type="button"
                           onClick={() => setCurrentInstallment((prev) => Math.max(1, prev - 1))}
-                          className="w-8 h-8 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 flex items-center justify-center font-bold text-slate-700 text-base shadow-2xs transition-colors cursor-pointer"
+                          className="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center justify-center font-bold text-slate-700 dark:text-slate-200 text-base shadow-2xs transition-colors cursor-pointer"
                           title="Parcela anterior"
                         >
                           -
                         </button>
-                        <span className="min-w-14 text-center font-bold text-slate-900 text-xs">
+                        <span className="min-w-14 text-center font-bold text-slate-900 dark:text-white text-xs">
                           {currentInstallment} de {installmentsCount}
                         </span>
                         <button
                           type="button"
                           onClick={() => setCurrentInstallment((prev) => Math.min(installmentsCount, prev + 1))}
-                          className="w-8 h-8 rounded-lg bg-white border border-slate-200 hover:bg-slate-100 flex items-center justify-center font-bold text-slate-700 text-base shadow-2xs transition-colors cursor-pointer"
+                          className="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center justify-center font-bold text-slate-700 dark:text-slate-200 text-base shadow-2xs transition-colors cursor-pointer"
                           title="Próxima parcela"
                         >
                           +
@@ -731,16 +731,16 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     </div>
 
                     {/* Embaixo: Valor informado do lado "Total" "Parcela" */}
-                    <div className="flex items-center justify-between pt-1 border-t border-slate-200/60">
-                      <span className="text-xs font-bold text-slate-700">Valor informado</span>
-                      <div className="flex items-center bg-white p-0.5 rounded-lg border border-slate-200 shadow-2xs">
+                    <div className="flex items-center justify-between pt-1 border-t border-slate-200/60 dark:border-slate-700">
+                      <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Valor informado</span>
+                      <div className="flex items-center bg-white dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-2xs">
                         <button
                           type="button"
                           onClick={() => setInstallmentValueType('total')}
                           className={`px-3 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
                             installmentValueType === 'total'
-                              ? 'bg-slate-900 text-white shadow-2xs'
-                              : 'text-slate-600 hover:text-slate-900'
+                              ? 'bg-slate-900 dark:bg-slate-700 text-white shadow-2xs'
+                              : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
                           }`}
                         >
                           Total
@@ -750,8 +750,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                           onClick={() => setInstallmentValueType('parcela')}
                           className={`px-3 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
                             installmentValueType === 'parcela'
-                              ? 'bg-slate-900 text-white shadow-2xs'
-                              : 'text-slate-600 hover:text-slate-900'
+                              ? 'bg-slate-900 dark:bg-slate-700 text-white shadow-2xs'
+                              : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
                           }`}
                         >
                           Parcela
@@ -764,8 +764,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
                 {/* Sub-opções quando for "Recorrente" */}
                 {repetitionMode === 'recorrente' && (
-                  <div className="space-y-2.5 pt-1 border-t border-slate-200/60">
-                    <span className="block text-xs font-bold text-slate-700">
+                  <div className="space-y-2.5 pt-1 border-t border-slate-200/60 dark:border-slate-700">
+                    <span className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                       Frequência
                     </span>
                     <div className="flex flex-wrap gap-1.5">
@@ -776,8 +776,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                           onClick={() => setFrequency(opt)}
                           className={`px-2.5 py-1 text-xs font-semibold rounded-lg border transition-all cursor-pointer capitalize ${
                             frequency === opt
-                              ? 'bg-slate-900 text-white border-slate-900 font-bold shadow-2xs'
-                              : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+                              ? 'bg-slate-900 dark:bg-slate-700 text-white border-slate-900 dark:border-slate-700 font-bold shadow-2xs'
+                              : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700'
                           }`}
                         >
                           {opt === 'personalizar' ? 'Personalizar' : opt}
@@ -786,16 +786,16 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     </div>
 
                     {frequency === 'personalizar' && (
-                      <div className="mt-2 flex items-center gap-2 bg-white p-2.5 rounded-xl border border-slate-200">
-                        <span className="text-xs text-slate-600">Repetir a cada</span>
+                      <div className="mt-2 flex items-center gap-2 bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700">
+                        <span className="text-xs text-slate-600 dark:text-slate-300">Repetir a cada</span>
                         <input
                           type="number"
                           min="1"
                           value={customDays}
                           onChange={(e) => setCustomDays(e.target.value)}
-                          className="w-16 p-1 text-xs text-center font-bold border border-slate-300 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-slate-900"
+                          className="w-16 p-1 text-xs text-center font-bold border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-850 text-slate-900 dark:text-white rounded-lg focus:outline-hidden focus:ring-1 focus:ring-slate-900 dark:focus:ring-emerald-500"
                         />
-                        <span className="text-xs text-slate-600">dias</span>
+                        <span className="text-xs text-slate-600 dark:text-slate-300">dias</span>
                       </div>
                     )}
                   </div>
@@ -808,7 +808,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
           </div>
 
           {/* Action: Ícone de confirmar centralizado e fixo na base do modal, ou botões de Salvar/Excluir no modo de edição */}
-          <div className={`p-3.5 sm:p-4 flex items-center border-t border-slate-100 bg-white/95 backdrop-blur-xs shrink-0 shadow-xs ${
+          <div className={`p-3.5 sm:p-4 flex items-center border-t border-slate-100 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs shrink-0 shadow-xs transition-colors ${
             editingTransaction ? 'justify-between' : 'justify-center'
           }`}>
             {editingTransaction && onDeleteTransaction ? (
@@ -820,7 +820,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     onClose();
                   }
                 }}
-                className="px-3.5 py-2.5 rounded-2xl text-rose-600 hover:bg-rose-50 border border-rose-200/80 font-bold text-xs sm:text-sm flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="px-3.5 py-2.5 rounded-2xl text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-rose-200/80 dark:border-rose-900/60 font-bold text-xs sm:text-sm flex items-center gap-1.5 transition-colors cursor-pointer"
                 title="Excluir este lançamento"
               >
                 <Trash2 className="w-4 h-4" />
@@ -869,28 +869,28 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       {/* Modal / Sheet Interno de Seleção e Criação de Categorias */}
       {isCategoryPickerOpen && (
         <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-950/50 backdrop-blur-xs animate-in fade-in duration-100 overflow-x-hidden">
-          <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[85vh] animate-fadeIn">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[85vh] animate-fadeIn transition-colors">
             
             {/* Header do Picker de Categorias */}
-            <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+            <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800">
               <div className="flex items-center gap-2">
                 <Tag className={`w-4 h-4 ${type === 'expense' ? 'text-rose-600' : 'text-emerald-600'}`} />
-                <h4 className="font-extrabold text-slate-900 text-sm sm:text-base">
+                <h4 className="font-extrabold text-slate-900 dark:text-white text-sm sm:text-base">
                   Categorias
                 </h4>
               </div>
               <button
                 type="button"
                 onClick={() => setIsCategoryPickerOpen(false)}
-                className="p-1 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-200 transition-colors cursor-pointer"
+                className="p-1 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-white rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Criar nova categoria */}
-            <div className={`p-4 border-b border-slate-100 space-y-2 ${type === 'expense' ? 'bg-rose-50/50' : 'bg-emerald-50/50'}`}>
-              <span className={`text-xs font-extrabold block ${type === 'expense' ? 'text-rose-900' : 'text-emerald-900'}`}>
+            <div className={`p-4 border-b border-slate-100 dark:border-slate-800 space-y-2 ${type === 'expense' ? 'bg-rose-50/50 dark:bg-rose-950/20' : 'bg-emerald-50/50 dark:bg-emerald-950/20'}`}>
+              <span className={`text-xs font-extrabold block ${type === 'expense' ? 'text-rose-900 dark:text-rose-300' : 'text-emerald-900 dark:text-emerald-300'}`}>
                 Criar nova categoria
               </span>
               <div className="flex items-center gap-2">
@@ -905,10 +905,10 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                       handleSaveCustomCategory(newCategoryName);
                     }
                   }}
-                  className={`flex-1 text-xs p-2 rounded-xl bg-white border font-medium focus:outline-hidden focus:ring-2 ${
+                  className={`flex-1 text-xs p-2 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white border font-medium focus:outline-hidden focus:ring-2 ${
                     type === 'expense'
-                      ? 'border-rose-300 focus:ring-rose-500'
-                      : 'border-emerald-300 focus:ring-emerald-500'
+                      ? 'border-rose-300 dark:border-rose-800 focus:ring-rose-500'
+                      : 'border-emerald-300 dark:border-emerald-800 focus:ring-emerald-500'
                   }`}
                 />
                 <button
@@ -928,7 +928,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             </div>
 
             {/* Busca de Categorias Existentes */}
-            <div className="p-4 border-b border-slate-100">
+            <div className="p-4 border-b border-slate-100 dark:border-slate-800">
               <div className="relative flex items-center">
                 <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3" />
                 <input
@@ -936,7 +936,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                   placeholder="Buscar categoria..."
                   value={categorySearch}
                   onChange={(e) => setCategorySearch(e.target.value)}
-                  className="w-full text-xs pl-8.5 pr-3 py-2 rounded-xl border border-slate-200 focus:outline-hidden focus:ring-2 focus:ring-slate-900 bg-slate-50"
+                  className="w-full text-xs pl-8.5 pr-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 focus:outline-hidden focus:ring-2 focus:ring-slate-900 dark:focus:ring-emerald-500 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white"
                 />
               </div>
             </div>
@@ -944,7 +944,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             {/* Lista de Categorias Disponíveis */}
             <div className="p-4 overflow-y-auto flex-1 space-y-1.5">
               {filteredCategories.length === 0 ? (
-                <div className="text-center py-8 text-xs text-slate-400">
+                <div className="text-center py-8 text-xs text-slate-400 dark:text-slate-500">
                   Nenhuma categoria encontrada. Digite acima para criar!
                 </div>
               ) : (
@@ -961,8 +961,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                         }}
                         className={`p-2.5 rounded-xl border text-xs font-bold text-left transition-all flex items-center justify-between cursor-pointer ${
                           isSelected
-                            ? 'bg-slate-900 text-white border-slate-900 shadow-2xs'
-                            : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:border-slate-300'
+                            ? 'bg-slate-900 dark:bg-slate-700 text-white border-slate-900 dark:border-slate-700 shadow-2xs'
+                            : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                         }`}
                       >
                         <span className="truncate">{catName}</span>
@@ -977,11 +977,11 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             </div>
 
             {/* Footer do Picker */}
-            <div className="p-3 border-t border-slate-100 flex justify-end bg-slate-50">
+            <div className="p-3 border-t border-slate-100 dark:border-slate-800 flex justify-end bg-slate-50 dark:bg-slate-800">
               <button
                 type="button"
                 onClick={() => setIsCategoryPickerOpen(false)}
-                className="px-4 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-200/70 rounded-xl transition-colors cursor-pointer"
+                className="px-4 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/70 dark:hover:bg-slate-700 rounded-xl transition-colors cursor-pointer"
               >
                 Concluir
               </button>
@@ -994,10 +994,10 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       {/* Modal de Calendário Direto (Totalmente compatível com Vercel, iOS, Android e Web) */}
       {isCustomDatePickerOpen && (
         <div className="fixed inset-0 z-70 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs animate-in fade-in duration-100">
-          <div className="bg-white w-full max-w-sm rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col p-4 sm:p-5 animate-fadeIn">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-sm rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col p-4 sm:p-5 animate-fadeIn transition-colors">
             
             {/* Header do Calendário: Mês/Ano e setas para navegar */}
-            <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+            <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-100 dark:border-slate-800">
               <button
                 type="button"
                 onClick={() => {
@@ -1009,13 +1009,13 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     return { year: prev.year, month: newMonth };
                   });
                 }}
-                className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
+                className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
                 title="Mês anterior"
               >
                 <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
               </button>
 
-              <span className="font-extrabold text-slate-900 text-sm sm:text-base capitalize">
+              <span className="font-extrabold text-slate-900 dark:text-white text-sm sm:text-base capitalize">
                 {new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' }).format(
                   new Date(calendarViewDate.year, calendarViewDate.month, 1)
                 )}
@@ -1032,7 +1032,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     return { year: prev.year, month: newMonth };
                   });
                 }}
-                className="p-1.5 rounded-xl hover:bg-slate-100 text-slate-600 hover:text-slate-900 transition-colors cursor-pointer"
+                className="p-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
                 title="Próximo mês"
               >
                 <ChevronRight className="w-5 h-5 stroke-[2.5]" />
@@ -1042,7 +1042,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             {/* Dias da semana */}
             <div className="grid grid-cols-7 gap-1 text-center mb-2">
               {['D', 'S', 'T', 'Q', 'Q', 'S', 'S'].map((dayChar, i) => (
-                <span key={i} className="text-[11px] font-bold text-slate-400 py-1">
+                <span key={i} className="text-[11px] font-bold text-slate-400 dark:text-slate-500 py-1">
                   {dayChar}
                 </span>
               ))}
@@ -1084,7 +1084,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                             : type === 'investment'
                             ? 'bg-indigo-600 text-white shadow-xs scale-105 font-black'
                             : 'bg-emerald-600 text-white shadow-xs scale-105 font-black'
-                          : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                          : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
                       }`}
                     >
                       {d}
@@ -1097,7 +1097,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             </div>
 
             {/* Footer com botão "Hoje" e fechar */}
-            <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between">
+            <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
               <button
                 type="button"
                 onClick={() => {
@@ -1107,8 +1107,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                 }}
                 className={`text-xs font-bold transition-colors cursor-pointer ${
                   type === 'expense'
-                    ? 'text-rose-600 hover:text-rose-700'
-                    : 'text-emerald-600 hover:text-emerald-700'
+                    ? 'text-rose-600 hover:text-rose-700 dark:text-rose-400'
+                    : 'text-emerald-600 hover:text-emerald-700 dark:text-emerald-400'
                 }`}
               >
                 Hoje
@@ -1117,7 +1117,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               <button
                 type="button"
                 onClick={() => setIsCustomDatePickerOpen(false)}
-                className="px-3.5 py-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+                className="px-3.5 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer"
               >
                 Fechar
               </button>

@@ -544,7 +544,7 @@ export default function App() {
   const unreadNotificationsCount = notifications.filter((n) => n.unread).length;
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 pb-16 font-sans selection:bg-emerald-500 selection:text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-16 font-sans selection:bg-emerald-500 selection:text-white transition-colors">
       
       {/* Top Header */}
       <Header
@@ -558,28 +558,28 @@ export default function App() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-6 space-y-6 pb-28 sm:pb-32">
 
         {/* ========================================================================= */}
-        {/* ABA 1: PLANEJAMENTO & CONTAS DO MÊS SELECIONADO                          */}
+        {/* ABA 1: TELA INICIAL (SALDO, RECEITAS, SAÍDAS E CONTAS)                    */}
         {/* ========================================================================= */}
         {activeAppTab === 'planejamento' && (
           <div className="space-y-5 animate-fadeIn">
 
             {/* Seletor de Mês (apenas na tela inicial) - Centralizado */}
             <div className="flex justify-center items-center">
-              <div className="flex items-center bg-white border border-slate-200/90 rounded-2xl px-3 py-1.5 shadow-2xs">
+              <div className="flex items-center bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl px-3 py-1.5 shadow-2xs transition-colors">
                 <button
                   onClick={() => handleChangeMonth('prev')}
-                  className="p-1 text-slate-500 hover:text-slate-900 rounded-lg transition-colors cursor-pointer"
+                  className="p-1 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white rounded-lg transition-colors cursor-pointer"
                   title="Mês anterior"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
-                <div className="flex items-center gap-1.5 px-4 text-xs sm:text-sm font-bold text-slate-800">
-                  <Calendar className="w-4 h-4 text-emerald-600" />
+                <div className="flex items-center gap-1.5 px-4 text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200">
+                  <Calendar className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                   <span>{currentMonth}</span>
                 </div>
                 <button
                   onClick={() => handleChangeMonth('next')}
-                  className="p-1 text-slate-500 hover:text-slate-900 rounded-lg transition-colors cursor-pointer"
+                  className="p-1 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white rounded-lg transition-colors cursor-pointer"
                   title="Próximo mês"
                 >
                   <ChevronRight className="w-4 h-4" />
@@ -587,12 +587,12 @@ export default function App() {
               </div>
             </div>
             
-            {/* 1. Minimalist Total Disponível com Receitas e Saídas */}
+            {/* 1. Minimalist Total Disponível com Receitas (descontado investimentos) e Saídas */}
             <IntuitiveBalanceHeader
               summary={currentMonthSummary}
             />
 
-            {/* 2. Seção CONTAS (Antes de Planejamento) com 2 cartões clicáveis Pagar / Receber */}
+            {/* 2. Seção CONTAS com 2 cartões clicáveis Pagar / Receber e Despesas Recentes */}
             <div id="section-contas">
               <ContasSection
                 transactions={currentMonthTransactions}
@@ -600,26 +600,6 @@ export default function App() {
                 onEditTransaction={handleOpenEditTransaction}
               />
             </div>
-
-            {/* 3. Planejamento Para Investir & Alocação de Envelopes do Mês */}
-            <SpreadsheetPlanner
-              transactions={currentMonthTransactions}
-              selectedMonthDate={`${currentMonthKey}-15`}
-              onAskAiTips={(prompt) => handleOpenAIChatWithPrompt(prompt)}
-              onOpenNewTransaction={(type) => {
-                setEditingTransaction(null);
-                if (type) {
-                  setTransactionModalDefaultType(type);
-                  setIsTransactionModalOpen(true);
-                } else {
-                  setIsTypeChoiceModalOpen(true);
-                }
-              }}
-              onAddTransaction={handleAddTransaction}
-              onDeleteTransaction={handleDeleteTransaction}
-              onToggleTransactionPaid={handleToggleTransactionPaid}
-              onResetAllData={handleClearAllData}
-            />
 
           </div>
         )}
@@ -666,33 +646,33 @@ export default function App() {
         {/* ========================================================================= */}
         {activeAppTab === 'historico' && (
           <div className="space-y-6 animate-fadeIn">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-3xl border border-slate-200 shadow-2xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xs transition-colors">
               <div>
-                <h3 className="text-lg font-black text-slate-900 tracking-tight">
+                <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight">
                   Histórico de Transações Registradas
                 </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                   Consulte todos os lançamentos ou filtre pelo mês de referência selecionado.
                 </p>
               </div>
 
-              <div className="flex items-center gap-1.5 bg-slate-100 p-1.5 rounded-2xl border border-slate-200">
+              <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 transition-colors">
                 <button
                   onClick={() => setHistoryScope('currentMonth')}
-                  className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-all ${
+                  className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
                     historyScope === 'currentMonth'
-                      ? 'bg-white text-slate-900 shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900'
+                      ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                   }`}
                 >
                   Apenas {currentMonth} ({currentMonthTransactions.length})
                 </button>
                 <button
                   onClick={() => setHistoryScope('all')}
-                  className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-all ${
+                  className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
                     historyScope === 'all'
-                      ? 'bg-white text-slate-900 shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900'
+                      ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                   }`}
                 >
                   Todos os Meses ({transactions.length})

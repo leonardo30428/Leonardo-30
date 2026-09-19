@@ -88,19 +88,19 @@ export const BankSyncModal: React.FC<BankSyncModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto overflow-x-hidden touch-pan-y">
       <div 
         id="bank-sync-modal"
-        className="bg-white w-full max-w-2xl rounded-2xl shadow-xl border border-slate-200 overflow-x-hidden flex flex-col max-h-[90vh] animate-fadeIn mx-auto"
+        className="bg-white dark:bg-slate-900 w-full max-w-2xl rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 overflow-x-hidden flex flex-col max-h-[90vh] animate-fadeIn mx-auto transition-colors"
       >
         {/* Header */}
-        <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+        <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/80">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-slate-900 dark:bg-slate-700 text-white flex items-center justify-center">
               <Building2 className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-bold text-slate-900 text-base sm:text-lg">
+              <h3 className="font-bold text-slate-900 dark:text-white text-base sm:text-lg">
                 Sincronização Bancária & Cartões
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 Integração direta e automática via Open Finance Brasil
               </p>
             </div>
@@ -108,7 +108,7 @@ export const BankSyncModal: React.FC<BankSyncModalProps> = ({
 
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors"
+            className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-white rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -118,24 +118,24 @@ export const BankSyncModal: React.FC<BankSyncModalProps> = ({
         <div className="p-5 sm:p-6 overflow-y-auto space-y-6">
           
           {/* Open finance security banner */}
-          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3.5 flex items-center justify-between gap-3">
+          <div className="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 rounded-xl p-3.5 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5">
-              <ShieldCheck className="w-5 h-5 text-emerald-700 shrink-0" />
-              <div className="text-xs text-emerald-950">
+              <ShieldCheck className="w-5 h-5 text-emerald-700 dark:text-emerald-400 shrink-0" />
+              <div className="text-xs text-emerald-950 dark:text-emerald-200">
                 <span className="font-bold">Conexão Segura Criptografada (Open Finance):</span>
-                <p className="text-emerald-800">Seus dados são protegidos com leitura somente para fins de categorização e extrato.</p>
+                <p className="text-emerald-800 dark:text-emerald-300">Seus dados são protegidos com leitura somente para fins de categorização e extrato.</p>
               </div>
             </div>
 
             {/* Auto sync switch */}
             <div className="flex items-center gap-2 shrink-0">
-              <label className="text-[11px] font-bold text-emerald-900 hidden sm:inline">
+              <label className="text-[11px] font-bold text-emerald-900 dark:text-emerald-200 hidden sm:inline">
                 Auto-Sync
               </label>
               <button
                 onClick={() => setAutoSyncEnabled(!autoSyncEnabled)}
                 className={`w-11 h-6 flex items-center rounded-full p-1 cursor-pointer transition-colors ${
-                  autoSyncEnabled ? 'bg-emerald-600' : 'bg-slate-300'
+                  autoSyncEnabled ? 'bg-emerald-600' : 'bg-slate-300 dark:bg-slate-700'
                 }`}
               >
                 <div
@@ -148,12 +148,12 @@ export const BankSyncModal: React.FC<BankSyncModalProps> = ({
           </div>
 
           {/* Sync action button */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200/80">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50 dark:bg-slate-800/60 p-4 rounded-xl border border-slate-200/80 dark:border-slate-700">
             <div>
-              <span className="text-xs font-bold text-slate-800">
+              <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
                 {accounts.length} Instituições Conectadas
               </span>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 Última sincronização geral realizada hoje
               </p>
             </div>
@@ -163,7 +163,7 @@ export const BankSyncModal: React.FC<BankSyncModalProps> = ({
                 id="btn-sync-all-accounts"
                 onClick={handleSync}
                 disabled={isSyncing}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 rounded-lg shadow-sm transition-all disabled:opacity-50"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold text-white bg-slate-900 dark:bg-slate-700 hover:bg-slate-800 dark:hover:bg-slate-600 rounded-lg shadow-sm transition-all disabled:opacity-50 cursor-pointer"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
                 <span>{isSyncing ? 'Sincronizando...' : 'Sincronizar Todas Agora'}</span>
@@ -172,8 +172,8 @@ export const BankSyncModal: React.FC<BankSyncModalProps> = ({
           </div>
 
           {syncSuccess && (
-            <div className="p-3 bg-emerald-50 border border-emerald-300 rounded-lg text-emerald-800 text-xs font-semibold flex items-center gap-2 animate-in fade-in">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 rounded-lg text-emerald-800 dark:text-emerald-300 text-xs font-semibold flex items-center gap-2 animate-in fade-in">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               Extratos e saldos sincronizados com sucesso com suas contas bancárias!
             </div>
           )}
@@ -181,12 +181,12 @@ export const BankSyncModal: React.FC<BankSyncModalProps> = ({
           {/* Accounts & Cards list */}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold tracking-wider text-slate-500">
+              <span className="text-xs font-bold tracking-wider text-slate-500 dark:text-slate-400">
                 Contas e Cartões de Crédito
               </span>
               <button
                 onClick={() => setShowAddBank(!showAddBank)}
-                className="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1"
+                className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 flex items-center gap-1 cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
                 Conectar Novo Banco
@@ -195,18 +195,18 @@ export const BankSyncModal: React.FC<BankSyncModalProps> = ({
 
             {/* Form to connect a new institution */}
             {showAddBank && (
-              <form onSubmit={handleCreateAccount} className="p-4 bg-indigo-50/50 rounded-xl border border-indigo-200 space-y-3 animate-in fade-in">
-                <div className="text-xs font-bold text-indigo-900">
+              <form onSubmit={handleCreateAccount} className="p-4 bg-indigo-50/50 dark:bg-indigo-950/20 rounded-xl border border-indigo-200 dark:border-indigo-800/60 space-y-3 animate-in fade-in">
+                <div className="text-xs font-bold text-indigo-900 dark:text-indigo-200">
                   Adicionar Nova Conexão Open Finance
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">Instituição</label>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Instituição</label>
                     <select
                       value={selectedInstitution}
                       onChange={(e) => setSelectedInstitution(e.target.value)}
-                      className="w-full text-xs p-2 rounded-lg border border-slate-300 bg-white"
+                      className="w-full text-xs p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
                     >
                       <option value="Bradesco">Banco Bradesco</option>
                       <option value="Santander">Banco Santander</option>
@@ -218,11 +218,11 @@ export const BankSyncModal: React.FC<BankSyncModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">Tipo</label>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Tipo</label>
                     <select
                       value={accountType}
                       onChange={(e) => setAccountType(e.target.value as any)}
-                      className="w-full text-xs p-2 rounded-lg border border-slate-300 bg-white"
+                      className="w-full text-xs p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
                     >
                       <option value="checking">Conta Corrente</option>
                       <option value="credit_card">Cartão de Crédito</option>
@@ -231,26 +231,26 @@ export const BankSyncModal: React.FC<BankSyncModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">Nome de Identificação</label>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Nome de Identificação</label>
                     <input
                       type="text"
                       placeholder="Ex: Minha Conta Corrente"
                       value={accountName}
                       onChange={(e) => setAccountName(e.target.value)}
                       required
-                      className="w-full text-xs p-2 rounded-lg border border-slate-300 bg-white"
+                      className="w-full text-xs p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">Saldo ou Fatura Atual (R$)</label>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Saldo ou Fatura Atual (R$)</label>
                     <input
                       type="number"
                       step="0.01"
                       placeholder="Ex: 1500.00"
                       value={initialBalance}
                       onChange={(e) => setInitialBalance(e.target.value)}
-                      className="w-full text-xs p-2 rounded-lg border border-slate-300 bg-white"
+                      className="w-full text-xs p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
                     />
                   </div>
                 </div>
@@ -259,13 +259,13 @@ export const BankSyncModal: React.FC<BankSyncModalProps> = ({
                   <button
                     type="button"
                     onClick={() => setShowAddBank(false)}
-                    className="px-3 py-1.5 text-xs text-slate-600 hover:text-slate-800"
+                    className="px-3 py-1.5 text-xs text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 cursor-pointer"
                   >
                     Cancelar
                   </button>
                   <button
                     type="submit"
-                    className="px-3 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-xs"
+                    className="px-3 py-1.5 text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-xs cursor-pointer"
                   >
                     Autorizar e Conectar
                   </button>
@@ -277,7 +277,7 @@ export const BankSyncModal: React.FC<BankSyncModalProps> = ({
               {accounts.map((acc) => (
                 <div
                   key={acc.id}
-                  className="p-3.5 rounded-xl border border-slate-200/80 bg-white hover:border-slate-300 transition-all flex items-center justify-between gap-3"
+                  className="p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-700 bg-white dark:bg-slate-800/80 hover:border-slate-300 dark:hover:border-slate-600 transition-all flex items-center justify-between gap-3"
                 >
                   <div className="flex items-center gap-3">
                     <div 
@@ -293,23 +293,23 @@ export const BankSyncModal: React.FC<BankSyncModalProps> = ({
 
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-sm text-slate-900">{acc.institution}</span>
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                        <span className="font-bold text-sm text-slate-900 dark:text-white">{acc.institution}</span>
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
                           {acc.type === 'credit_card' ? 'Cartão de Crédito' : acc.type === 'investment' ? 'Investimentos' : 'Conta Corrente'}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-500 mt-0.5">{acc.name} • {acc.accountNumber}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{acc.name} • {acc.accountNumber}</p>
                     </div>
                   </div>
 
                   <div className="text-right">
-                    <div className="text-xs text-slate-400">
+                    <div className="text-xs text-slate-400 dark:text-slate-500">
                       {acc.type === 'credit_card' ? 'Fatura Atual' : 'Saldo'}
                     </div>
-                    <div className="text-sm sm:text-base font-bold text-slate-900">
+                    <div className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
                       {formatCurrency(acc.balance)}
                     </div>
-                    <div className="text-[10px] text-emerald-700 font-semibold flex items-center justify-end gap-1">
+                    <div className="text-[10px] text-emerald-700 dark:text-emerald-400 font-semibold flex items-center justify-end gap-1">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                       {acc.lastSync}
                     </div>
@@ -323,14 +323,14 @@ export const BankSyncModal: React.FC<BankSyncModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
-          <span className="text-[11px] text-slate-500 flex items-center gap-1">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+        <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 flex items-center justify-between">
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
             Certificado pelo Banco Central do Brasil
           </span>
           <button
             onClick={onClose}
-            className="px-4 py-2 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors"
+            className="px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-100 dark:hover:bg-slate-600 border border-slate-200 dark:border-slate-600 rounded-lg transition-colors cursor-pointer"
           >
             Fechar
           </button>

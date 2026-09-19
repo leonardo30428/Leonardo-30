@@ -72,11 +72,13 @@ export interface ChatMessage {
 }
 
 export interface MonthlySummary {
-  totalIncome: number;
+  totalIncome: number; // Receitas
+  grossIncome: number; // Receita bruta total
   totalExpense: number;
   totalInvestment: number;
-  balance: number; // Ganhos - Gastos
-  netRemaining: number; // O que sobra: Receita - Gastos - Investimentos
+  totalOutflows: number; // Total de saídas (gastos + investimentos)
+  balance: number; // Total Disponível: Receitas - Saídas
+  netRemaining: number;
   isRed: boolean;
   savingsRate: number;
   topExpenseCategory: {

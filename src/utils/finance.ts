@@ -49,14 +49,14 @@ export function isTransactionPending(tx: { date?: string; isPaid?: boolean }): b
 }
 
 export function calculateSummary(transactions: Transaction[]): MonthlySummary {
-  let totalIncome = 0;
+  let grossIncome = 0;
   let totalExpense = 0;
   let totalInvestment = 0;
   const categoryExpenses: Record<string, number> = {};
 
   transactions.forEach((tx) => {
     if (tx.type === 'income') {
-      totalIncome += tx.amount;
+      grossIncome += tx.amount;
     } else if (tx.type === 'expense') {
       totalExpense += tx.amount;
       categoryExpenses[tx.category] = (categoryExpenses[tx.category] || 0) + tx.amount;
@@ -68,12 +68,12 @@ export function calculateSummary(transactions: Transaction[]): MonthlySummary {
     }
   });
 
-  const nonExpenseInvestment = transactions
-    .filter((tx) => tx.type === 'investment')
-    .reduce((acc, tx) => acc + tx.amount, 0);
+  // Mandato do usuário: Investimentos aparecem em "saídas" (Saídas = Gastos + Investimentos)
+  const totalOutflows = totalExpense + totalInvestment;
 
-  const balance = totalIncome - totalExpense;
-  const netRemaining = totalIncome - totalExpense - nonExpenseInvestment;
+  // Total disponível (Saldo): Receitas - Saídas
+  const balance = grossIncome - totalOutflows;
+  const netRemaining = balance;
   const isRed = balance < 0;
 
   // Find category with highest expense
@@ -87,14 +87,14 @@ export function calculateSummary(transactions: Transaction[]): MonthlySummary {
   });
 
   const topPercentage = totalExpense > 0 ? Math.round((topAmount / totalExpense) * 100) : 0;
-  const savingsRate = totalIncome > 0 ? (totalInvestment / totalIncome) * 100 : 0;
+  const savingsRate = grossIncome > 0 ? (totalInvestment / grossIncome) * 100 : 0;
 
   // Calculate Health Score (0 - 100)
   let score = 50;
   if (isRed) {
-    score = Math.max(10, Math.round(35 - (Math.abs(balance) / (totalIncome || 1)) * 30));
+    score = Math.max(10, Math.round(35 - (Math.abs(balance) / (grossIncome || 1)) * 30));
   } else {
-    const expenseRatio = totalIncome > 0 ? totalExpense / totalIncome : 1;
+    const expenseRatio = grossIncome > 0 ? totalExpense / grossIncome : 1;
     if (expenseRatio <= 0.6) score += 30;
     else if (expenseRatio <= 0.75) score += 20;
     else if (expenseRatio <= 0.9) score += 10;
@@ -118,9 +118,11 @@ export function calculateSummary(transactions: Transaction[]): MonthlySummary {
   }
 
   return {
-    totalIncome,
+    totalIncome: grossIncome,
+    grossIncome,
     totalExpense,
     totalInvestment,
+    totalOutflows,
     balance,
     netRemaining,
     isRed,
