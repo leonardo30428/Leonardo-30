@@ -21,7 +21,7 @@ export const OverviewCards: React.FC<OverviewCardsProps> = ({ summary, onNavigat
         id="card-total-entradas"
         onClick={() => onNavigateToSection('receitas')}
         className="cursor-pointer bg-white dark:bg-slate-900 rounded-2xl p-5 border-2 border-emerald-500 shadow-xs hover:shadow-md hover:border-emerald-600 transition-all relative overflow-hidden group select-none"
-        title="Clique para ir para a página completa de Receitas"
+        title="Clique para ir para a página completa de Entradas"
       >
         <div className="absolute top-0 right-0 w-28 h-28 bg-emerald-50 dark:bg-emerald-950/20 rounded-bl-full -z-0 opacity-70 group-hover:scale-105 transition-transform" />
         
@@ -36,7 +36,7 @@ export const OverviewCards: React.FC<OverviewCardsProps> = ({ summary, onNavigat
           </div>
 
           <div className="mt-3">
-            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Receitas deste mês</span>
+            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Entradas deste mês</span>
             <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-0.5">
               {formatCurrency(totalIncome)}
             </h3>
@@ -48,7 +48,7 @@ export const OverviewCards: React.FC<OverviewCardsProps> = ({ summary, onNavigat
               100% recebido
             </span>
             <span className="text-emerald-700 dark:text-emerald-400 font-bold group-hover:translate-x-0.5 transition-transform flex items-center gap-0.5">
-              Ver receitas <ArrowRight className="w-3.5 h-3.5" />
+              Ver entradas <ArrowRight className="w-3.5 h-3.5" />
             </span>
           </div>
         </div>
@@ -59,11 +59,11 @@ export const OverviewCards: React.FC<OverviewCardsProps> = ({ summary, onNavigat
         id="card-total-gastos"
         onClick={() => onNavigateToSection('gastos')}
         className="cursor-pointer bg-white dark:bg-slate-900 rounded-2xl p-5 border border-slate-200 dark:border-slate-800 shadow-xs hover:shadow-md hover:border-rose-400 dark:hover:border-rose-600 transition-all relative overflow-hidden group select-none"
-        title="Clique para ir para a página completa de Gastos"
+        title="Clique para ir para a página completa de Saídas"
       >
         <div className="flex items-center justify-between">
           <span className="text-xs font-bold tracking-wider text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/80 px-2.5 py-1 rounded-md">
-            Total de Gastos
+            Total de Saídas
           </span>
           <div className="w-9 h-9 rounded-xl bg-rose-500 text-white flex items-center justify-center shadow-xs shadow-rose-200 dark:shadow-none group-hover:bg-rose-600 transition-colors">
             <TrendingDown className="w-5 h-5 stroke-[2.5]" />
@@ -71,7 +71,7 @@ export const OverviewCards: React.FC<OverviewCardsProps> = ({ summary, onNavigat
         </div>
 
         <div className="mt-3">
-          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Despesas acumuladas</span>
+          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Saídas acumuladas</span>
           <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mt-0.5">
             {formatCurrency(totalExpense)}
           </h3>
@@ -83,7 +83,7 @@ export const OverviewCards: React.FC<OverviewCardsProps> = ({ summary, onNavigat
             {expenseRatio}% das entradas
           </span>
           <span className="text-rose-600 dark:text-rose-400 font-bold group-hover:translate-x-0.5 transition-transform flex items-center gap-0.5">
-            Ver gastos <ArrowRight className="w-3.5 h-3.5" />
+            Ver saídas <ArrowRight className="w-3.5 h-3.5" />
           </span>
         </div>
       </div>

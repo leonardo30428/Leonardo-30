@@ -733,9 +733,9 @@ export const MonthlyBalanceTab: React.FC<MonthlyBalanceTabProps> = ({
                 <div>
                   <h4 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base">
                     {rankingModalType === 'income' 
-                      ? 'Ranking de Receitas (Maiores → Menores)' 
+                      ? 'Ranking de Entradas (Maiores → Menores)' 
                       : rankingModalType === 'expense' 
-                      ? 'Ranking de Despesas (Maiores → Menores)' 
+                      ? 'Ranking de Saídas (Maiores → Menores)' 
                       : 'Ranking de Investimentos (Maiores → Menores)'}
                   </h4>
                   <p className="text-xs text-slate-500 dark:text-slate-400">

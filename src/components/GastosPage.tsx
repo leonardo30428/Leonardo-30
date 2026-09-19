@@ -82,7 +82,7 @@ export const GastosPage: React.FC<GastosPageProps> = ({
           <span className="text-slate-300 font-light">/</span>
           <span className="text-xs sm:text-sm font-bold text-rose-800 bg-rose-50 px-2.5 py-1 rounded-lg border border-rose-200/60 flex items-center gap-1.5">
             <TrendingDown className="w-3.5 h-3.5 text-rose-600" />
-            Gestão de Gastos & Contas
+            Gestão de Saídas & Contas
           </span>
         </div>
 
@@ -93,7 +93,7 @@ export const GastosPage: React.FC<GastosPageProps> = ({
           className="flex items-center gap-1.5 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-xs transition-colors self-start sm:self-auto"
         >
           <Plus className="w-4 h-4 stroke-[2.5]" />
-          <span>Novo Gasto</span>
+          <span>Nova Saída</span>
         </button>
       </div>
 
@@ -103,7 +103,7 @@ export const GastosPage: React.FC<GastosPageProps> = ({
         <div className="bg-white rounded-2xl p-5 border-2 border-rose-400/80 shadow-xs relative overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold tracking-wider text-rose-800 bg-rose-100/90 px-2.5 py-1 rounded-md">
-              Total de Gastos
+              Total de Saídas
             </span>
             <div className="w-9 h-9 rounded-xl bg-rose-500 text-white flex items-center justify-center">
               <TrendingDown className="w-5 h-5 stroke-[2.5]" />

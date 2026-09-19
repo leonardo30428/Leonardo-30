@@ -176,36 +176,36 @@ export const PhoneHomeDashboard: React.FC<PhoneHomeDashboardProps> = ({
           {/* Sub-cards 2-column: Receitas & Despesas */}
           <div className="grid grid-cols-2 gap-2.5">
             
-            {/* Receitas Tile */}
+            {/* Entrada Tile */}
             <div
               id="card-receitas-tile"
               onClick={onNavigateToReceitas}
               className="bg-slate-50/80 dark:bg-slate-800/80 hover:bg-emerald-50/50 dark:hover:bg-emerald-950/40 p-3 sm:p-3.5 rounded-2xl border border-slate-100/90 dark:border-slate-700/80 cursor-pointer active:scale-98 transition-all group"
-              title="Toque para abrir a página detalhada de Receitas"
+              title="Toque para abrir a página detalhada de Entrada"
             >
               <div className="flex items-center gap-1.5 mb-1.5">
                 <div className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
                   <ArrowUp className="w-2.5 h-2.5 stroke-[3]" />
                 </div>
-                <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Receitas</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Entrada</span>
               </div>
               <p className="text-xs sm:text-sm font-extrabold text-emerald-600 dark:text-emerald-400 tracking-tight group-hover:translate-x-0.5 transition-transform">
                 {formatVal(displayReceitas)}
               </p>
             </div>
 
-            {/* Despesas Tile */}
+            {/* Saída Tile */}
             <div
               id="card-despesas-tile"
               onClick={onNavigateToGastos}
               className="bg-slate-50/80 dark:bg-slate-800/80 hover:bg-rose-50/50 dark:hover:bg-rose-950/40 p-3 sm:p-3.5 rounded-2xl border border-slate-100/90 dark:border-slate-700/80 cursor-pointer active:scale-98 transition-all group"
-              title="Toque para abrir a página detalhada de Despesas"
+              title="Toque para abrir a página detalhada de Saída"
             >
               <div className="flex items-center gap-1.5 mb-1.5">
                 <div className="w-4 h-4 rounded-full bg-rose-100 dark:bg-rose-950 text-rose-600 dark:text-rose-400 flex items-center justify-center">
                   <ArrowDown className="w-2.5 h-2.5 stroke-[3]" />
                 </div>
-                <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Despesas</span>
+                <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Saída</span>
               </div>
               <p className="text-xs sm:text-sm font-extrabold text-rose-600 dark:text-rose-400 tracking-tight group-hover:translate-x-0.5 transition-transform">
                 {formatVal(displayDespesas)}

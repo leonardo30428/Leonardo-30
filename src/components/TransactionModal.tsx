@@ -396,24 +396,24 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             <h3 className="font-extrabold text-slate-900 dark:text-white text-base sm:text-lg">
               {editingTransaction
                 ? (editingTransaction.type === 'income' 
-                    ? 'Editar receita' 
+                    ? 'Editar Entrada' 
                     : editingTransaction.type === 'investment' 
-                    ? 'Editar investimento' 
-                    : 'Editar gasto')
+                    ? 'Editar Investimento' 
+                    : 'Editar Saída')
                 : (type === 'income' 
-                    ? 'Nova Receita' 
+                    ? 'Nova Entrada' 
                     : type === 'investment'
                     ? 'Novo Investimento'
-                    : 'Novo Gasto')}
+                    : 'Nova Saída')}
             </h3>
             <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
               {editingTransaction
-                ? 'Atualize as informações do seu gasto'
+                ? 'Atualize as informações do lançamento'
                 : (type === 'income' 
-                    ? 'Adicione seus ganhos ou entradas financeiras' 
+                    ? 'Adicione suas entradas financeiras' 
                     : type === 'investment'
                     ? 'Registre seus aportes e investimentos'
-                    : 'Registre seus gastos e contas do mês')}
+                    : 'Registre suas saídas e contas do mês')}
             </p>
           </div>
 

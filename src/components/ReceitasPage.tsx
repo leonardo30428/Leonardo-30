@@ -93,7 +93,7 @@ export const ReceitasPage: React.FC<ReceitasPageProps> = ({
           <span className="text-slate-300 font-light">/</span>
           <span className="text-xs sm:text-sm font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200/60 flex items-center gap-1.5">
             <Wallet className="w-3.5 h-3.5 text-emerald-600" />
-            Gestão de Receitas & Entradas
+            Gestão de Entradas
           </span>
         </div>
 
@@ -114,7 +114,7 @@ export const ReceitasPage: React.FC<ReceitasPageProps> = ({
         <div className="bg-white rounded-2xl p-5 border border-emerald-200 shadow-xs relative overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold tracking-wider text-emerald-800 bg-emerald-100/90 px-2.5 py-1 rounded-md">
-              Total de Receitas
+              Total de Entradas
             </span>
             <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs">
               <TrendingUp className="w-5 h-5 stroke-[2.5]" />
@@ -200,7 +200,7 @@ export const ReceitasPage: React.FC<ReceitasPageProps> = ({
               <Wallet className="w-6 h-6" />
             </div>
             <h4 className="text-sm sm:text-base font-bold text-slate-800">
-              Nenhuma fonte de receita cadastrada ainda
+              Nenhuma entrada cadastrada ainda
             </h4>
             <p className="text-xs text-slate-500 max-w-md mx-auto mt-1 mb-4">
               Todas as contas estão zeradas para você testar do zero. Clique no botão abaixo para adicionar sua primeira entrada (salário, comissão, adiantamento ou vendas).
@@ -210,7 +210,7 @@ export const ReceitasPage: React.FC<ReceitasPageProps> = ({
               className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors"
             >
               <Plus className="w-4 h-4" />
-              <span>Cadastrar Primeira Receita</span>
+              <span>Cadastrar Primeira Entrada</span>
             </button>
           </div>
         ) : (

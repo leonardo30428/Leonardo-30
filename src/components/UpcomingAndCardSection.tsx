@@ -213,14 +213,14 @@ export const UpcomingAndCardSection: React.FC<UpcomingAndCardSectionProps> = ({
                   <h3 className="text-sm font-extrabold text-slate-900 dark:text-white">
                     O que vai ser recebido
                   </h3>
-                  <span className="text-[11px] text-slate-400 dark:text-slate-500">Receitas previstas do mês</span>
+                  <span className="text-[11px] text-slate-400 dark:text-slate-500">Entradas previstas do mês</span>
                 </div>
               </div>
 
               <button
                 onClick={() => onOpenNewTransaction('income')}
                 className="p-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg transition-colors cursor-pointer"
-                title="Adicionar receita prevista"
+                title="Adicionar entrada prevista"
               >
                 <Plus className="w-3.5 h-3.5" />
               </button>

@@ -46,10 +46,10 @@ export const IntuitiveBalanceHeader: React.FC<IntuitiveBalanceHeaderProps> = ({
         </h1>
       </div>
 
-      {/* 2 Cartões não clicáveis embaixo de Total Disponível: Receitas e Saídas lado a lado */}
+      {/* 2 Cartões não clicáveis embaixo de Total Disponível: Entrada e Saída lado a lado */}
       <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
         
-        {/* LADO ESQUERDO: RECEITAS (Não clicável) */}
+        {/* LADO ESQUERDO: ENTRADA (Não clicável) */}
         <div 
           id="card-receitas-topo"
           className="relative bg-emerald-50/70 dark:bg-emerald-950/40 rounded-2xl p-3.5 sm:p-5 border border-emerald-200/90 dark:border-emerald-800/60 select-none cursor-default flex flex-col justify-between transition-colors"
@@ -61,7 +61,7 @@ export const IntuitiveBalanceHeader: React.FC<IntuitiveBalanceHeaderProps> = ({
               </div>
               <div className="min-w-0">
                 <span className="text-xs sm:text-base font-black text-emerald-950 dark:text-emerald-100 block leading-tight truncate">
-                  Receitas
+                  Entrada
                 </span>
                 <p className="text-[10px] sm:text-xs text-emerald-700 dark:text-emerald-400 font-medium mt-0.5 truncate">
                   Total de entradas
@@ -79,12 +79,12 @@ export const IntuitiveBalanceHeader: React.FC<IntuitiveBalanceHeaderProps> = ({
           <div className="mt-2 pt-2 border-t border-emerald-200/60 dark:border-emerald-800/50 text-[10px] sm:text-xs text-emerald-700 dark:text-emerald-400 font-semibold flex items-center justify-between">
             <span className="flex items-center gap-1 truncate">
               <ArrowUpRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
-              <span className="truncate">Ganhos do mês</span>
+              <span className="truncate">Entradas do mês</span>
             </span>
           </div>
         </div>
 
-        {/* LADO DIREITO: SAÍDAS (Inclui despesas e investimentos) */}
+        {/* LADO DIREITO: SAÍDA (Inclui despesas e investimentos) */}
         <div 
           id="card-saidas-topo"
           className="relative bg-rose-50/70 dark:bg-rose-950/40 rounded-2xl p-3.5 sm:p-5 border border-rose-200/90 dark:border-rose-800/60 select-none cursor-default flex flex-col justify-between transition-colors"
@@ -96,10 +96,10 @@ export const IntuitiveBalanceHeader: React.FC<IntuitiveBalanceHeaderProps> = ({
               </div>
               <div className="min-w-0">
                 <span className="text-xs sm:text-base font-black text-rose-950 dark:text-rose-100 block leading-tight truncate">
-                  Saídas
+                  Saída
                 </span>
                 <p className="text-[10px] sm:text-xs text-rose-700 dark:text-rose-400 font-medium mt-0.5 truncate">
-                  {totalInvestment > 0 ? 'Gastos + Investimentos' : 'Total de gastos'}
+                  {totalInvestment > 0 ? 'Saídas + Investimentos' : 'Total de saídas'}
                 </p>
               </div>
             </div>
@@ -114,11 +114,7 @@ export const IntuitiveBalanceHeader: React.FC<IntuitiveBalanceHeaderProps> = ({
           <div className="mt-2 pt-2 border-t border-rose-200/60 dark:border-rose-800/50 text-[10px] sm:text-xs text-rose-700 dark:text-rose-400 font-semibold flex items-center justify-between">
             <span className="flex items-center gap-1 truncate">
               <ArrowDownRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 shrink-0" />
-              <span className="truncate">
-                {totalInvestment > 0
-                  ? `Gastos: ${formatCurrency(totalExpense)} • Invest.: ${formatCurrency(totalInvestment)}`
-                  : 'Gastos do mês'}
-              </span>
+              <span className="truncate">Saídas do mês</span>
             </span>
           </div>
         </div>

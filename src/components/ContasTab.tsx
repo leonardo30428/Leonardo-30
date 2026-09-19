@@ -2,7 +2,6 @@ import React from 'react';
 import { 
   ChevronLeft,
   Plus,
-  Repeat,
   FileText
 } from 'lucide-react';
 import { Transaction } from '../types';
@@ -39,9 +38,10 @@ export const ContasTab: React.FC<ContasTabProps> = ({
   const isPagar = mode === 'pagar';
   const baseList = isPagar ? expenseAccounts : incomeAccounts;
 
-  // Cálculos do modo ativo
-  const pendingItems = baseList.filter((t) => t.isPaid === false);
-  const paidItems = baseList.filter((t) => t.isPaid !== false);
+  // Cálculos do modo ativo - organizados pelos dias de pagamento
+  const sortByPaymentDay = (a: Transaction, b: Transaction) => (a.date || '').localeCompare(b.date || '');
+  const pendingItems = [...baseList.filter((t) => t.isPaid === false)].sort(sortByPaymentDay);
+  const paidItems = [...baseList.filter((t) => t.isPaid !== false)].sort(sortByPaymentDay);
   const totalPending = pendingItems.reduce((sum, t) => sum + t.amount, 0);
   const totalAll = baseList.reduce((sum, t) => sum + t.amount, 0);
 
@@ -57,7 +57,6 @@ export const ContasTab: React.FC<ContasTabProps> = ({
     const isInv = item.type === 'investment';
     const visual = getCategoryVisual(item.category);
     const CategoryIcon = visual.icon;
-    const isRecurring = Boolean(item.recurrence || item.isRecurring);
     const dateText = getDisplayDate(item);
     const bankNameClean = (item.bankName || 'nubank').toLowerCase();
     const categoryClean = (item.category || (isInv ? 'investimento' : 'outros')).toLowerCase();
@@ -73,7 +72,7 @@ export const ContasTab: React.FC<ContasTabProps> = ({
         }`}
         title="Clique para editar este lançamento"
       >
-        {/* Lado Esquerdo: Ícone da Categoria + Descrição como Título (com ícone recorrente) + Subtítulo (categoria - banco) */}
+        {/* Lado Esquerdo: Ícone da Categoria + Descrição como Título + Subtítulo (categoria - banco) */}
         <div className="flex items-center gap-3 min-w-0 flex-1">
           {/* Ícone da Categoria */}
           <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center border ${visual.bgColor} ${visual.textColor} ${visual.borderColor} shrink-0 shadow-2xs`}>
@@ -81,22 +80,13 @@ export const ContasTab: React.FC<ContasTabProps> = ({
           </div>
 
           <div className="min-w-0 flex-1">
-            {/* Título: Descrição completa + Apenas o Ícone de Recorrência (sem a palavra "Recorrente") */}
+            {/* Título: Descrição completa */}
             <div className="flex items-center gap-1.5 flex-wrap">
               <span className={`font-extrabold text-sm sm:text-base text-slate-900 dark:text-white break-words leading-snug ${
                 isConcluded ? 'line-through text-slate-400 dark:text-slate-500' : ''
               }`}>
                 {item.description}
               </span>
-
-              {isRecurring && (
-                <span 
-                  title="Conta Recorrente"
-                  className="inline-flex items-center p-0.5 text-indigo-600 dark:text-indigo-400 shrink-0"
-                >
-                  <Repeat className="w-3.5 h-3.5 stroke-[2.5]" />
-                </span>
-              )}
             </div>
 
             {/* Subtítulo: categoria e banco ex: (alimentação - nubank) */}
@@ -177,7 +167,7 @@ export const ContasTab: React.FC<ContasTabProps> = ({
             }`}
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
-            <span className="hidden sm:inline">Adicionar {isPagar ? 'Gasto' : 'Receita'}</span>
+            <span className="hidden sm:inline">Adicionar {isPagar ? 'Saída' : 'Entrada'}</span>
           </button>
         </div>
       </div>
@@ -205,11 +195,11 @@ export const ContasTab: React.FC<ContasTabProps> = ({
           <div className="text-center py-10 px-4 bg-slate-50/70 dark:bg-slate-800/40 border border-dashed border-slate-200 dark:border-slate-700 rounded-2xl">
             <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">
               {isPagar 
-                ? 'Nenhuma despesa ou saída registrada neste mês.' 
-                : 'Nenhuma receita registrada neste mês.'}
+                ? 'Nenhuma saída registrada neste mês.' 
+                : 'Nenhuma entrada registrada neste mês.'}
             </p>
             <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
-              Clique em &quot;Adicionar {isPagar ? 'Gasto' : 'Receita'}&quot; para criar o primeiro registro.
+              Clique em &quot;Adicionar {isPagar ? 'Saída' : 'Entrada'}&quot; para criar o primeiro registro.
             </p>
           </div>
         ) : (

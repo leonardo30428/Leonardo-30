@@ -66,7 +66,7 @@ export const TransactionTypeChoiceModal: React.FC<TransactionTypeChoiceModalProp
         {/* Options List */}
         <div className="p-5 sm:p-6 space-y-3">
           
-          {/* 1. Opção RECEITA */}
+          {/* 1. Opção ENTRADA */}
           <button
             type="button"
             id="btn-opcao-receita"
@@ -79,7 +79,7 @@ export const TransactionTypeChoiceModal: React.FC<TransactionTypeChoiceModalProp
               </div>
               <div>
                 <span className="text-base font-extrabold text-emerald-950 dark:text-emerald-100 block">
-                  Receita
+                  Entrada
                 </span>
                 <span className="text-xs text-emerald-700 dark:text-emerald-400 font-medium block">
                   Salários, rendimentos, vendas, PIX recebido e extras
@@ -89,7 +89,7 @@ export const TransactionTypeChoiceModal: React.FC<TransactionTypeChoiceModalProp
             <ArrowRight className="w-5 h-5 text-emerald-600 dark:text-emerald-400 group-hover:translate-x-1 transition-transform shrink-0 ml-2" />
           </button>
 
-          {/* 2. Opção GASTO */}
+          {/* 2. Opção SAÍDA */}
           <button
             type="button"
             id="btn-opcao-gasto"
@@ -102,7 +102,7 @@ export const TransactionTypeChoiceModal: React.FC<TransactionTypeChoiceModalProp
               </div>
               <div>
                 <span className="text-base font-extrabold text-rose-950 dark:text-rose-100 block">
-                  Gasto
+                  Saída
                 </span>
                 <span className="text-xs text-rose-700 dark:text-rose-400 font-medium block">
                   Contas do mês, boletos, faturas, compras e despesas

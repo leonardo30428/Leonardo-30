@@ -60,7 +60,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
             id="btn-central-adicionar"
             onClick={onOpenNewTransaction}
             className="w-12 h-12 sm:w-13 sm:h-13 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white flex items-center justify-center shadow-lg shadow-emerald-600/35 border-3 border-white dark:border-slate-900 transition-colors cursor-pointer"
-            title="Adicionar Receita, Gasto ou Investimento"
+            title="Adicionar Entrada, Saída ou Investimento"
           >
             <Plus className="w-6 h-6 stroke-[2.5]" />
           </button>

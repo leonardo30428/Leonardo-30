@@ -82,10 +82,10 @@ export const ChartComparison: React.FC<ChartComparisonProps> = ({
           <div className="flex items-center gap-2">
             <h3 className="text-base sm:text-lg font-bold text-slate-900">
               {isIncomeExpense 
-                ? 'Análise Gráfica: Ganhos vs Gastos' 
+                ? 'Análise Gráfica: Entradas vs Saídas' 
                 : isExpenseInvestment 
-                ? 'Análise Gráfica: Gastos vs Investimentos' 
-                : 'Distribuição de Gastos por Categoria'}
+                ? 'Análise Gráfica: Saídas vs Investimentos' 
+                : 'Distribuição de Saídas por Categoria'}
             </h3>
             <span className={`text-xs font-semibold px-2 py-0.5 rounded-md border ${
               isIncomeExpense
@@ -94,7 +94,7 @@ export const ChartComparison: React.FC<ChartComparisonProps> = ({
                 ? 'bg-indigo-50 text-indigo-700 border-indigo-100'
                 : 'bg-rose-50 text-rose-700 border-rose-100'
             }`}>
-              {isIncomeExpense ? 'Receitas x Despesas' : isExpenseInvestment ? 'Gastos x Investido' : 'Detalhamento'}
+              {isIncomeExpense ? 'Entradas x Saídas' : isExpenseInvestment ? 'Saídas x Investido' : 'Detalhamento'}
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-0.5">
@@ -118,7 +118,7 @@ export const ChartComparison: React.FC<ChartComparisonProps> = ({
             }`}
           >
             <ArrowLeftRight className="w-3.5 h-3.5 text-emerald-600" />
-            Ganhos vs Gastos
+            Entradas vs Saídas
           </button>
           
           <button
@@ -131,7 +131,7 @@ export const ChartComparison: React.FC<ChartComparisonProps> = ({
             }`}
           >
             <BarChart3 className="w-3.5 h-3.5 text-indigo-600" />
-            Gastos vs Investido
+            Saídas vs Investido
           </button>
 
           <button
@@ -167,7 +167,7 @@ export const ChartComparison: React.FC<ChartComparisonProps> = ({
             <div className="bg-rose-50/60 p-3 rounded-xl border border-rose-100">
               <div className="flex items-center gap-1.5 text-xs font-medium text-rose-700">
                 <span className="w-2 h-2 rounded-full bg-rose-500" />
-                Gastos deste Mês
+                Saídas deste Mês
               </div>
               <div className="text-lg font-bold text-rose-950 mt-1">
                 {formatCurrency(currentExpense)}
@@ -195,18 +195,18 @@ export const ChartComparison: React.FC<ChartComparisonProps> = ({
             </div>
           </div>
 
-          {/* SVG/CSS Bar Chart: Ganhos vs Gastos */}
+          {/* SVG/CSS Bar Chart: Entradas vs Saídas */}
           <div className="relative h-64 sm:h-72 w-full pt-4">
             
             {/* Legend */}
             <div className="flex items-center justify-end gap-5 text-xs font-medium text-slate-600 mb-2">
               <div className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-xs bg-emerald-600" />
-                <span>Ganhos (Entradas)</span>
+                <span>Entradas</span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span className="w-3 h-3 rounded-xs bg-rose-500" />
-                <span>Gastos (Saídas)</span>
+                <span>Saídas</span>
               </div>
             </div>
 

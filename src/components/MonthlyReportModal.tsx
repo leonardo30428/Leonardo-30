@@ -78,8 +78,8 @@ export const MonthlyReportModal: React.FC<MonthlyReportModalProps> = ({
   const handleWhatsAppSend = () => {
     // Monta texto formatado do resumo para envio direto no WhatsApp
     const message = `📊 *Relatório Financeiro - ${monthName}*\n\n` +
-      `💰 *Receitas:* ${formatCurrency(summary.totalIncome)}\n` +
-      `🔻 *Despesas:* ${formatCurrency(summary.totalExpenses)}\n` +
+      `💰 *Entradas:* ${formatCurrency(summary.totalIncome)}\n` +
+      `🔻 *Saídas:* ${formatCurrency(summary.totalExpenses)}\n` +
       `⚖️ *Saldo Líquido:* ${formatCurrency(summary.netBalance)}\n` +
       `⏳ *Pendente a Pagar:* ${formatCurrency(summary.pendingBillsTotal || 0)}\n\n` +
       `📄 _Total de ${transactions.length} lançamentos registrados no FinanSmart._\n` +
@@ -93,8 +93,8 @@ export const MonthlyReportModal: React.FC<MonthlyReportModalProps> = ({
     const subject = encodeURIComponent(`Relatório Financeiro Mensal - ${monthName}`);
     const body = encodeURIComponent(
       `Olá!\n\nSegue o resumo do relatório financeiro de ${monthName}:\n\n` +
-      `- Total de Receitas: ${formatCurrency(summary.totalIncome)}\n` +
-      `- Total de Despesas: ${formatCurrency(summary.totalExpenses)}\n` +
+      `- Total de Entradas: ${formatCurrency(summary.totalIncome)}\n` +
+      `- Total de Saídas: ${formatCurrency(summary.totalExpenses)}\n` +
       `- Saldo Líquido: ${formatCurrency(summary.netBalance)}\n` +
       `- Contas Pendentes: ${formatCurrency(summary.pendingBillsTotal || 0)}\n` +
       `- Total de lançamentos: ${transactions.length}\n\n` +
