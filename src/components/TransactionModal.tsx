@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { Transaction, TransactionType } from '../types';
 import { getTodayDateString } from '../utils/finance';
+import { cleanInstallmentDescription } from '../utils/dateUtils';
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -165,7 +166,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     if (isOpen) {
       if (editingTransaction) {
         setType(editingTransaction.type);
-        setDescription(editingTransaction.description || '');
+        const cleanDesc = cleanInstallmentDescription(editingTransaction.description || '');
+        setDescription(cleanDesc);
         setAmount(editingTransaction.amount ? editingTransaction.amount.toString() : '');
         setCategory(editingTransaction.category || '');
         setBankName(editingTransaction.bankName || '');
@@ -316,9 +318,10 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         : 'Geral';
     const finalCategory = category.trim() || defaultCat;
     
-    let finalDescription = description.trim() || finalCategory;
+    const baseDescription = cleanInstallmentDescription(description.trim() || finalCategory);
+    let finalDescription = baseDescription;
     if (repetitionMode === 'parcela') {
-      finalDescription = `${finalDescription} (${currentInstallment}/${installmentsCount})`;
+      finalDescription = `${baseDescription} (${currentInstallment}/${installmentsCount})`;
     }
 
     const finalBank = bankName.trim() || 'Conta Principal';

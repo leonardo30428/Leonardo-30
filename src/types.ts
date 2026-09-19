@@ -16,6 +16,7 @@ export interface Transaction {
     total: number;
     type?: 'total' | 'installment';
   };
+  installmentParentId?: string;
   recurrence?: 'semanal' | 'quinzenal' | 'mensal' | 'bimestral' | 'personalizar';
   isRecurring?: boolean;
   recurringParentId?: string;

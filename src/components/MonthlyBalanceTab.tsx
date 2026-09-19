@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { Transaction } from '../types';
 import { formatCurrency, formatDateBR } from '../utils/finance';
+import { getMonthKey } from '../utils/dateUtils';
 
 interface MonthData {
   name: string;
@@ -51,27 +52,6 @@ export const MonthlyBalanceTab: React.FC<MonthlyBalanceTabProps> = ({
   onGoToPlanning,
   onCopyMonthContas,
 }) => {
-  // Helper to convert Month Name to YYYY-MM
-  const getMonthKey = (monthName: string): string => {
-    const map: Record<string, string> = {
-      'Janeiro': '01',
-      'Fevereiro': '02',
-      'Março': '03',
-      'Abril': '04',
-      'Maio': '05',
-      'Junho': '06',
-      'Julho': '07',
-      'Agosto': '08',
-      'Setembro': '09',
-      'Outubro': '10',
-      'Novembro': '11',
-      'Dezembro': '12',
-    };
-    const [name, year] = monthName.split(' ');
-    const monthNum = map[name] || '09';
-    return `${year || '2026'}-${monthNum}`;
-  };
-
   // Calculate stats for all available months
   const monthsData: MonthData[] = useMemo(() => {
     return months.map((mName) => {

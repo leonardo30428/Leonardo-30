@@ -36,6 +36,12 @@ import {
   isTransactionPending
 } from './utils/finance';
 import { 
+  DEFAULT_MONTHS_LIST, 
+  getMonthKey, 
+  addMonthsToDate, 
+  cleanInstallmentDescription 
+} from './utils/dateUtils';
+import { 
   Bot, 
   ChevronLeft,
   ChevronRight,
@@ -87,25 +93,11 @@ export default function App() {
   const [contasMode, setContasMode] = useState<'pagar' | 'receber'>('pagar');
   const [historyScope, setHistoryScope] = useState<'currentMonth' | 'all'>('currentMonth');
 
-  // Month navigation: includes Setembro 2026, Outubro 2026, etc.
-  const months = ['Julho 2026', 'Agosto 2026', 'Setembro 2026', 'Outubro 2026', 'Novembro 2026', 'Dezembro 2026'];
-  const [currentMonthIndex, setCurrentMonthIndex] = useState(2); // 'Setembro 2026'
-  const currentMonth = months[currentMonthIndex];
-
-  // Helper to convert Month Name to YYYY-MM
-  const getMonthKey = (monthName: string): string => {
-    const map: Record<string, string> = {
-      'Julho': '07',
-      'Agosto': '08',
-      'Setembro': '09',
-      'Outubro': '10',
-      'Novembro': '11',
-      'Dezembro': '12',
-    };
-    const [name, year] = monthName.split(' ');
-    const monthNum = map[name] || '09';
-    return `${year || '2026'}-${monthNum}`;
-  };
+  // Month navigation: includes 2026 and 2027 with seamless December to January rollover
+  const months = DEFAULT_MONTHS_LIST;
+  const initialMonthIdx = months.indexOf('Setembro 2026');
+  const [currentMonthIndex, setCurrentMonthIndex] = useState(initialMonthIdx >= 0 ? initialMonthIdx : 8);
+  const currentMonth = months[currentMonthIndex] || 'Setembro 2026';
 
   const currentMonthKey = useMemo(() => getMonthKey(currentMonth), [currentMonth]);
 
@@ -206,20 +198,207 @@ export default function App() {
   };
 
   const handleUpdateTransaction = (updatedTx: Transaction) => {
-    setTransactions((prev) =>
-      prev.map((t) => (t.id === updatedTx.id ? updatedTx : t))
-    );
-    setNotifications((prev) => [
-      {
-        id: `notif-${Date.now()}`,
-        type: 'sync',
-        title: 'Gasto Atualizado',
-        message: `O lançamento "${updatedTx.description}" foi atualizado com sucesso.`,
-        time: 'Agora',
-        unread: true,
-      },
-      ...prev,
-    ]);
+    const prevTx = transactions.find((t) => t.id === updatedTx.id);
+
+    const isNowRecurring = Boolean(updatedTx.isRecurring);
+    const wasRecurring = Boolean(prevTx?.isRecurring);
+
+    const hasInstallments = Boolean(updatedTx.installments && updatedTx.installments.total > 1);
+    const hadInstallments = Boolean(prevTx?.installments && prevTx.installments.total > 1);
+
+    let nextTransactions = [...transactions];
+
+    // CENÁRIO 1: Alterou de ÚNICA para RECORRENTE
+    if (isNowRecurring && !wasRecurring) {
+      const parentId = prevTx?.recurringParentId || `rec-${Date.now()}`;
+      const updatedMainTx: Transaction = {
+        ...updatedTx,
+        isRecurring: true,
+        recurringParentId: parentId,
+      };
+
+      // Gera os meses posteriores (15 meses à frente cobrindo a virada do ano de dezembro para janeiro)
+      const futureTxs: Transaction[] = [];
+      for (let offset = 1; offset <= 15; offset++) {
+        const nextDate = addMonthsToDate(updatedTx.date, offset);
+        futureTxs.push({
+          ...updatedTx,
+          id: `tx-rec-${parentId}-${offset}-${Date.now()}`,
+          date: nextDate,
+          isRecurring: true,
+          recurringParentId: parentId,
+          isPaid: false, // nos meses posteriores começa pendente (previsto)
+        });
+      }
+
+      nextTransactions = nextTransactions.map((t) => (t.id === updatedTx.id ? updatedMainTx : t));
+      nextTransactions = [...futureTxs, ...nextTransactions];
+
+      setNotifications((prev) => [
+        {
+          id: `notif-${Date.now()}`,
+          type: 'sync',
+          title: 'Conta Recorrente Ativada',
+          message: `"${updatedTx.description}" agora é recorrente e foi propagada para os meses posteriores (renovando para o ano seguinte)!`,
+          time: 'Agora',
+          unread: true,
+        },
+        ...prev,
+      ]);
+    } 
+    // CENÁRIO 2: Já era RECORRENTE e foi editada
+    else if (isNowRecurring && wasRecurring) {
+      const parentId = updatedTx.recurringParentId || prevTx?.recurringParentId;
+      nextTransactions = nextTransactions.map((t) => (t.id === updatedTx.id ? updatedTx : t));
+
+      if (parentId) {
+        const parts = updatedTx.date.split('-');
+        const newDay = parseInt(parts[2], 10) || 10;
+
+        nextTransactions = nextTransactions.map((t) => {
+          if (t.recurringParentId === parentId && t.id !== updatedTx.id && t.date > updatedTx.date) {
+            const tParts = t.date.split('-');
+            const tYear = parseInt(tParts[0], 10);
+            const tMonth = parseInt(tParts[1], 10);
+            const maxDays = new Date(tYear, tMonth, 0).getDate();
+            const adjustedDay = Math.min(newDay, maxDays);
+            const adjustedDate = `${tParts[0]}-${tParts[1]}-${String(adjustedDay).padStart(2, '0')}`;
+
+            return {
+              ...t,
+              description: updatedTx.description,
+              amount: updatedTx.amount,
+              date: adjustedDate,
+              type: updatedTx.type,
+              category: updatedTx.category,
+              bankName: updatedTx.bankName,
+            };
+          }
+          return t;
+        });
+      }
+
+      setNotifications((prev) => [
+        {
+          id: `notif-${Date.now()}`,
+          type: 'sync',
+          title: 'Recorrência Atualizada',
+          message: `O lançamento "${updatedTx.description}" e os meses posteriores foram sincronizados.`,
+          time: 'Agora',
+          unread: true,
+        },
+        ...prev,
+      ]);
+    } 
+    // CENÁRIO 3: Alterou de RECORRENTE para ÚNICA
+    else if (!isNowRecurring && wasRecurring) {
+      const parentId = prevTx?.recurringParentId;
+      const updatedMainTx: Transaction = {
+        ...updatedTx,
+        isRecurring: false,
+        recurringParentId: undefined,
+      };
+
+      // Remove repetições futuras
+      nextTransactions = nextTransactions.filter(
+        (t) => !(parentId && t.recurringParentId === parentId && t.id !== updatedTx.id && t.date > updatedTx.date)
+      );
+      nextTransactions = nextTransactions.map((t) => (t.id === updatedTx.id ? updatedMainTx : t));
+
+      setNotifications((prev) => [
+        {
+          id: `notif-${Date.now()}`,
+          type: 'alert',
+          title: 'Recorrência Desativada',
+          message: `"${updatedTx.description}" agora é única. Repetições futuras foram removidas.`,
+          time: 'Agora',
+          unread: true,
+        },
+        ...prev,
+      ]);
+    } 
+    // CENÁRIO 4: Lançamento em PARCELAS
+    else if (hasInstallments) {
+      const total = updatedTx.installments!.total;
+      const current = updatedTx.installments!.current || 1;
+      const seriesId = prevTx?.installmentParentId || updatedTx.installmentParentId || `inst-${Date.now()}`;
+      const baseDesc = cleanInstallmentDescription(updatedTx.description);
+
+      const updatedMainTx: Transaction = {
+        ...updatedTx,
+        description: `${baseDesc} (${current}/${total})`,
+        installmentParentId: seriesId,
+        installments: {
+          ...updatedTx.installments!,
+          current,
+          total,
+        },
+      };
+
+      // Remove parcelas futuras antigas dessa série se existiam
+      nextTransactions = nextTransactions.filter(
+        (t) => !(t.installmentParentId === seriesId && t.id !== updatedTx.id && t.date > updatedTx.date)
+      );
+
+      // Gera as parcelas subsequentes nos meses seguintes até quitar
+      const futureInstallments: Transaction[] = [];
+      for (let i = current + 1; i <= total; i++) {
+        const monthsOffset = i - current;
+        const nextDate = addMonthsToDate(updatedTx.date, monthsOffset);
+        futureInstallments.push({
+          ...updatedTx,
+          id: `tx-inst-${seriesId}-${i}-${Date.now()}`,
+          description: `${baseDesc} (${i}/${total})`,
+          date: nextDate,
+          installments: {
+            current: i,
+            total,
+            type: updatedTx.installments?.type,
+          },
+          installmentParentId: seriesId,
+          isPaid: false, // nos meses seguintes começa como pendente
+        });
+      }
+
+      nextTransactions = nextTransactions.map((t) => (t.id === updatedTx.id ? updatedMainTx : t));
+      nextTransactions = [...futureInstallments, ...nextTransactions];
+
+      setNotifications((prev) => [
+        {
+          id: `notif-${Date.now()}`,
+          type: 'sync',
+          title: 'Parcelas Programadas',
+          message: `Parcela ${current}/${total} atualizada e parcelas restantes programadas nos meses seguintes até quitar!`,
+          time: 'Agora',
+          unread: true,
+        },
+        ...prev,
+      ]);
+    } 
+    // CENÁRIO 5: Transação ÚNICA / NORMAL
+    else {
+      // Se antes tinha parcelas e agora não tem, limpa as futuras
+      if (hadInstallments && prevTx?.installmentParentId) {
+        nextTransactions = nextTransactions.filter(
+          (t) => !(t.installmentParentId === prevTx.installmentParentId && t.id !== updatedTx.id && t.date > updatedTx.date)
+        );
+      }
+      nextTransactions = nextTransactions.map((t) => (t.id === updatedTx.id ? updatedTx : t));
+
+      setNotifications((prev) => [
+        {
+          id: `notif-${Date.now()}`,
+          type: 'sync',
+          title: 'Gasto Atualizado',
+          message: `O lançamento "${updatedTx.description}" foi atualizado com sucesso.`,
+          time: 'Agora',
+          unread: true,
+        },
+        ...prev,
+      ]);
+    }
+
+    setTransactions(nextTransactions);
   };
   const [isReceiptScannerOpen, setIsReceiptScannerOpen] = useState(false);
   const [isBankSyncOpen, setIsBankSyncOpen] = useState(false);
@@ -390,49 +569,121 @@ export default function App() {
   };
 
   const handleAddTransaction = (newTxData: Omit<Transaction, 'id'>) => {
-    const parentId = newTxData.isRecurring ? `rec-${Date.now()}` : undefined;
     const txDate = newTxData.date || `${currentMonthKey}-10`;
 
+    // 1. CASO PARCELADO: lança a parcela atual e programa nos meses seguintes até quitar
+    if (newTxData.installments && newTxData.installments.total > 1) {
+      const total = newTxData.installments.total;
+      const current = newTxData.installments.current || 1;
+      const seriesId = `inst-${Date.now()}`;
+      const baseDesc = cleanInstallmentDescription(newTxData.description);
+
+      const currentTx: Transaction = {
+        ...newTxData,
+        id: `tx-${Date.now()}`,
+        description: `${baseDesc} (${current}/${total})`,
+        date: txDate,
+        installments: {
+          ...newTxData.installments,
+          current,
+          total,
+        },
+        installmentParentId: seriesId,
+        isPaid: newTxData.isPaid,
+      };
+
+      const futureInstallments: Transaction[] = [];
+      for (let i = current + 1; i <= total; i++) {
+        const monthsOffset = i - current;
+        const nextDate = addMonthsToDate(txDate, monthsOffset);
+        futureInstallments.push({
+          ...newTxData,
+          id: `tx-inst-${seriesId}-${i}`,
+          description: `${baseDesc} (${i}/${total})`,
+          date: nextDate,
+          installments: {
+            ...newTxData.installments,
+            current: i,
+            total,
+          },
+          installmentParentId: seriesId,
+          isPaid: false, // nos meses seguintes começa como pendente
+        });
+      }
+
+      setTransactions((prev) => [currentTx, ...futureInstallments, ...prev]);
+
+      setNotifications((prev) => [
+        {
+          id: `notif-${Date.now()}`,
+          type: 'sync',
+          title: 'Lançamento Parcelado',
+          message: `${baseDesc}: parcela ${current}/${total} lançada e as parcelas restantes programadas nos meses seguintes até quitar!`,
+          time: 'Agora',
+          unread: true,
+        },
+        ...prev,
+      ]);
+      return;
+    }
+
+    // 2. CASO RECORRENTE: propaga para os meses posteriores e renova de dezembro para janeiro
+    if (newTxData.isRecurring) {
+      const parentId = `rec-${Date.now()}`;
+      const currentTx: Transaction = {
+        ...newTxData,
+        id: `tx-${Date.now()}`,
+        date: txDate,
+        isRecurring: true,
+        recurringParentId: parentId,
+        isPaid: newTxData.isPaid,
+      };
+
+      const futureTxs: Transaction[] = [];
+      // Gera para os próximos 15 meses posteriores garantindo virada de ano automática
+      for (let offset = 1; offset <= 15; offset++) {
+        const nextDate = addMonthsToDate(txDate, offset);
+        futureTxs.push({
+          ...newTxData,
+          id: `tx-rec-${parentId}-${offset}`,
+          date: nextDate,
+          isRecurring: true,
+          recurringParentId: parentId,
+          isPaid: false, // nos meses posteriores começa pendente (previsto)
+        });
+      }
+
+      setTransactions((prev) => [currentTx, ...futureTxs, ...prev]);
+
+      setNotifications((prev) => [
+        {
+          id: `notif-${Date.now()}`,
+          type: 'sync',
+          title: 'Conta Recorrente Programada',
+          message: `${newTxData.description} (${formatCurrency(newTxData.amount)}) programada para os meses posteriores e renovada para o próximo ano!`,
+          time: 'Agora',
+          unread: true,
+        },
+        ...prev,
+      ]);
+      return;
+    }
+
+    // 3. CASO NORMAL (ÚNICA)
     const newTx: Transaction = {
       ...newTxData,
       id: `tx-${Date.now()}`,
       date: txDate,
-      isRecurring: newTxData.isRecurring,
-      recurringParentId: parentId,
     };
 
-    const futureTxs: Transaction[] = [];
-    if (newTxData.isRecurring && parentId) {
-      const parts = txDate.split('-');
-      const day = parts[2] || '10';
-      const currentYM = `${parts[0]}-${parts[1]}`;
-
-      // Propaga a conta recorrente para todos os meses cadastrados posteriores ao mês de lançamento
-      months.forEach((mName) => {
-        const mKey = getMonthKey(mName);
-        if (mKey > currentYM) {
-          futureTxs.push({
-            ...newTxData,
-            id: `tx-rec-${mKey}-${Date.now()}`,
-            date: `${mKey}-${day}`,
-            isRecurring: true,
-            recurringParentId: parentId,
-            isPaid: false, // nos meses futuros começa como pendente/previsto
-          });
-        }
-      });
-    }
-
-    setTransactions((prev) => [newTx, ...futureTxs, ...prev]);
+    setTransactions((prev) => [newTx, ...prev]);
 
     setNotifications((prev) => [
       {
         id: `notif-${Date.now()}`,
         type: 'sync',
-        title: newTx.isRecurring ? 'Conta Recorrente Programada' : 'Movimentação Registrada',
-        message: newTx.isRecurring
-          ? `${newTx.description} (${formatCurrency(newTx.amount)}) programada para todos os meses!`
-          : `${newTx.description} (${formatCurrency(newTx.amount)}) adicionada com sucesso.`,
+        title: 'Movimentação Registrada',
+        message: `${newTx.description} (${formatCurrency(newTx.amount)}) adicionada com sucesso.`,
         time: 'Agora',
         unread: true,
       },
@@ -443,7 +694,7 @@ export default function App() {
   const handleDeleteTransaction = (id: string) => {
     const target = transactions.find((t) => t.id === id);
     if (target && target.recurringParentId) {
-      // Se for uma conta recorrente, remove todas as instâncias da recorrência até que o usuário a retire
+      // Se for recorrente, remove todas as instâncias da recorrência
       setTransactions((prev) => prev.filter((t) => t.recurringParentId !== target.recurringParentId && t.id !== id));
       setNotifications((prev) => [
         {
@@ -451,6 +702,20 @@ export default function App() {
           type: 'alert',
           title: 'Conta Recorrente Removida',
           message: `${target.description} foi retirada de todos os meses com sucesso.`,
+          time: 'Agora',
+          unread: true,
+        },
+        ...prev,
+      ]);
+    } else if (target && target.installmentParentId) {
+      // Se for parcelada, remove todas as parcelas da série
+      setTransactions((prev) => prev.filter((t) => t.installmentParentId !== target.installmentParentId && t.id !== id));
+      setNotifications((prev) => [
+        {
+          id: `notif-${Date.now()}`,
+          type: 'alert',
+          title: 'Parcelamento Removido',
+          message: `Todas as parcelas de ${cleanInstallmentDescription(target.description)} foram removidas com sucesso.`,
           time: 'Agora',
           unread: true,
         },
