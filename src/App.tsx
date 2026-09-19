@@ -15,6 +15,7 @@ import { MonthlyBalanceTab } from './components/MonthlyBalanceTab';
 import { BottomNavBar } from './components/BottomNavBar';
 import { PendingBillsModal } from './components/PendingBillsModal';
 import { TransactionTypeChoiceModal } from './components/TransactionTypeChoiceModal';
+import { MonthlyReportModal } from './components/MonthlyReportModal';
 import { 
   Transaction, 
   BankAccount, 
@@ -39,7 +40,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Sparkles,
-  Calendar
+  Calendar,
+  FileText
 } from 'lucide-react';
 
 const CLEAN_SLATE_VERSION = 'v11_zerado_total_limpo';
@@ -230,6 +232,7 @@ export default function App() {
   // Transactions filter on extrato view
   const [activeFilter, setActiveFilter] = useState<TransactionFilterType>('all');
   const [isPendingModalOpen, setIsPendingModalOpen] = useState(false);
+  const [isMonthlyReportModalOpen, setIsMonthlyReportModalOpen] = useState(false);
 
   // Filter transactions for the selected month (e.g. Setembro or Outubro)
   const currentMonthTransactions = useMemo(() => {
@@ -637,6 +640,7 @@ export default function App() {
               setIsTransactionModalOpen(true);
             }}
             onEditTransaction={handleOpenEditTransaction}
+            onOpenMonthlyPdfReport={() => setIsMonthlyReportModalOpen(true)}
           />
         )}
 
@@ -702,6 +706,7 @@ export default function App() {
               onToggleTransactionPaid={handleToggleTransactionPaid}
               onClearHistory={handleClearHistory}
               onEditTransaction={handleOpenEditTransaction}
+              onOpenMonthlyPdfReport={() => setIsMonthlyReportModalOpen(true)}
               currentMonthName={historyScope === 'currentMonth' ? currentMonth : 'Todos os Meses'}
               activeFilter={activeFilter}
               onChangeFilter={setActiveFilter}
@@ -822,6 +827,15 @@ export default function App() {
           setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
         }}
         onOpenAIChat={handleOpenAIChatWithPrompt}
+      />
+
+      {/* 6. Monthly Financial Report (PDF) Modal */}
+      <MonthlyReportModal
+        isOpen={isMonthlyReportModalOpen}
+        onClose={() => setIsMonthlyReportModalOpen(false)}
+        monthName={currentMonth}
+        summary={currentMonthSummary}
+        transactions={currentMonthTransactions}
       />
 
     </div>

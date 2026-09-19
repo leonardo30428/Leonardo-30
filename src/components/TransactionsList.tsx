@@ -12,7 +12,8 @@ import {
   Filter,
   CheckCircle2,
   Clock,
-  Repeat
+  Repeat,
+  FileText
 } from 'lucide-react';
 import { Transaction, TransactionType } from '../types';
 import { formatCurrency, formatDateBR, isTransactionPending } from '../utils/finance';
@@ -25,6 +26,7 @@ interface TransactionsListProps {
   onToggleTransactionPaid?: (id: string) => void;
   onClearHistory?: (scope: 'currentMonth' | 'all') => void;
   onEditTransaction?: (transaction: Transaction) => void;
+  onOpenMonthlyPdfReport?: () => void;
   currentMonthName?: string;
   activeFilter: TransactionFilterType;
   onChangeFilter: (filter: TransactionFilterType) => void;
@@ -36,6 +38,7 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
   onToggleTransactionPaid,
   onClearHistory,
   onEditTransaction,
+  onOpenMonthlyPdfReport,
   currentMonthName = 'Mês Atual',
   activeFilter,
   onChangeFilter,
@@ -159,6 +162,18 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
             </button>
           </div>
 
+          {/* Relatório PDF Button */}
+          {onOpenMonthlyPdfReport && transactions.length > 0 && (
+            <button
+              onClick={onOpenMonthlyPdfReport}
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 hover:text-emerald-900 border border-emerald-200 rounded-xl transition-all shadow-2xs whitespace-nowrap cursor-pointer"
+              title="Gerar e enviar relatório do mês em PDF"
+            >
+              <FileText className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Relatório PDF</span>
+            </button>
+          )}
+
           {/* Apagar Histórico Button */}
           {onClearHistory && transactions.length > 0 && (
             <button
@@ -268,8 +283,8 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
 
                   <div className="min-w-0 flex-1">
                     {/* Top line: Description (e.g. Adiantamento, Aluguel, Salário) */}
-                    <div className="flex items-center gap-2">
-                      <h4 className="text-base sm:text-[17px] font-extrabold text-slate-900 truncate">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h4 className="text-base sm:text-[17px] font-extrabold text-slate-900 break-words leading-snug">
                         {tx.description}
                       </h4>
                       {tx.isRecurring && (

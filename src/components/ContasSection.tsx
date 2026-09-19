@@ -1,6 +1,6 @@
 import React from 'react';
 import { 
-  Clock, 
+  TrendingDown,
   TrendingUp, 
   ChevronRight,
   Receipt
@@ -61,7 +61,7 @@ export const ContasSection: React.FC<ContasSectionProps> = ({
           <div className="flex items-center justify-between w-full mb-1">
             <div className="flex items-center gap-2">
               <div className="w-7 h-7 rounded-lg bg-rose-600 text-white flex items-center justify-center shadow-xs shadow-rose-200 shrink-0">
-                <Clock className="w-3.5 h-3.5 stroke-[2.5]" />
+                <TrendingDown className="w-3.5 h-3.5 stroke-[2.5]" />
               </div>
               <span className="text-[11px] sm:text-xs font-bold text-slate-700 truncate">
                 Pagar
@@ -157,12 +157,12 @@ export const ContasSection: React.FC<ContasSectionProps> = ({
                     </div>
 
                     <div className="min-w-0 flex-1">
-                      {/* Categoria como Título */}
-                      <span className="font-extrabold text-xs sm:text-[13px] text-slate-900 group-hover:text-rose-700 transition-colors truncate block">
-                        {expense.category || expense.description}
+                      {/* Categoria em cima */}
+                      <span className="font-extrabold text-xs sm:text-[13px] text-slate-900 group-hover:text-rose-700 transition-colors block leading-tight truncate">
+                        {expense.category || 'Outros'}
                       </span>
-                      {/* Subtítulo: data e banco ex: 18 de set - nubank */}
-                      <span className="text-[10.5px] sm:text-[11px] text-slate-500 font-medium truncate block">
+                      {/* Data e banco em baixo da categoria */}
+                      <span className="text-[10.5px] sm:text-[11px] text-slate-500 font-medium block mt-0.5 truncate">
                         {formattedDate} - {bankNameClean}
                       </span>
                     </div>

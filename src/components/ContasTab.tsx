@@ -1,11 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { 
-  Clock, 
   ChevronLeft,
   Plus,
-  Check,
-  CheckCircle2,
-  Repeat
+  Repeat,
+  FileText
 } from 'lucide-react';
 import { Transaction } from '../types';
 import { formatCurrency, getTodayDateString } from '../utils/finance';
@@ -15,23 +13,22 @@ interface ContasTabProps {
   transactions: Transaction[];
   currentMonthName: string;
   mode: 'pagar' | 'receber';
-  onTogglePaid: (id: string) => void;
+  onTogglePaid?: (id: string) => void;
   onGoBackToPlanning: () => void;
   onOpenNewTransaction: (type: 'income' | 'expense') => void;
   onEditTransaction?: (transaction: Transaction) => void;
+  onOpenMonthlyPdfReport?: () => void;
 }
 
 export const ContasTab: React.FC<ContasTabProps> = ({
   transactions,
   currentMonthName,
   mode,
-  onTogglePaid,
   onGoBackToPlanning,
   onOpenNewTransaction,
   onEditTransaction,
+  onOpenMonthlyPdfReport,
 }) => {
-  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'paid'>('all');
-
   // Contas de Saídas/Gastos (Despesas) - NUNCA inclui receitas
   const expenseAccounts = transactions.filter((t) => t.type === 'expense');
 
@@ -83,9 +80,9 @@ export const ContasTab: React.FC<ContasTabProps> = ({
           </div>
 
           <div className="min-w-0 flex-1">
-            {/* Título: Descrição + Apenas o Ícone de Recorrência (sem a palavra "Recorrente") */}
+            {/* Título: Descrição completa + Apenas o Ícone de Recorrência (sem a palavra "Recorrente") */}
             <div className="flex items-center gap-1.5 flex-wrap">
-              <span className={`font-extrabold text-sm sm:text-base text-slate-900 truncate ${
+              <span className={`font-extrabold text-sm sm:text-base text-slate-900 break-words leading-snug ${
                 isConcluded ? 'line-through text-slate-500' : ''
               }`}>
                 {item.description}
@@ -99,13 +96,6 @@ export const ContasTab: React.FC<ContasTabProps> = ({
                   <Repeat className="w-3.5 h-3.5 stroke-[2.5]" />
                 </span>
               )}
-
-              {isConcluded && (
-                <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.2 rounded-md shrink-0">
-                  <CheckCircle2 className="w-3 h-3 text-emerald-600 stroke-[2.5]" />
-                  <span>Concluída</span>
-                </span>
-              )}
             </div>
 
             {/* Subtítulo: categoria e banco ex: (alimentação - nubank) */}
@@ -116,7 +106,7 @@ export const ContasTab: React.FC<ContasTabProps> = ({
         </div>
 
         {/* Lado Direito: No topo a Data ("Hoje" ou "16 de set") e Embaixo da Data o Valor */}
-        <div className="flex items-center gap-2.5 sm:gap-3.5 shrink-0 text-right">
+        <div className="flex items-center shrink-0 text-right">
           <div className="flex flex-col items-end">
             {/* Data: "Hoje" ou data como "16 de set" */}
             <span className={`text-[11px] sm:text-xs font-bold ${
@@ -132,27 +122,6 @@ export const ContasTab: React.FC<ContasTabProps> = ({
               {formatCurrency(item.amount)}
             </span>
           </div>
-
-          {/* Botão de Toggle Pago / Pendente com stopPropagation */}
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onTogglePaid(item.id);
-            }}
-            className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center transition-all cursor-pointer border shrink-0 ${
-              isConcluded
-                ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs hover:bg-emerald-700'
-                : 'bg-slate-50 text-slate-400 border-slate-300 hover:border-slate-400 hover:text-slate-600'
-            }`}
-            title={isConcluded ? 'Marcar como pendente' : 'Marcar como pago'}
-          >
-            {isConcluded ? (
-              <Check className="w-4 h-4 stroke-[3]" />
-            ) : (
-              <Clock className="w-3.5 h-3.5 text-slate-400" />
-            )}
-          </button>
         </div>
 
       </div>
@@ -183,8 +152,20 @@ export const ContasTab: React.FC<ContasTabProps> = ({
           </h2>
         </div>
 
-        {/* Lado Direito: Adicionar */}
-        <div className="flex items-center z-10">
+        {/* Lado Direito: Relatório PDF + Adicionar */}
+        <div className="flex items-center gap-2 z-10">
+          {onOpenMonthlyPdfReport && (
+            <button
+              type="button"
+              onClick={onOpenMonthlyPdfReport}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-700 hover:text-emerald-700 bg-slate-100 hover:bg-emerald-50 border border-slate-200/80 shadow-2xs cursor-pointer active:scale-95 transition-all"
+              title="Gerar e enviar relatório do mês via PDF"
+            >
+              <FileText className="w-4 h-4 text-emerald-600" />
+              <span className="hidden md:inline">Relatório PDF</span>
+            </button>
+          )}
+
           <button
             type="button"
             onClick={() => onOpenNewTransaction(isPagar ? 'expense' : 'income')}
@@ -201,7 +182,7 @@ export const ContasTab: React.FC<ContasTabProps> = ({
       </div>
 
       {/* Card de Resumo do Sub-Total */}
-      <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200/90 shadow-xs flex flex-wrap items-center justify-between gap-3">
+      <div className="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200/90 shadow-xs">
         <div>
           <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
             {isPagar ? 'Total a Pagar (Pendente)' : 'Total a Receber (Pendente)'}
@@ -214,41 +195,6 @@ export const ContasTab: React.FC<ContasTabProps> = ({
           <p className="text-xs text-slate-400 mt-0.5">
             Total geral do mês ({currentMonthName}): {formatCurrency(totalAll)}
           </p>
-        </div>
-
-        {/* Filtro por status das contas exibidas: Todas, Pendentes/Previstas, Pagas/Concluídas */}
-        <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs">
-          <button
-            type="button"
-            onClick={() => setStatusFilter('all')}
-            className={`px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer ${
-              statusFilter === 'all' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            Todas ({baseList.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setStatusFilter('pending')}
-            className={`px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer ${
-              statusFilter === 'pending'
-                ? isPagar ? 'bg-rose-50 text-rose-700 shadow-2xs font-black' : 'bg-emerald-50 text-emerald-700 shadow-2xs font-black'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            {isPagar ? 'A Pagar' : 'A Receber'} ({pendingItems.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setStatusFilter('paid')}
-            className={`px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer ${
-              statusFilter === 'paid' 
-                ? 'bg-slate-800 text-white shadow-2xs font-black' 
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            {isPagar ? 'Pagas' : 'Recebidas'} ({paidItems.length})
-          </button>
         </div>
       </div>
 
@@ -268,35 +214,31 @@ export const ContasTab: React.FC<ContasTabProps> = ({
         ) : (
           <div className="space-y-4">
             
-            {/* Seção 1: Contas a Pagar / Pendentes (quando filtro for 'all' ou 'pending') */}
-            {(statusFilter === 'all' || statusFilter === 'pending') && (
-              <div className="space-y-2.5">
-                {statusFilter === 'all' && paidItems.length > 0 && (
-                  <div className="flex items-center gap-2 pb-1">
-                    <Clock className="w-3.5 h-3.5 text-amber-600" />
-                    <span className="text-xs font-black uppercase tracking-wider text-slate-600">
-                      {isPagar ? 'Contas a Pagar' : 'Contas a Receber'} ({pendingItems.length})
-                    </span>
-                  </div>
-                )}
+            {/* Seção 1: Contas a Pagar / Pendentes */}
+            <div className="space-y-2.5">
+              {paidItems.length > 0 && (
+                <div className="flex items-center gap-2 pb-1">
+                  <span className="text-xs font-black uppercase tracking-wider text-slate-600">
+                    {isPagar ? 'Contas a Pagar' : 'Contas a Receber'} ({pendingItems.length})
+                  </span>
+                </div>
+              )}
 
-                {pendingItems.length === 0 ? (
-                  <div className="py-4 text-center text-xs text-slate-400 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
-                    Tudo pago e em dia por aqui!
-                  </div>
-                ) : (
-                  pendingItems.map((item) => renderTransactionRow(item, false))
-                )}
-              </div>
-            )}
+              {pendingItems.length === 0 ? (
+                <div className="py-4 text-center text-xs text-slate-400 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+                  Tudo pago e em dia por aqui!
+                </div>
+              ) : (
+                pendingItems.map((item) => renderTransactionRow(item, false))
+              )}
+            </div>
 
-            {/* Seção 2: Contas Concluídas / Pagas embaixo das contas a pagar (com ícone de concluída e despesa ofuscada) */}
-            {(statusFilter === 'all' || statusFilter === 'paid') && paidItems.length > 0 && (
+            {/* Seção 2: Contas Pagas / Recebidas embaixo das contas a pagar */}
+            {paidItems.length > 0 && (
               <div className="space-y-2.5 pt-2">
                 <div className="flex items-center gap-2 pt-2 pb-1 border-t border-slate-100">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 stroke-[2.5]" />
                   <span className="text-xs font-black uppercase tracking-wider text-slate-500">
-                    Concluídas ({paidItems.length})
+                    {isPagar ? 'Pagas' : 'Recebidas'} ({paidItems.length})
                   </span>
                   <div className="flex-1 h-px bg-slate-200/70 ml-1" />
                 </div>
