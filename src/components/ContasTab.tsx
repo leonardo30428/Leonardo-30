@@ -1,16 +1,15 @@
 import React, { useState } from 'react';
 import { 
   Clock, 
-  Building2, 
-  Calendar, 
-  CheckCircle2, 
-  Repeat, 
   ChevronLeft,
   Plus,
-  Check
+  Check,
+  CheckCircle2,
+  Repeat
 } from 'lucide-react';
 import { Transaction } from '../types';
-import { formatCurrency, formatDateBR } from '../utils/finance';
+import { formatCurrency, getTodayDateString } from '../utils/finance';
+import { getCategoryVisual, formatShortDateWithMonth } from '../utils/categoryIcons';
 
 interface ContasTabProps {
   transactions: Transaction[];
@@ -19,6 +18,7 @@ interface ContasTabProps {
   onTogglePaid: (id: string) => void;
   onGoBackToPlanning: () => void;
   onOpenNewTransaction: (type: 'income' | 'expense') => void;
+  onEditTransaction?: (transaction: Transaction) => void;
 }
 
 export const ContasTab: React.FC<ContasTabProps> = ({
@@ -28,6 +28,7 @@ export const ContasTab: React.FC<ContasTabProps> = ({
   onTogglePaid,
   onGoBackToPlanning,
   onOpenNewTransaction,
+  onEditTransaction,
 }) => {
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'paid'>('all');
 
@@ -47,41 +48,115 @@ export const ContasTab: React.FC<ContasTabProps> = ({
   const totalPending = pendingItems.reduce((sum, t) => sum + t.amount, 0);
   const totalAll = baseList.reduce((sum, t) => sum + t.amount, 0);
 
-  // Filtragem por status (Todas, Pendentes/Previstas, Pagas/Recebidas)
-  const currentList = baseList.filter((item) => {
-    if (statusFilter === 'pending') return item.isPaid === false;
-    if (statusFilter === 'paid') return item.isPaid !== false;
-    return true;
-  });
+  // Helper para formatar data: "Hoje" se for hoje/paga hoje, senão "16 de set"
+  const getDisplayDate = (item: Transaction) => {
+    const today = getTodayDateString();
+    const isToday = item.date === today;
+    return formatShortDateWithMonth(item.date, isToday);
+  };
 
-  // Helper visual para símbolo e estilo de banco brasileiro
-  const getBankStyle = (bankName?: string) => {
-    const b = (bankName || '').toLowerCase();
-    if (b.includes('nu') || b.includes('rox')) {
-      return { bg: 'bg-purple-50 text-purple-800 border-purple-200/80', dot: 'bg-purple-600' };
-    }
-    if (b.includes('ita') || b.includes('itau')) {
-      return { bg: 'bg-orange-50 text-orange-800 border-orange-200/80', dot: 'bg-orange-600' };
-    }
-    if (b.includes('inter')) {
-      return { bg: 'bg-amber-50 text-amber-900 border-amber-200/80', dot: 'bg-amber-500' };
-    }
-    if (b.includes('brad')) {
-      return { bg: 'bg-red-50 text-red-800 border-red-200/80', dot: 'bg-red-600' };
-    }
-    if (b.includes('sant')) {
-      return { bg: 'bg-rose-50 text-rose-800 border-rose-200/80', dot: 'bg-rose-600' };
-    }
-    if (b.includes('brasil') || b.includes('bb')) {
-      return { bg: 'bg-yellow-50 text-yellow-900 border-yellow-200/80', dot: 'bg-yellow-500' };
-    }
-    if (b.includes('caixa')) {
-      return { bg: 'bg-blue-50 text-blue-800 border-blue-200/80', dot: 'bg-blue-600' };
-    }
-    if (b.includes('c6')) {
-      return { bg: 'bg-slate-100 text-slate-900 border-slate-300', dot: 'bg-slate-800' };
-    }
-    return { bg: 'bg-slate-50 text-slate-700 border-slate-200', dot: 'bg-slate-500' };
+  // Renderizador de um item da lista
+  const renderTransactionRow = (item: Transaction, isConcluded: boolean) => {
+    const visual = getCategoryVisual(item.category);
+    const CategoryIcon = visual.icon;
+    const isRecurring = Boolean(item.recurrence || item.isRecurring);
+    const dateText = getDisplayDate(item);
+    const bankNameClean = (item.bankName || 'nubank').toLowerCase();
+    const categoryClean = (item.category || 'outros').toLowerCase();
+
+    return (
+      <div
+        key={item.id}
+        onClick={() => onEditTransaction?.(item)}
+        className={`group relative flex items-center justify-between p-3.5 sm:p-4 rounded-2xl border transition-all cursor-pointer gap-3 ${
+          isConcluded
+            ? 'bg-slate-50/60 border-slate-200/70 opacity-60 hover:opacity-90 hover:bg-slate-50'
+            : 'bg-white border-slate-200/90 hover:border-slate-300 hover:shadow-xs'
+        }`}
+        title="Clique para editar este gasto"
+      >
+        {/* Lado Esquerdo: Ícone da Categoria + Descrição como Título (com ícone recorrente) + Subtítulo (categoria - banco) */}
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          {/* Ícone da Categoria */}
+          <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center border ${visual.bgColor} ${visual.textColor} ${visual.borderColor} shrink-0 shadow-2xs`}>
+            <CategoryIcon className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.2]" />
+          </div>
+
+          <div className="min-w-0 flex-1">
+            {/* Título: Descrição + Apenas o Ícone de Recorrência (sem a palavra "Recorrente") */}
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className={`font-extrabold text-sm sm:text-base text-slate-900 truncate ${
+                isConcluded ? 'line-through text-slate-500' : ''
+              }`}>
+                {item.description}
+              </span>
+
+              {isRecurring && (
+                <span 
+                  title="Conta Recorrente"
+                  className="inline-flex items-center p-0.5 text-indigo-600 shrink-0"
+                >
+                  <Repeat className="w-3.5 h-3.5 stroke-[2.5]" />
+                </span>
+              )}
+
+              {isConcluded && (
+                <span className="inline-flex items-center gap-0.5 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-1.5 py-0.2 rounded-md shrink-0">
+                  <CheckCircle2 className="w-3 h-3 text-emerald-600 stroke-[2.5]" />
+                  <span>Concluída</span>
+                </span>
+              )}
+            </div>
+
+            {/* Subtítulo: categoria e banco ex: (alimentação - nubank) */}
+            <div className="text-xs text-slate-500 font-medium truncate mt-0.5">
+              {categoryClean} - {bankNameClean}
+            </div>
+          </div>
+        </div>
+
+        {/* Lado Direito: No topo a Data ("Hoje" ou "16 de set") e Embaixo da Data o Valor */}
+        <div className="flex items-center gap-2.5 sm:gap-3.5 shrink-0 text-right">
+          <div className="flex flex-col items-end">
+            {/* Data: "Hoje" ou data como "16 de set" */}
+            <span className={`text-[11px] sm:text-xs font-bold ${
+              dateText === 'Hoje' ? 'text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-md border border-emerald-200/60' : 'text-slate-400'
+            }`}>
+              {dateText}
+            </span>
+
+            {/* Embaixo da data o valor */}
+            <span className={`text-sm sm:text-base font-black tracking-tight whitespace-nowrap mt-0.5 ${
+              isConcluded ? 'text-slate-400 line-through' : isPagar ? 'text-rose-700' : 'text-emerald-700'
+            }`}>
+              {formatCurrency(item.amount)}
+            </span>
+          </div>
+
+          {/* Botão de Toggle Pago / Pendente com stopPropagation */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onTogglePaid(item.id);
+            }}
+            className={`w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center transition-all cursor-pointer border shrink-0 ${
+              isConcluded
+                ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs hover:bg-emerald-700'
+                : 'bg-slate-50 text-slate-400 border-slate-300 hover:border-slate-400 hover:text-slate-600'
+            }`}
+            title={isConcluded ? 'Marcar como pendente' : 'Marcar como pago'}
+          >
+            {isConcluded ? (
+              <Check className="w-4 h-4 stroke-[3]" />
+            ) : (
+              <Clock className="w-3.5 h-3.5 text-slate-400" />
+            )}
+          </button>
+        </div>
+
+      </div>
+    );
   };
 
   return (
@@ -120,7 +195,7 @@ export const ContasTab: React.FC<ContasTabProps> = ({
             }`}
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
-            <span className="hidden sm:inline">Adicionar {isPagar ? 'Conta' : 'Receita'}</span>
+            <span className="hidden sm:inline">Adicionar {isPagar ? 'Gasto' : 'Receita'}</span>
           </button>
         </div>
       </div>
@@ -137,7 +212,7 @@ export const ContasTab: React.FC<ContasTabProps> = ({
             {formatCurrency(totalPending)}
           </span>
           <p className="text-xs text-slate-400 mt-0.5">
-            Total geral do mês: {formatCurrency(totalAll)}
+            Total geral do mês ({currentMonthName}): {formatCurrency(totalAll)}
           </p>
         </div>
 
@@ -168,9 +243,7 @@ export const ContasTab: React.FC<ContasTabProps> = ({
             onClick={() => setStatusFilter('paid')}
             className={`px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer ${
               statusFilter === 'paid' 
-                ? isPagar 
-                  ? 'bg-slate-800 text-white shadow-2xs font-black' 
-                  : 'bg-emerald-50 text-emerald-800 shadow-2xs font-black' 
+                ? 'bg-slate-800 text-white shadow-2xs font-black' 
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -179,104 +252,59 @@ export const ContasTab: React.FC<ContasTabProps> = ({
         </div>
       </div>
 
-      {/* Lista de Contas (Exclusiva do que foi selecionado) */}
-      <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs p-5 sm:p-6 space-y-3">
-        {currentList.length === 0 ? (
+      {/* Lista de Contas */}
+      <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs p-5 sm:p-6 space-y-4">
+        {baseList.length === 0 ? (
           <div className="text-center py-10 px-4 bg-slate-50/70 border border-dashed border-slate-200 rounded-2xl">
             <p className="text-sm font-semibold text-slate-600">
               {isPagar 
-                ? 'Nenhuma conta a pagar encontrada.' 
-                : 'Nenhuma receita a receber encontrada.'}
+                ? 'Nenhuma despesa registrada neste mês.' 
+                : 'Nenhuma receita registrada neste mês.'}
             </p>
             <p className="text-xs text-slate-400 mt-1">
-              {isPagar
-                ? 'Não há débitos pendentes com o filtro selecionado.'
-                : 'Não há entradas pendentes com o filtro selecionado.'}
+              Clique em &quot;Adicionar {isPagar ? 'Gasto' : 'Receita'}&quot; para criar o primeiro registro.
             </p>
           </div>
         ) : (
-          <div className="space-y-2.5">
-            {currentList.map((item) => {
-              const isPending = item.isPaid === false;
-              const bankStyle = getBankStyle(item.bankName);
-              const isRecurring = Boolean(item.recurrence || item.isRecurring);
-
-              return (
-                <div
-                  key={item.id}
-                  className="flex items-center justify-between p-3.5 sm:p-4 rounded-2xl border border-slate-200/90 hover:border-slate-300 bg-white hover:bg-slate-50/40 transition-all gap-3"
-                >
-                  {/* Lado Esquerdo: Nome da conta e símbolo do banco em baixo com data */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-extrabold text-sm sm:text-base text-slate-900 truncate">
-                        {item.description}
-                      </span>
-
-                      {isRecurring && (
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/70 shrink-0">
-                          <Repeat className="w-2.5 h-2.5" />
-                          Recorrente
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Embaixo: Símbolo do banco e data de vencimento */}
-                    <div className="flex flex-wrap items-center gap-2 mt-1.5">
-                      {/* Símbolo do Banco */}
-                      <div className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[11px] font-bold border ${bankStyle.bg}`}>
-                        <span className={`w-2 h-2 rounded-full ${bankStyle.dot}`} />
-                        <Building2 className="w-3 h-3 opacity-70 shrink-0" />
-                        <span className="truncate max-w-[120px]">{item.bankName || 'Conta'}</span>
-                      </div>
-
-                      <span className="text-slate-300">•</span>
-
-                      {/* Data / Vencimento */}
-                      <span className="flex items-center gap-1 text-[11.5px] font-medium text-slate-500">
-                        <Calendar className="w-3 h-3 text-slate-400" />
-                        {formatDateBR(item.date)}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Lado Direito: Status "Previsto" / "Pago" e Valor no canto direito */}
-                  <div className="flex items-center gap-3 shrink-0">
-                    {/* Tag / Botão Previsto / Pago */}
-                    <button
-                      type="button"
-                      onClick={() => onTogglePaid(item.id)}
-                      className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer border ${
-                        isPending
-                          ? 'bg-amber-50 text-amber-900 border-amber-200/90 hover:bg-amber-100'
-                          : isPagar
-                          ? 'bg-slate-100 text-slate-800 border-slate-300 hover:bg-slate-200'
-                          : 'bg-emerald-50 text-emerald-900 border-emerald-200/90 hover:bg-emerald-100'
-                      }`}
-                      title={isPending ? 'Clique para marcar como concluído' : 'Clique para marcar como pendente'}
-                    >
-                      {isPending ? (
-                        <>
-                          <Clock className="w-3 h-3 text-amber-600" />
-                          <span>Previsto</span>
-                        </>
-                      ) : (
-                        <>
-                          <Check className={`w-3 h-3 ${isPagar ? 'text-slate-700 stroke-[3]' : 'text-emerald-600'}`} />
-                          <span>{isPagar ? 'Pago' : 'Recebido'}</span>
-                        </>
-                      )}
-                    </button>
-
-                    {/* Valor no canto direito */}
-                    <span className="text-base sm:text-lg font-black text-slate-900 tracking-tight whitespace-nowrap min-w-[80px] text-right">
-                      {formatCurrency(item.amount)}
+          <div className="space-y-4">
+            
+            {/* Seção 1: Contas a Pagar / Pendentes (quando filtro for 'all' ou 'pending') */}
+            {(statusFilter === 'all' || statusFilter === 'pending') && (
+              <div className="space-y-2.5">
+                {statusFilter === 'all' && paidItems.length > 0 && (
+                  <div className="flex items-center gap-2 pb-1">
+                    <Clock className="w-3.5 h-3.5 text-amber-600" />
+                    <span className="text-xs font-black uppercase tracking-wider text-slate-600">
+                      {isPagar ? 'Contas a Pagar' : 'Contas a Receber'} ({pendingItems.length})
                     </span>
                   </div>
+                )}
 
+                {pendingItems.length === 0 ? (
+                  <div className="py-4 text-center text-xs text-slate-400 bg-slate-50/50 rounded-xl border border-dashed border-slate-200">
+                    Tudo pago e em dia por aqui!
+                  </div>
+                ) : (
+                  pendingItems.map((item) => renderTransactionRow(item, false))
+                )}
+              </div>
+            )}
+
+            {/* Seção 2: Contas Concluídas / Pagas embaixo das contas a pagar (com ícone de concluída e despesa ofuscada) */}
+            {(statusFilter === 'all' || statusFilter === 'paid') && paidItems.length > 0 && (
+              <div className="space-y-2.5 pt-2">
+                <div className="flex items-center gap-2 pt-2 pb-1 border-t border-slate-100">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 stroke-[2.5]" />
+                  <span className="text-xs font-black uppercase tracking-wider text-slate-500">
+                    Concluídas ({paidItems.length})
+                  </span>
+                  <div className="flex-1 h-px bg-slate-200/70 ml-1" />
                 </div>
-              );
-            })}
+
+                {paidItems.map((item) => renderTransactionRow(item, true))}
+              </div>
+            )}
+
           </div>
         )}
       </div>

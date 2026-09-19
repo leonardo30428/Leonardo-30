@@ -187,12 +187,37 @@ export default function App() {
   // Modal dialog states
   const [isTypeChoiceModalOpen, setIsTypeChoiceModalOpen] = useState(false);
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [transactionModalDefaultType, setTransactionModalDefaultType] = useState<TransactionType>('expense');
 
   const handleSelectTransactionType = (type: TransactionType) => {
+    setEditingTransaction(null);
     setTransactionModalDefaultType(type);
     setIsTypeChoiceModalOpen(false);
     setIsTransactionModalOpen(true);
+  };
+
+  const handleOpenEditTransaction = (tx: Transaction) => {
+    setEditingTransaction(tx);
+    setTransactionModalDefaultType(tx.type);
+    setIsTransactionModalOpen(true);
+  };
+
+  const handleUpdateTransaction = (updatedTx: Transaction) => {
+    setTransactions((prev) =>
+      prev.map((t) => (t.id === updatedTx.id ? updatedTx : t))
+    );
+    setNotifications((prev) => [
+      {
+        id: `notif-${Date.now()}`,
+        type: 'sync',
+        title: 'Gasto Atualizado',
+        message: `O lançamento "${updatedTx.description}" foi atualizado com sucesso.`,
+        time: 'Agora',
+        unread: true,
+      },
+      ...prev,
+    ]);
   };
   const [isReceiptScannerOpen, setIsReceiptScannerOpen] = useState(false);
   const [isBankSyncOpen, setIsBankSyncOpen] = useState(false);
@@ -569,6 +594,7 @@ export default function App() {
               <ContasSection
                 transactions={currentMonthTransactions}
                 onSelectTab={handleOpenContasTab}
+                onEditTransaction={handleOpenEditTransaction}
               />
             </div>
 
@@ -578,6 +604,7 @@ export default function App() {
               selectedMonthDate={`${currentMonthKey}-15`}
               onAskAiTips={(prompt) => handleOpenAIChatWithPrompt(prompt)}
               onOpenNewTransaction={(type) => {
+                setEditingTransaction(null);
                 if (type) {
                   setTransactionModalDefaultType(type);
                   setIsTransactionModalOpen(true);
@@ -605,9 +632,11 @@ export default function App() {
             onTogglePaid={handleToggleTransactionPaid}
             onGoBackToPlanning={() => setActiveAppTab('planejamento')}
             onOpenNewTransaction={(type) => {
+              setEditingTransaction(null);
               setTransactionModalDefaultType(type);
               setIsTransactionModalOpen(true);
             }}
+            onEditTransaction={handleOpenEditTransaction}
           />
         )}
 
@@ -672,6 +701,7 @@ export default function App() {
               onDeleteTransaction={handleDeleteTransaction}
               onToggleTransactionPaid={handleToggleTransactionPaid}
               onClearHistory={handleClearHistory}
+              onEditTransaction={handleOpenEditTransaction}
               currentMonthName={historyScope === 'currentMonth' ? currentMonth : 'Todos os Meses'}
               activeFilter={activeFilter}
               onChangeFilter={setActiveFilter}
@@ -700,6 +730,7 @@ export default function App() {
         activeTab={activeAppTab}
         onChangeTab={setActiveAppTab}
         onOpenNewTransaction={() => {
+          setEditingTransaction(null);
           setIsTypeChoiceModalOpen(true);
         }}
         onViewPending={handleViewPending}
@@ -724,11 +755,17 @@ export default function App() {
         onSelectType={handleSelectTransactionType}
       />
       
-      {/* 1. Transaction Modal (Add Income, Expense or Investment) */}
+      {/* 1. Transaction Modal (Add Income, Expense or Investment, or Edit Gasto) */}
       <TransactionModal
         isOpen={isTransactionModalOpen}
-        onClose={() => setIsTransactionModalOpen(false)}
+        onClose={() => {
+          setIsTransactionModalOpen(false);
+          setEditingTransaction(null);
+        }}
         onAddTransaction={handleAddTransaction}
+        onEditTransaction={handleUpdateTransaction}
+        onDeleteTransaction={handleDeleteTransaction}
+        editingTransaction={editingTransaction}
         defaultType={transactionModalDefaultType}
         defaultDate={`${currentMonthKey}-10`}
         onOpenReceiptScanner={() => setIsReceiptScannerOpen(true)}

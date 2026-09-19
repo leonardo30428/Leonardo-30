@@ -1,27 +1,24 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { 
   Clock, 
-  TrendingDown, 
   TrendingUp, 
-  Building2, 
-  Calendar, 
-  CheckCircle2, 
-  AlertCircle, 
-  Repeat, 
   ChevronRight,
-  Filter
+  Receipt
 } from 'lucide-react';
 import { Transaction } from '../types';
-import { formatCurrency, formatDateBR } from '../utils/finance';
+import { formatCurrency } from '../utils/finance';
+import { getCategoryVisual, formatShortDateWithMonth } from '../utils/categoryIcons';
 
 interface ContasSectionProps {
   transactions: Transaction[];
   onSelectTab: (type: 'pagar' | 'receber') => void;
+  onEditTransaction?: (transaction: Transaction) => void;
 }
 
 export const ContasSection: React.FC<ContasSectionProps> = ({
   transactions,
   onSelectTab,
+  onEditTransaction,
 }) => {
   // Contas de Saídas/Gastos (Despesas) - NUNCA inclui receitas
   const expenseAccounts = transactions.filter((t) => t.type === 'expense');
@@ -40,6 +37,11 @@ export const ContasSection: React.FC<ContasSectionProps> = ({
     ? pendingIncomes.reduce((sum, t) => sum + t.amount, 0)
     : incomeAccounts.reduce((sum, t) => sum + t.amount, 0);
   const countToReceive = pendingIncomes.length > 0 ? pendingIncomes.length : incomeAccounts.length;
+
+  // Despesas recentes ordenadas por data decrescente (as mais recentes primeiro)
+  const recentExpenses = [...expenseAccounts]
+    .sort((a, b) => (b.date || '').localeCompare(a.date || ''))
+    .slice(0, 4);
 
   return (
     <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs p-4 sm:p-5">
@@ -107,6 +109,76 @@ export const ContasSection: React.FC<ContasSectionProps> = ({
           </div>
         </button>
 
+      </div>
+
+      {/* Seção "Despesas recentes" abaixo dos dois cartões pagar e receber */}
+      <div className="mt-4 pt-3.5 border-t border-slate-100">
+        <div className="flex items-center justify-between mb-2.5 px-0.5">
+          <h3 className="text-xs sm:text-sm font-black text-slate-900 tracking-tight flex items-center gap-1.5">
+            <Receipt className="w-3.5 h-3.5 text-slate-500" />
+            <span>Despesas recentes</span>
+          </h3>
+          {expenseAccounts.length > 0 && (
+            <button
+              type="button"
+              onClick={() => onSelectTab('pagar')}
+              className="text-[11px] font-bold text-rose-600 hover:text-rose-700 hover:underline transition-all cursor-pointer"
+            >
+              Ver todas ({expenseAccounts.length})
+            </button>
+          )}
+        </div>
+
+        {recentExpenses.length === 0 ? (
+          <div className="py-4 px-3 text-center bg-slate-50/70 border border-dashed border-slate-200 rounded-2xl">
+            <p className="text-xs text-slate-500 font-medium">
+              Nenhuma despesa recente registrada neste mês.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {recentExpenses.map((expense) => {
+              const visual = getCategoryVisual(expense.category);
+              const CategoryIcon = visual.icon;
+              const formattedDate = formatShortDateWithMonth(expense.date);
+              const bankNameClean = (expense.bankName || 'Nubank').toLowerCase();
+
+              return (
+                <div
+                  key={expense.id}
+                  onClick={() => onEditTransaction?.(expense)}
+                  className="flex items-center justify-between p-2.5 sm:p-3 rounded-2xl border border-slate-100 bg-slate-50/40 hover:bg-slate-100/70 hover:border-slate-300 transition-all cursor-pointer group"
+                  title="Clique para editar este gasto"
+                >
+                  {/* Esquerda: Ícone da Categoria + Categoria como Título + Data e Banco como Subtítulo */}
+                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                    <div className={`w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-xl flex items-center justify-center border ${visual.bgColor} ${visual.textColor} ${visual.borderColor} shrink-0 shadow-2xs`}>
+                      <CategoryIcon className="w-4 h-4 stroke-[2.2]" />
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      {/* Categoria como Título */}
+                      <span className="font-extrabold text-xs sm:text-[13px] text-slate-900 group-hover:text-rose-700 transition-colors truncate block">
+                        {expense.category || expense.description}
+                      </span>
+                      {/* Subtítulo: data e banco ex: 18 de set - nubank */}
+                      <span className="text-[10.5px] sm:text-[11px] text-slate-500 font-medium truncate block">
+                        {formattedDate} - {bankNameClean}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Direita: Valor */}
+                  <div className="text-right shrink-0 pl-2">
+                    <span className="font-black text-xs sm:text-sm text-slate-900 tracking-tight">
+                      {formatCurrency(expense.amount)}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
 
     </div>

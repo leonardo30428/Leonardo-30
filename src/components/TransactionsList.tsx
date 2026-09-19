@@ -11,7 +11,8 @@ import {
   Calendar,
   Filter,
   CheckCircle2,
-  Clock
+  Clock,
+  Repeat
 } from 'lucide-react';
 import { Transaction, TransactionType } from '../types';
 import { formatCurrency, formatDateBR, isTransactionPending } from '../utils/finance';
@@ -23,6 +24,7 @@ interface TransactionsListProps {
   onDeleteTransaction: (id: string) => void;
   onToggleTransactionPaid?: (id: string) => void;
   onClearHistory?: (scope: 'currentMonth' | 'all') => void;
+  onEditTransaction?: (transaction: Transaction) => void;
   currentMonthName?: string;
   activeFilter: TransactionFilterType;
   onChangeFilter: (filter: TransactionFilterType) => void;
@@ -33,6 +35,7 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
   onDeleteTransaction,
   onToggleTransactionPaid,
   onClearHistory,
+  onEditTransaction,
   currentMonthName = 'Mês Atual',
   activeFilter,
   onChangeFilter,
@@ -269,6 +272,11 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
                       <h4 className="text-base sm:text-[17px] font-extrabold text-slate-900 truncate">
                         {tx.description}
                       </h4>
+                      {tx.isRecurring && (
+                        <span title="Conta Recorrente" className="inline-flex items-center text-indigo-600 shrink-0">
+                          <Repeat className="w-3.5 h-3.5" />
+                        </span>
+                      )}
                       {tx.source === 'receipt_scan' && (
                         <span className="hidden sm:inline-flex items-center gap-1 text-[10px] font-semibold bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded-md border border-indigo-200">
                           <Camera className="w-2.5 h-2.5" />
@@ -360,9 +368,19 @@ export const TransactionsList: React.FC<TransactionsListProps> = ({
                           {pending ? 'Pendente' : isIncome ? 'Recebido' : isInvestment ? 'Aporte' : 'Pago'}
                         </button>
 
+                        {onEditTransaction && (
+                          <button
+                            onClick={() => onEditTransaction(tx)}
+                            className="p-1.5 text-slate-400 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
+                            title="Editar este lançamento"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+
                         <button
                           onClick={() => onDeleteTransaction(tx.id)}
-                          className="p-1.5 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors opacity-70 group-hover:opacity-100"
+                          className="p-1.5 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors opacity-70 group-hover:opacity-100 cursor-pointer"
                           title="Excluir movimentação"
                         >
                           <Trash2 className="w-3.5 h-3.5" />

@@ -17,7 +17,8 @@ import {
   ArrowLeft,
   ScanLine,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Trash2
 } from 'lucide-react';
 import { Transaction, TransactionType } from '../types';
 import { getTodayDateString } from '../utils/finance';
@@ -26,6 +27,9 @@ interface TransactionModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAddTransaction: (transaction: Omit<Transaction, 'id'>) => void;
+  onEditTransaction?: (transaction: Transaction) => void;
+  onDeleteTransaction?: (id: string) => void;
+  editingTransaction?: Transaction | null;
   defaultType?: TransactionType;
   defaultDate?: string;
   onOpenReceiptScanner?: () => void;
@@ -75,6 +79,9 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   isOpen,
   onClose,
   onAddTransaction,
+  onEditTransaction,
+  onDeleteTransaction,
+  editingTransaction,
   defaultType = 'expense',
   defaultDate,
   onOpenReceiptScanner,
@@ -147,32 +154,69 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
-      setType(defaultType);
-      setDescription('');
-      setAmount('');
-      setCategory('');
-      setBankName('');
-      setDate(defaultDate || new Date().toISOString().split('T')[0]);
-      setIsPaid(true);
-      setShowMoreDetails(false);
-      setRepetitionMode('uma_vez');
-      setInstallmentsCount(2);
-      setCurrentInstallment(1);
-      setInstallmentValueType('total');
-      setFrequency('mensal');
-      setCustomDays('30');
-      setIsCategoryPickerOpen(false);
-      setCategorySearch('');
-      setNewCategoryName('');
-      setIsCustomDatePickerOpen(false);
-      const initialDate = defaultDate || new Date().toISOString().split('T')[0];
-      const parts = initialDate.split('-');
-      setCalendarViewDate({
-        year: parseInt(parts[0], 10) || new Date().getFullYear(),
-        month: (parseInt(parts[1], 10) || (new Date().getMonth() + 1)) - 1
-      });
+      if (editingTransaction) {
+        setType(editingTransaction.type);
+        setDescription(editingTransaction.description || '');
+        setAmount(editingTransaction.amount ? editingTransaction.amount.toString() : '');
+        setCategory(editingTransaction.category || '');
+        setBankName(editingTransaction.bankName || '');
+        setDate(editingTransaction.date || defaultDate || new Date().toISOString().split('T')[0]);
+        setIsPaid(editingTransaction.isPaid !== false);
+        const hasExtra = Boolean(editingTransaction.notes || editingTransaction.isRecurring || editingTransaction.recurrence || editingTransaction.installments);
+        setShowMoreDetails(hasExtra);
+        setRepetitionMode(
+          editingTransaction.isRecurring || editingTransaction.recurrence 
+            ? 'recorrente' 
+            : editingTransaction.installments 
+            ? 'parcela' 
+            : 'uma_vez'
+        );
+        if (editingTransaction.installments) {
+          setInstallmentsCount(editingTransaction.installments.total || 2);
+          setCurrentInstallment(editingTransaction.installments.current || 1);
+          setInstallmentValueType(editingTransaction.installments.type || 'total');
+        }
+        if (editingTransaction.recurrence && editingTransaction.recurrence !== 'nenhuma') {
+          setFrequency(editingTransaction.recurrence as any);
+        }
+        setIsCategoryPickerOpen(false);
+        setCategorySearch('');
+        setNewCategoryName('');
+        setIsCustomDatePickerOpen(false);
+        const initialDate = editingTransaction.date || defaultDate || new Date().toISOString().split('T')[0];
+        const parts = initialDate.split('-');
+        setCalendarViewDate({
+          year: parseInt(parts[0], 10) || new Date().getFullYear(),
+          month: (parseInt(parts[1], 10) || (new Date().getMonth() + 1)) - 1
+        });
+      } else {
+        setType(defaultType);
+        setDescription('');
+        setAmount('');
+        setCategory('');
+        setBankName('');
+        setDate(defaultDate || new Date().toISOString().split('T')[0]);
+        setIsPaid(true);
+        setShowMoreDetails(false);
+        setRepetitionMode('uma_vez');
+        setInstallmentsCount(2);
+        setCurrentInstallment(1);
+        setInstallmentValueType('total');
+        setFrequency('mensal');
+        setCustomDays('30');
+        setIsCategoryPickerOpen(false);
+        setCategorySearch('');
+        setNewCategoryName('');
+        setIsCustomDatePickerOpen(false);
+        const initialDate = defaultDate || new Date().toISOString().split('T')[0];
+        const parts = initialDate.split('-');
+        setCalendarViewDate({
+          year: parseInt(parts[0], 10) || new Date().getFullYear(),
+          month: (parseInt(parts[1], 10) || (new Date().getMonth() + 1)) - 1
+        });
+      }
     }
-  }, [defaultType, defaultDate, isOpen]);
+  }, [defaultType, defaultDate, isOpen, editingTransaction]);
 
   // Salvar categorias personalizadas no localStorage
   const handleSaveCustomCategory = (name: string) => {
@@ -261,6 +305,28 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     const today = getTodayDateString();
     const finalDate = date || today;
 
+    if (editingTransaction && onEditTransaction) {
+      onEditTransaction({
+        ...editingTransaction,
+        description: finalDescription,
+        amount: finalAmount,
+        date: finalDate,
+        type,
+        category: finalCategory,
+        bankName: finalBank,
+        isPaid: isPaid,
+        installments: repetitionMode === 'parcela' ? {
+          current: currentInstallment,
+          total: installmentsCount,
+          type: installmentValueType,
+        } : undefined,
+        recurrence: repetitionMode === 'recorrente' ? frequency : undefined,
+        isRecurring: repetitionMode === 'recorrente',
+      });
+      onClose();
+      return;
+    }
+
     onAddTransaction({
       description: finalDescription,
       amount: finalAmount,
@@ -308,18 +374,26 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
           <div className="absolute inset-x-0 text-center pointer-events-none px-14">
             <h3 className="font-extrabold text-slate-900 text-base sm:text-lg">
-              {type === 'income' 
-                ? 'Nova Receita' 
-                : type === 'investment'
-                ? 'Novo Investimento'
-                : 'Novo Gasto'}
+              {editingTransaction
+                ? (editingTransaction.type === 'income' 
+                    ? 'Editar receita' 
+                    : editingTransaction.type === 'investment' 
+                    ? 'Editar investimento' 
+                    : 'Editar gasto')
+                : (type === 'income' 
+                    ? 'Nova Receita' 
+                    : type === 'investment'
+                    ? 'Novo Investimento'
+                    : 'Novo Gasto')}
             </h3>
             <p className="text-xs text-slate-500 truncate mt-0.5">
-              {type === 'income' 
-                ? 'Adicione seus ganhos ou entradas financeiras' 
-                : type === 'investment'
-                ? 'Registre seus aportes e investimentos'
-                : 'Registre seus gastos e contas do mês'}
+              {editingTransaction
+                ? 'Atualize as informações do seu gasto'
+                : (type === 'income' 
+                    ? 'Adicione seus ganhos ou entradas financeiras' 
+                    : type === 'investment'
+                    ? 'Registre seus aportes e investimentos'
+                    : 'Registre seus gastos e contas do mês')}
             </p>
           </div>
 
@@ -733,22 +807,59 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
           </div>
 
-          {/* Action: Ícone de confirmar centralizado e fixo na base do modal, subindo com o teclado */}
-          <div className="p-3.5 sm:p-4 flex items-center justify-center border-t border-slate-100 bg-white/95 backdrop-blur-xs shrink-0 shadow-xs">
-            <button
-              type="submit"
-              id="btn-submit-new-transaction"
-              className={`w-13 h-13 sm:w-14 sm:h-14 rounded-full text-white flex items-center justify-center shadow-lg active:scale-95 hover:scale-105 transition-all cursor-pointer ${
-                type === 'expense'
-                  ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-600/30'
-                  : type === 'investment'
-                  ? 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/30'
-                  : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/30'
-              }`}
-              title="Confirmar lançamento"
-            >
-              <Check className="w-7 h-7 stroke-[3]" />
-            </button>
+          {/* Action: Ícone de confirmar centralizado e fixo na base do modal, ou botões de Salvar/Excluir no modo de edição */}
+          <div className={`p-3.5 sm:p-4 flex items-center border-t border-slate-100 bg-white/95 backdrop-blur-xs shrink-0 shadow-xs ${
+            editingTransaction ? 'justify-between' : 'justify-center'
+          }`}>
+            {editingTransaction && onDeleteTransaction ? (
+              <button
+                type="button"
+                onClick={() => {
+                  if (window.confirm('Tem certeza que deseja excluir este gasto?')) {
+                    onDeleteTransaction(editingTransaction.id);
+                    onClose();
+                  }
+                }}
+                className="px-3.5 py-2.5 rounded-2xl text-rose-600 hover:bg-rose-50 border border-rose-200/80 font-bold text-xs sm:text-sm flex items-center gap-1.5 transition-colors cursor-pointer"
+                title="Excluir este lançamento"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>Excluir</span>
+              </button>
+            ) : null}
+
+            {editingTransaction ? (
+              <button
+                type="submit"
+                id="btn-submit-new-transaction"
+                className={`flex items-center justify-center gap-2 px-6 py-3 rounded-2xl text-white font-black text-sm shadow-md active:scale-95 hover:scale-102 transition-all cursor-pointer ${
+                  type === 'expense'
+                    ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-600/30'
+                    : type === 'investment'
+                    ? 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/30'
+                    : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/30'
+                }`}
+                title="Salvar alterações"
+              >
+                <Check className="w-5 h-5 stroke-[3]" />
+                <span>Salvar Alterações</span>
+              </button>
+            ) : (
+              <button
+                type="submit"
+                id="btn-submit-new-transaction"
+                className={`w-13 h-13 sm:w-14 sm:h-14 rounded-full text-white flex items-center justify-center shadow-lg active:scale-95 hover:scale-105 transition-all cursor-pointer ${
+                  type === 'expense'
+                    ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-600/30'
+                    : type === 'investment'
+                    ? 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/30'
+                    : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/30'
+                }`}
+                title="Confirmar lançamento"
+              >
+                <Check className="w-7 h-7 stroke-[3]" />
+              </button>
+            )}
           </div>
 
         </form>
