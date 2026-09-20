@@ -262,32 +262,55 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     setIsCategoryPickerOpen(false);
   };
 
-  const [viewportBottomOffset, setViewportBottomOffset] = useState<number>(0);
+  const [viewportMetrics, setViewportMetrics] = useState(() => ({
+    height: typeof window !== 'undefined' ? (window.visualViewport?.height || window.innerHeight) : 800,
+    offsetTop: 0,
+    keyboardHeight: 0,
+  }));
 
   useEffect(() => {
     if (!isOpen) return;
 
-    const handleResize = () => {
+    const handleViewportChange = () => {
+      if (typeof window === 'undefined') return;
+
       if (window.visualViewport) {
-        // Quantidade de pixels ocupada pelo teclado virtual na parte inferior da tela
-        const offset = Math.max(0, window.innerHeight - window.visualViewport.height - window.visualViewport.offsetTop);
-        setViewportBottomOffset(offset);
+        const vv = window.visualViewport;
+        const currentHeight = vv.height;
+        const offsetTop = vv.offsetTop || 0;
+        // Altura do teclado é a diferença entre a altura da janela interna e o visualViewport
+        const kb = Math.max(0, window.innerHeight - currentHeight);
+        setViewportMetrics({
+          height: currentHeight,
+          offsetTop,
+          keyboardHeight: kb,
+        });
+      } else {
+        setViewportMetrics({
+          height: window.innerHeight,
+          offsetTop: 0,
+          keyboardHeight: 0,
+        });
       }
     };
 
     if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', handleResize);
-      window.visualViewport.addEventListener('scroll', handleResize);
-      handleResize();
+      window.visualViewport.addEventListener('resize', handleViewportChange);
+      window.visualViewport.addEventListener('scroll', handleViewportChange);
+      handleViewportChange();
     }
+    window.addEventListener('resize', handleViewportChange);
 
     return () => {
       if (window.visualViewport) {
-        window.visualViewport.removeEventListener('resize', handleResize);
-        window.visualViewport.removeEventListener('scroll', handleResize);
+        window.visualViewport.removeEventListener('resize', handleViewportChange);
+        window.visualViewport.removeEventListener('scroll', handleViewportChange);
       }
+      window.removeEventListener('resize', handleViewportChange);
     };
   }, [isOpen]);
+
+  const isKeyboardOpen = viewportMetrics.keyboardHeight > 60;
 
   if (!isOpen) return null;
 
@@ -396,15 +419,25 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs overflow-x-hidden touch-pan-y"
+      className={`fixed inset-0 z-50 flex justify-center p-2 sm:p-4 bg-slate-900/60 backdrop-blur-xs overflow-hidden touch-pan-y ${
+        isKeyboardOpen ? 'items-start pt-2 sm:pt-4' : 'items-center'
+      }`}
       style={{
-        paddingBottom: viewportBottomOffset > 0 ? `${viewportBottomOffset + 12}px` : undefined,
-        transition: 'padding-bottom 0.15s ease-out',
+        top: isKeyboardOpen && viewportMetrics.offsetTop > 0 ? `${viewportMetrics.offsetTop}px` : 0,
+        bottom: isKeyboardOpen ? `${viewportMetrics.keyboardHeight}px` : 0,
+        height: isKeyboardOpen && viewportMetrics.height > 0 ? `${viewportMetrics.height}px` : '100%',
+        transition: 'bottom 0.12s cubic-bezier(0.16, 1, 0.3, 1), height 0.12s cubic-bezier(0.16, 1, 0.3, 1)',
       }}
     >
       <div 
         id="transaction-modal"
-        className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden animate-fadeIn max-h-[92vh] flex flex-col mx-auto transition-colors"
+        className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden animate-fadeIn flex flex-col mx-auto transition-all"
+        style={{
+          maxHeight: isKeyboardOpen && viewportMetrics.height > 0 
+            ? `${Math.max(260, viewportMetrics.height - 12)}px` 
+            : '92vh',
+          height: isKeyboardOpen ? `${Math.max(260, viewportMetrics.height - 12)}px` : undefined,
+        }}
       >
         {/* Header - Título centralizado, com ícone < no canto superior esquerdo e escaner no canto superior direito */}
         <div className="relative p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-800/80 shrink-0">
@@ -466,9 +499,9 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         </div>
 
         {/* Form Body com Scroll suave */}
-        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden min-h-0">
+        <form onSubmit={handleSubmit} className="relative flex flex-col flex-1 overflow-hidden min-h-0">
           
-          <div className="p-5 sm:p-6 space-y-4 overflow-y-auto overflow-x-hidden flex-1">
+          <div className="p-5 sm:p-6 space-y-4 overflow-y-auto overflow-x-hidden flex-1 pb-24">
           
           {/* Botão de Deslizar: PAGO (para gasto) / RECEBIDO (para receita) */}
           <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200/90 dark:border-slate-700/80 rounded-2xl">
@@ -510,6 +543,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               <input
                 type="number"
                 step="0.01"
+                inputMode="decimal"
                 required
                 placeholder="0,00"
                 value={amount}
@@ -887,59 +921,38 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
           </div>
 
-          {/* Action: Ícone de confirmar centralizado e fixo na base do modal, ou botões de Salvar/Excluir no modo de edição */}
-          <div className={`p-3.5 sm:p-4 flex items-center border-t border-slate-100 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs shrink-0 shadow-xs transition-colors ${
-            editingTransaction ? 'justify-between' : 'justify-center'
-          }`}>
+          {/* Action: Ícone circular flutuante idêntico ao da imagem, sem retângulo ou barra, repousando acima do teclado */}
+          <div className="absolute bottom-3 sm:bottom-4 inset-x-0 flex items-center justify-center pointer-events-none z-30 px-6">
             {editingTransaction && onDeleteTransaction ? (
               <button
                 type="button"
                 onClick={() => {
-                  if (window.confirm('Tem certeza que deseja excluir este gasto?')) {
+                  if (window.confirm('Tem certeza que deseja excluir este lançamento?')) {
                     onDeleteTransaction(editingTransaction.id);
                     onClose();
                   }
                 }}
-                className="px-3.5 py-2.5 rounded-2xl text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-rose-200/80 dark:border-rose-900/60 font-bold text-xs sm:text-sm flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="pointer-events-auto absolute left-6 w-11 h-11 rounded-full text-rose-600 dark:text-rose-400 bg-white/95 dark:bg-slate-800/95 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 shadow-lg flex items-center justify-center transition-all cursor-pointer hover:scale-105 active:scale-95"
                 title="Excluir este lançamento"
               >
-                <Trash2 className="w-4 h-4" />
-                <span>Excluir</span>
+                <Trash2 className="w-5 h-5" />
               </button>
             ) : null}
 
-            {editingTransaction ? (
-              <button
-                type="submit"
-                id="btn-submit-new-transaction"
-                className={`flex items-center justify-center gap-2 px-6 py-3 rounded-2xl text-white font-black text-sm shadow-md transition-colors cursor-pointer ${
-                  type === 'expense'
-                    ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-600/30'
-                    : type === 'investment'
-                    ? 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/30'
-                    : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/30'
-                }`}
-                title="Salvar alterações"
-              >
-                <Check className="w-5 h-5 stroke-[3]" />
-                <span>Salvar Alterações</span>
-              </button>
-            ) : (
-              <button
-                type="submit"
-                id="btn-submit-new-transaction"
-                className={`w-13 h-13 sm:w-14 sm:h-14 rounded-full text-white flex items-center justify-center shadow-lg transition-colors cursor-pointer ${
-                  type === 'expense'
-                    ? 'bg-rose-600 hover:bg-rose-700 shadow-rose-600/30'
-                    : type === 'investment'
-                    ? 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/30'
-                    : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/30'
-                }`}
-                title="Confirmar lançamento"
-              >
-                <Check className="w-7 h-7 stroke-[3]" />
-              </button>
-            )}
+            <button
+              type="submit"
+              id="btn-submit-new-transaction"
+              className={`pointer-events-auto w-14 h-14 rounded-full flex items-center justify-center shadow-xl transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95 ${
+                type === 'expense'
+                  ? 'bg-[#E5536D] hover:bg-[#D4415C] text-white shadow-rose-900/30 ring-4 ring-white/60 dark:ring-slate-900/60'
+                  : type === 'investment'
+                  ? 'bg-[#5B67F6] hover:bg-[#4955E4] text-white shadow-indigo-900/30 ring-4 ring-white/60 dark:ring-slate-900/60'
+                  : 'bg-[#40B5A6] hover:bg-[#349E91] text-white shadow-teal-900/30 ring-4 ring-white/60 dark:ring-slate-900/60'
+              }`}
+              title={editingTransaction ? 'Salvar alterações' : `Confirmar ${type === 'expense' ? 'Saída' : type === 'investment' ? 'Investimento' : 'Entrada'}`}
+            >
+              <Check className="w-7 h-7 text-white stroke-[2.75]" />
+            </button>
           </div>
 
         </form>
