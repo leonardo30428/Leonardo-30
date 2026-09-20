@@ -97,19 +97,24 @@ export const MonthlyBalanceTab: React.FC<MonthlyBalanceTabProps> = ({
     };
   }, [monthTransactions]);
 
-  // Percentuais de Entrada, Saída e Investimento sobre o total movimentado no mês
-  const totalMovement = monthTotals.income + monthTotals.expenses + monthTotals.investments;
-  const incomePercent = totalMovement > 0 ? (monthTotals.income / totalMovement) * 100 : 0;
-  const expensePercent = totalMovement > 0 ? (monthTotals.expenses / totalMovement) * 100 : 0;
-  const investmentPercent = totalMovement > 0 ? (monthTotals.investments / totalMovement) * 100 : 0;
+  // Percentuais com base nas Entradas (Renda = 100%)
+  // Saídas e Investimentos são calculados como porcentagem da renda
+  const incomePercent = monthTotals.income > 0 ? 100 : 0;
+  const expensePercent = monthTotals.income > 0 
+    ? (monthTotals.expenses / monthTotals.income) * 100 
+    : (monthTotals.expenses > 0 ? 100 : 0);
+  const investmentPercent = monthTotals.income > 0 
+    ? (monthTotals.investments / monthTotals.income) * 100 
+    : 0;
 
   const formatPercent = (pct: number) => {
     if (pct <= 0) return '0%';
     return `${pct.toFixed(pct % 1 === 0 ? 0 : 1).replace('.', ',')}%`;
   };
 
-  // Altura máxima para o gráfico de barras verticais em porcentagem
-  const maxPercent = Math.max(incomePercent, expensePercent, investmentPercent, 1);
+  // Altura máxima para o gráfico de barras verticais em porcentagem:
+  // Considera 100% como base padrão, expandindo caso gastos ou investimentos excedam a renda
+  const maxPercent = Math.max(incomePercent, expensePercent, investmentPercent, 100);
 
   // Calcula a altura percentual da cápsula arredondada baseada na porcentagem
   const getBarHeightPercent = (pct: number) => {
