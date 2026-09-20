@@ -1,8 +1,7 @@
 import React from 'react';
 import { 
   ChevronLeft,
-  Plus,
-  FileText
+  Plus
 } from 'lucide-react';
 import { Transaction } from '../types';
 import { formatCurrency, getTodayDateString } from '../utils/finance';
@@ -99,10 +98,8 @@ export const ContasTab: React.FC<ContasTabProps> = ({
         {/* Lado Direito: No topo a Data ("Hoje" ou "16 de set") e Embaixo da Data o Valor */}
         <div className="flex items-center shrink-0 text-right">
           <div className="flex flex-col items-end">
-            {/* Data: "Hoje" ou data como "16 de set" */}
-            <span className={`text-[11px] sm:text-xs font-bold ${
-              dateText === 'Hoje' ? 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 px-1.5 py-0.5 rounded-md border border-emerald-200/60 dark:border-emerald-800/60' : 'text-slate-400 dark:text-slate-500'
-            }`}>
+            {/* Data: "Hoje" ou data como "16 de set" - mesma cor das datas */}
+            <span className="text-[11px] sm:text-xs font-semibold text-slate-500 dark:text-slate-400">
               {dateText}
             </span>
 
@@ -143,20 +140,8 @@ export const ContasTab: React.FC<ContasTabProps> = ({
           </h2>
         </div>
 
-        {/* Lado Direito: Relatório PDF + Adicionar */}
+        {/* Lado Direito: Apenas Adicionar (sem botão PDF em transações do mês) */}
         <div className="flex items-center gap-2 z-10">
-          {onOpenMonthlyPdfReport && (
-            <button
-              type="button"
-              onClick={onOpenMonthlyPdfReport}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 hover:text-emerald-700 dark:hover:text-emerald-400 bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 border border-slate-200/80 dark:border-slate-700 shadow-2xs cursor-pointer active:scale-95 transition-all"
-              title="Gerar e enviar relatório do mês via PDF"
-            >
-              <FileText className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <span className="hidden md:inline">Relatório PDF</span>
-            </button>
-          )}
-
           <button
             type="button"
             onClick={() => onOpenNewTransaction(isPagar ? 'expense' : 'income')}

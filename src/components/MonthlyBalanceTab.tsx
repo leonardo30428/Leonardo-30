@@ -1,46 +1,25 @@
 import React, { useMemo, useState } from 'react';
 import { 
-  Scale, 
+  ChevronLeft, 
+  ChevronRight, 
   TrendingUp, 
   TrendingDown, 
-  PiggyBank, 
-  Wallet, 
-  Calendar, 
-  ArrowRight, 
-  CheckCircle2, 
-  AlertTriangle,
-  Sparkles,
-  ArrowUpRight,
-  ArrowDownRight,
-  Copy,
-  ShieldCheck,
-  Link2,
-  Check,
-  X
+  ArrowLeftRight,
+  CheckCircle2,
+  AlertCircle
 } from 'lucide-react';
-import { Transaction } from '../types';
-import { formatCurrency, formatDateBR } from '../utils/finance';
+import { Transaction, BankAccount } from '../types';
+import { formatCurrency, calculateSummary } from '../utils/finance';
 import { getMonthKey } from '../utils/dateUtils';
-
-interface MonthData {
-  name: string;
-  key: string; // e.g. '2026-08', '2026-09', '2026-10'
-  income: number;
-  expenses: number;
-  investments: number;
-  surplus: number;
-  savingsRate: number;
-  expenseRate: number;
-  txCount: number;
-  status: 'healthy' | 'warning' | 'alert';
-}
+import { getCategoryVisual } from '../utils/categoryIcons';
 
 interface MonthlyBalanceTabProps {
   transactions: Transaction[];
   months: string[];
   currentMonth: string;
+  bankAccounts?: BankAccount[];
   onSelectMonth: (monthName: string) => void;
-  onGoToPlanning: () => void;
+  onGoToPlanning?: () => void;
   onCopyMonthContas?: (fromMonthKey: string, toMonthKey: string) => void;
 }
 
@@ -49,740 +28,625 @@ export const MonthlyBalanceTab: React.FC<MonthlyBalanceTabProps> = ({
   months,
   currentMonth,
   onSelectMonth,
-  onGoToPlanning,
-  onCopyMonthContas,
 }) => {
-  // Calculate stats for all available months
-  const monthsData: MonthData[] = useMemo(() => {
-    return months.map((mName) => {
+  // Estado para alternar entre "Saídas" e "Entradas" por categoria
+  const [categoryViewType, setCategoryViewType] = useState<'expense' | 'income'>('expense');
+
+  // Navegação do mês: < setembro 2026 > (sem parênteses)
+  const currentMonthIdx = months.indexOf(currentMonth);
+  const handlePrevMonth = () => {
+    if (currentMonthIdx > 0) {
+      onSelectMonth(months[currentMonthIdx - 1]);
+    } else {
+      onSelectMonth(months[months.length - 1]);
+    }
+  };
+
+  const handleNextMonth = () => {
+    if (currentMonthIdx < months.length - 1) {
+      onSelectMonth(months[currentMonthIdx + 1]);
+    } else {
+      onSelectMonth(months[0]);
+    }
+  };
+
+  // Chave do mês selecionado (ex: "2026-09")
+  const currentKey = useMemo(() => getMonthKey(currentMonth), [currentMonth]);
+
+  // Transações do mês ativo
+  const monthTransactions = useMemo(() => {
+    return transactions.filter((t) => t.date && t.date.startsWith(currentKey));
+  }, [transactions, currentKey]);
+
+  // 1. Cálculos de Entrada, Saída, Investimento e Balanço do Mês
+  const monthTotals = useMemo(() => {
+    let income = 0;
+    let expenses = 0;
+    let investments = 0;
+
+    monthTransactions.forEach((t) => {
+      if (t.type === 'income') income += t.amount;
+      else if (t.type === 'investment') investments += t.amount;
+      else expenses += t.amount;
+    });
+
+    const balance = income - expenses - investments;
+
+    let statusText = 'Equilibrado';
+    let statusBadgeColor = 'text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700';
+
+    if (balance > 0) {
+      statusText = 'No Azul (Superávit)';
+      statusBadgeColor = 'text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-800';
+    } else if (balance < 0) {
+      statusText = 'Déficit no Mês';
+      statusBadgeColor = 'text-rose-800 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/60 border-rose-200 dark:border-rose-800';
+    }
+
+    return {
+      income,
+      expenses,
+      investments,
+      balance,
+      statusText,
+      statusBadgeColor,
+    };
+  }, [monthTransactions]);
+
+  // Altura máxima para o gráfico de barras verticais ("gráfico em pé")
+  const maxBarValue = Math.max(monthTotals.income, monthTotals.expenses, monthTotals.investments, 1);
+
+  // Calcula a altura percentual da cápsula arredondada sem achatar
+  const getBarHeightPercent = (val: number) => {
+    if (val <= 0) return 0;
+    const pct = (val / maxBarValue) * 100;
+    return Math.min(Math.max(pct, 12), 100);
+  };
+
+  // 2. Agrupamento por Categoria para o Gráfico em Círculo e Lista de Categorias
+  const categoriesData = useMemo(() => {
+    const map: Record<string, number> = {};
+
+    monthTransactions
+      .filter((t) => t.type === categoryViewType)
+      .forEach((t) => {
+        const cat = t.category || (categoryViewType === 'expense' ? 'Outros Gastos' : 'Outras Entradas');
+        map[cat] = (map[cat] || 0) + t.amount;
+      });
+
+    const list = Object.entries(map).map(([name, amount]) => ({
+      name,
+      amount,
+    }));
+
+    list.sort((a, b) => b.amount - a.amount);
+
+    const total = list.reduce((sum, item) => sum + item.amount, 0);
+
+    const distinctColors = [
+      '#10b981', // emerald
+      '#f43f5e', // rose
+      '#6366f1', // indigo
+      '#f59e0b', // amber
+      '#06b6d4', // cyan
+      '#8b5cf6', // purple
+      '#ec4899', // pink
+      '#14b8a6', // teal
+      '#3b82f6', // blue
+      '#84cc16', // lime
+    ];
+
+    return {
+      items: list.map((item, index) => ({
+        ...item,
+        percent: total > 0 ? (item.amount / total) * 100 : 0,
+        color: distinctColors[index % distinctColors.length],
+      })),
+      total,
+    };
+  }, [monthTransactions, categoryViewType]);
+
+  // 3. Cálculos de Patrimônio (12 Meses) - CONTABILIZA SOMENTE O "TOTAL DISPONÍVEL" DA TELA INICIAL
+  const patrimonioData = useMemo(() => {
+    const currentIdx = months.indexOf(currentMonth);
+    const startIdx = Math.max(0, currentIdx - 11);
+    const selectedMonths = months.slice(startIdx, currentIdx + 1);
+
+    // Para cada mês dos 12 meses, contabiliza estritamente o "total disponível" da tela inicial
+    const monthlySeries = selectedMonths.map((mName) => {
       const key = getMonthKey(mName);
-      const monthTxs = transactions.filter((t) => t.date && t.date.startsWith(key));
+      const txs = transactions.filter((t) => t.date && t.date.startsWith(key));
+      const summary = calculateSummary(txs);
+      const totalDisponivel = summary.balance; // IDÊNTICO ao "Total disponível" da tela inicial
 
-      const income = monthTxs
-        .filter((t) => t.type === 'income')
-        .reduce((sum, t) => sum + t.amount, 0);
-
-      const expenses = monthTxs
-        .filter((t) => t.type === 'expense')
-        .reduce((sum, t) => sum + t.amount, 0);
-
-      const investments = monthTxs
-        .filter((t) => t.type === 'investment')
-        .reduce((sum, t) => sum + t.amount, 0);
-
-      const surplus = income - expenses - investments;
-      const expenseRate = income > 0 ? (expenses / income) * 100 : 0;
-      const savingsRate = income > 0 ? (investments / income) * 100 : 0;
-
-      let status: 'healthy' | 'warning' | 'alert' = 'healthy';
-      if (surplus < 0) {
-        status = 'alert';
-      } else if (expenseRate > 75 || savingsRate < 10) {
-        status = 'warning';
-      }
+      const [mOnly] = mName.split(' ');
+      const shortName = mOnly.slice(0, 3).toLowerCase();
 
       return {
         name: mName,
-        key,
-        income,
-        expenses,
-        investments,
-        surplus,
-        savingsRate,
-        expenseRate,
-        txCount: monthTxs.length,
-        status,
+        shortName,
+        totalDisponivel,
       };
     });
-  }, [months, transactions]);
 
-  // Find September and October for side-by-side comparison
-  const setMonth = monthsData.find((m) => m.name.includes('Setembro'));
-  const outMonth = monthsData.find((m) => m.name.includes('Outubro'));
+    // Total disponível do mês ativo (igual ao card da tela inicial)
+    const activeSummary = calculateSummary(monthTransactions);
+    const saldoTotal = activeSummary.balance;
 
-  // Calculate Max value for relative chart bars
-  const maxVal = useMemo(() => {
-    return Math.max(
-      ...monthsData.flatMap((m) => [m.income, m.expenses, m.investments]),
-      1000
-    );
-  }, [monthsData]);
+    // Variação em relação ao início da série de 12 meses
+    const initialDisponivel = monthlySeries.length > 0 ? monthlySeries[0].totalDisponivel : saldoTotal;
+    const diff = saldoTotal - initialDisponivel;
+    const percentage = initialDisponivel !== 0
+      ? (diff / Math.abs(initialDisponivel)) * 100
+      : (saldoTotal > 0 ? 100 : (saldoTotal < 0 ? -100 : 0));
 
-  // Total surplus accumulated across all months
-  const totalAccumulatedSurplus = useMemo(() => {
-    return monthsData.reduce((acc, m) => acc + m.surplus, 0);
-  }, [monthsData]);
+    // Valor máximo e mínimo para cálculo de alturas
+    const allValues = monthlySeries.map((m) => m.totalDisponivel);
+    const maxVal = Math.max(...allValues, 100);
+    const minVal = Math.min(...allValues, 0);
 
-  const totalAccumulatedInvested = useMemo(() => {
-    return monthsData.reduce((acc, m) => acc + m.investments, 0);
-  }, [monthsData]);
-
-  // Parâmetros do mês atualmente selecionado
-  const activeMonthKey = getMonthKey(currentMonth);
-  const activeMonthTxs = useMemo(() => {
-    return transactions.filter((t) => t.date && t.date.startsWith(activeMonthKey));
-  }, [transactions, activeMonthKey]);
-
-  const activeIncomeTxs = useMemo(() => activeMonthTxs.filter((t) => t.type === 'income'), [activeMonthTxs]);
-  const activeExpenseTxs = useMemo(() => activeMonthTxs.filter((t) => t.type === 'expense'), [activeMonthTxs]);
-  const activeInvestmentTxs = useMemo(() => activeMonthTxs.filter((t) => t.type === 'investment'), [activeMonthTxs]);
-
-  const activeTotalIncome = activeIncomeTxs.reduce((s, t) => s + t.amount, 0);
-  const activeTotalExpense = activeExpenseTxs.reduce((s, t) => s + t.amount, 0);
-  const activeTotalInvestments = activeInvestmentTxs.reduce((s, t) => s + t.amount, 0);
-  const activeSurplus = activeTotalIncome - activeTotalExpense - activeTotalInvestments;
-
-  const activeExpensePct = activeTotalIncome > 0 ? (activeTotalExpense / activeTotalIncome) * 100 : 0;
-  const activeInvestmentPct = activeTotalIncome > 0 ? (activeTotalInvestments / activeTotalIncome) * 100 : 0;
-  const activeSurplusPct = activeTotalIncome > 0 ? (activeSurplus / activeTotalIncome) * 100 : 0;
-
-  const [rankingModalType, setRankingModalType] = useState<'income' | 'expense' | 'investment' | null>(null);
-
-  const currentRankingItems = useMemo(() => {
-    if (!rankingModalType) return [];
-    const list = rankingModalType === 'income' 
-      ? activeIncomeTxs 
-      : rankingModalType === 'expense' 
-      ? activeExpenseTxs 
-      : activeInvestmentTxs;
-    return [...list].sort((a, b) => b.amount - a.amount);
-  }, [rankingModalType, activeIncomeTxs, activeExpenseTxs, activeInvestmentTxs]);
+    return {
+      saldoTotal,
+      diff,
+      percentage,
+      monthlySeries,
+      maxVal,
+      minVal,
+    };
+  }, [months, currentMonth, transactions, monthTransactions]);
 
   return (
-    <div className="space-y-6 animate-fadeIn pb-8">
-      {/* Top Banner */}
-      <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-slate-700/50">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-emerald-400 text-xs font-bold mb-3 backdrop-blur-xs border border-white/10">
-              <Scale className="w-3.5 h-3.5" />
-              <span>Balanço Comparativo Entre os Meses</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
-              Balanceamento dos Meses
-            </h2>
-            <p className="text-slate-300 text-xs sm:text-sm mt-1 max-w-2xl leading-relaxed">
-              Monitore a transição financeira de Setembro de 2026 para Outubro de 2026 e verifique a sustentabilidade do seu orçamento, saldo acumulado e evolução dos investimentos.
-            </p>
-          </div>
+    <div className="space-y-6 animate-fadeIn pb-12">
 
-          {/* Quick Metrics */}
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 shrink-0">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
-              <span className="text-[10px] font-bold tracking-wider text-slate-300 block">
-                Investimentos Totais
-              </span>
-              <span className="text-lg sm:text-2xl font-black text-indigo-300 mt-1 block">
-                {formatCurrency(totalAccumulatedInvested)}
-              </span>
-              <span className="text-[11px] text-emerald-300 font-medium flex items-center gap-1 mt-0.5">
-                <Sparkles className="w-3 h-3" />
-                Patrimônio em construção
-              </span>
-            </div>
+      {/* ========================================================================= */}
+      {/* 1. SEÇÃO ANÁLISE / BALANÇO DO MÊS COM GRÁFICO EM PÉ 100% ARREDONDADO      */}
+      {/* ========================================================================= */}
+      <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-6 border border-slate-200/90 dark:border-slate-800 shadow-2xs transition-colors">
+        
+        {/* Cabeçalho: "Análise" à esquerda e "< setembro 2026 >" à direita (sem parênteses) */}
+        <div className="flex items-center justify-between gap-2 pb-4 border-b border-slate-100 dark:border-slate-800">
+          <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+            Análise
+          </h2>
 
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/10">
-              <span className="text-[10px] font-bold tracking-wider text-slate-300 block">
-                Sobra Líquida Acumulada
-              </span>
-              <span className={`text-lg sm:text-2xl font-black mt-1 block ${totalAccumulatedSurplus >= 0 ? 'text-emerald-300' : 'text-rose-300'}`}>
-                {formatCurrency(totalAccumulatedSurplus)}
-              </span>
-              <span className="text-[11px] text-slate-300 font-medium block mt-0.5">
-                Em {monthsData.length} meses analisados
-              </span>
-            </div>
+          {/* Navegação do mês: < setembro 2026 > (sem parênteses) */}
+          <div className="flex items-center gap-1.5 text-xs sm:text-sm font-extrabold text-slate-700 dark:text-slate-300 bg-slate-100/80 dark:bg-slate-800/90 px-3 py-1.5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-2xs">
+            <button
+              type="button"
+              onClick={handlePrevMonth}
+              className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg transition-colors cursor-pointer"
+              title="Mês anterior"
+            >
+              <ChevronLeft className="w-4 h-4 stroke-[2.5]" />
+            </button>
+
+            <span className="px-2 text-slate-900 dark:text-white capitalize">
+              {currentMonth.toLowerCase()}
+            </span>
+
+            <button
+              type="button"
+              onClick={handleNextMonth}
+              className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg transition-colors cursor-pointer"
+              title="Próximo mês"
+            >
+              <ChevronRight className="w-4 h-4 stroke-[2.5]" />
+            </button>
           </div>
         </div>
-      </div>
 
-      {/* Destaque Setembro vs Outubro de 2026 */}
-      {setMonth && outMonth && (
-        <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-7 border border-slate-200/90 dark:border-slate-800 shadow-sm transition-colors">
-          <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800 mb-5">
-            <div>
-              <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                <span>Comparativo Direto: Setembro 2026 vs Outubro 2026</span>
-                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-md bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800">
-                  Em Destaque
-                </span>
-              </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                Veja o impacto das contas de Setembro para Outubro de 2026
-              </p>
-            </div>
-            
-            {onCopyMonthContas && (
-              <button
-                onClick={() => onCopyMonthContas('2026-09', '2026-10')}
-                className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold transition-all border border-slate-200/80 dark:border-slate-700 cursor-pointer"
-                title="Replicar contas fixas de Setembro para Outubro"
-              >
-                <Copy className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
-                <span>Replicar Contas de Setembro para Outubro</span>
-              </button>
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {/* Card Setembro */}
-            <div className={`p-5 rounded-2xl border transition-all ${
-              currentMonth === setMonth.name 
-                ? 'bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-700 ring-2 ring-emerald-200 dark:ring-emerald-800' 
-                : 'bg-slate-50/80 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
-            }`}>
-              <div className="flex items-center justify-between pb-3 border-b border-slate-200/60 dark:border-slate-700/60">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-xs">
-                    09
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-slate-900 dark:text-white text-sm">Setembro de 2026</h4>
-                    <span className="text-[11px] text-slate-500 dark:text-slate-400">{setMonth.txCount} contas e transações</span>
-                  </div>
-                </div>
-                <button
-                  onClick={() => {
-                    onSelectMonth(setMonth.name);
-                    onGoToPlanning();
-                  }}
-                  className="px-3 py-1.5 text-xs font-bold rounded-xl bg-white dark:bg-slate-800 hover:bg-emerald-600 dark:hover:bg-emerald-600 hover:text-white dark:hover:text-white text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700 transition-all flex items-center gap-1 shadow-2xs cursor-pointer"
-                >
-                  <span>Abrir Contas</span>
-                  <ArrowRight className="w-3 h-3" />
-                </button>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2 mt-4 text-center">
-                <div className="p-2.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800">
-                  <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 block">Renda</span>
-                  <span className="text-xs sm:text-sm font-black text-slate-900 dark:text-white">{formatCurrency(setMonth.income)}</span>
-                </div>
-                <div className="p-2.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800">
-                  <span className="text-[10px] font-bold text-rose-700 dark:text-rose-400 block">Despesas</span>
-                  <span className="text-xs sm:text-sm font-black text-slate-900 dark:text-white">{formatCurrency(setMonth.expenses)}</span>
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 block">{setMonth.expenseRate.toFixed(0)}% da renda</span>
-                </div>
-                <div className="p-2.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800">
-                  <span className="text-[10px] font-bold text-indigo-700 dark:text-indigo-400 block">Investido</span>
-                  <span className="text-xs sm:text-sm font-black text-indigo-900 dark:text-indigo-200">{formatCurrency(setMonth.investments)}</span>
-                  <span className="text-[10px] text-indigo-500 dark:text-indigo-400 block">{setMonth.savingsRate.toFixed(0)}% aporte</span>
-                </div>
-              </div>
-
-              <div className="mt-3 pt-3 border-t border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Sobra Livre do Mês:</span>
-                <span className={`text-sm font-black ${setMonth.surplus >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
-                  {formatCurrency(setMonth.surplus)}
-                </span>
-              </div>
-            </div>
-
-            {/* Card Outubro */}
-            <div className={`p-5 rounded-2xl border transition-all ${
-              currentMonth === outMonth.name 
-                ? 'bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-300 dark:border-emerald-700 ring-2 ring-emerald-200 dark:ring-emerald-800' 
-                : 'bg-slate-50/80 dark:bg-slate-800/60 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
-            }`}>
-              <div className="flex items-center justify-between pb-3 border-b border-slate-200/60 dark:border-slate-700/60">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-xs">
-                    10
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-slate-900 dark:text-white text-sm">Outubro de 2026</h4>
-                    <span className="text-[11px] text-slate-500 dark:text-slate-400">{outMonth.txCount} contas e transações</span>
-                  </div>
-                </div>
-                <button
-                  onClick={() => {
-                    onSelectMonth(outMonth.name);
-                    onGoToPlanning();
-                  }}
-                  className="px-3 py-1.5 text-xs font-bold rounded-xl bg-white dark:bg-slate-800 hover:bg-indigo-600 dark:hover:bg-indigo-600 hover:text-white dark:hover:text-white text-indigo-800 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700 transition-all flex items-center gap-1 shadow-2xs cursor-pointer"
-                >
-                  <span>Abrir Contas</span>
-                  <ArrowRight className="w-3 h-3" />
-                </button>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2 mt-4 text-center">
-                <div className="p-2.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800">
-                  <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 block">Renda</span>
-                  <span className="text-xs sm:text-sm font-black text-slate-900 dark:text-white">{formatCurrency(outMonth.income)}</span>
-                </div>
-                <div className="p-2.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800">
-                  <span className="text-[10px] font-bold text-rose-700 dark:text-rose-400 block">Despesas</span>
-                  <span className="text-xs sm:text-sm font-black text-slate-900 dark:text-white">{formatCurrency(outMonth.expenses)}</span>
-                  <span className="text-[10px] text-slate-400 dark:text-slate-500 block">{outMonth.expenseRate.toFixed(0)}% da renda</span>
-                </div>
-                <div className="p-2.5 bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800">
-                  <span className="text-[10px] font-bold text-indigo-700 dark:text-indigo-400 block">Investido</span>
-                  <span className="text-xs sm:text-sm font-black text-indigo-900 dark:text-indigo-200">{formatCurrency(outMonth.investments)}</span>
-                  <span className="text-[10px] text-indigo-500 dark:text-indigo-400 block">{outMonth.savingsRate.toFixed(0)}% aporte</span>
-                </div>
-              </div>
-
-              <div className="mt-3 pt-3 border-t border-slate-200/60 dark:border-slate-700/60 flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Sobra Livre do Mês:</span>
-                <span className={`text-sm font-black ${outMonth.surplus >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
-                  {formatCurrency(outMonth.surplus)}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 2. QUADRO DE PARÂMETROS FINANCEIROS (Exclusivo da aba Comparativo) */}
-      <div 
-        id="comparativo-parameters-panel" 
-        className="bg-slate-50/90 dark:bg-slate-800/80 rounded-3xl p-5 sm:p-7 border border-slate-200/90 dark:border-slate-700 space-y-5 transition-colors"
-      >
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200/80 dark:border-slate-700">
-          <div>
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-              <h3 className="text-base sm:text-lg font-black tracking-tight text-slate-900 dark:text-white">
-                Quadro de Parâmetros Financeiros ({currentMonth})
-              </h3>
-            </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-              Análise dos 4 pilares orçamentários (Renda, Despesas, Investimentos e Sobra) com ranking do maior ao menor
-            </p>
-          </div>
-
-          <span className="text-xs font-bold text-emerald-800 dark:text-emerald-200 bg-emerald-100/90 dark:bg-emerald-950/60 px-3 py-1.5 rounded-xl self-start sm:self-auto flex items-center gap-1.5 border border-emerald-200 dark:border-emerald-800">
-            <Check className="w-3.5 h-3.5 stroke-[2.5]" />
-            Parâmetros Ativos
-          </span>
-        </div>
-
-        {/* Os 4 Cards de Parâmetros */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+        {/* Em baixo: Gráfico em pé arredondado à esquerda e Balanço do mês à direita */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-5 items-center">
           
-          {/* Card 1: Renda Principal */}
-          <div 
-            onClick={() => setRankingModalType('income')}
-            className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-emerald-200 dark:border-emerald-800/60 shadow-2xs cursor-pointer hover:border-emerald-400 dark:hover:border-emerald-600 hover:shadow-md transition-all group flex flex-col justify-between"
-            role="button"
-            tabIndex={0}
-            title="Clique para ver os parâmetros com as maiores receitas até as menores"
-          >
-            <div>
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-extrabold tracking-wider text-emerald-800 dark:text-emerald-300">
-                  1. Renda Principal
+          {/* Gráfico em pé (colunas verticais) estilo cápsula totalmente arredondada */}
+          <div className="bg-slate-50/80 dark:bg-slate-800/50 p-5 rounded-3xl border border-slate-200/70 dark:border-slate-700/60 flex flex-col items-center justify-end min-h-[230px]">
+            <div className="w-full flex items-end justify-around gap-2 sm:gap-4 h-48 pt-4">
+              
+              {/* Coluna 1: Entrada - Cápsula Arredondada com valor completo incluindo centavos */}
+              <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
+                <span className="text-[11px] sm:text-xs font-black text-emerald-700 dark:text-emerald-400 text-center whitespace-nowrap leading-tight">
+                  {formatCurrency(monthTotals.income)}
                 </span>
-                <span className="text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 px-2 py-0.5 rounded-full">
-                  100% Base
-                </span>
-              </div>
-              <div className="mt-2">
-                <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-                  {formatCurrency(activeTotalIncome)}
+                <div className="w-8 sm:w-9 bg-slate-200/80 dark:bg-slate-700/80 rounded-full h-36 flex items-end p-1 shadow-inner transition-all">
+                  <div
+                    style={{ height: `${getBarHeightPercent(monthTotals.income)}%` }}
+                    className="w-full bg-emerald-500 dark:bg-emerald-400 rounded-full transition-all duration-500 shadow-sm"
+                  />
                 </div>
-                <p className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium mt-1 flex items-center gap-1">
-                  <Link2 className="w-3 h-3" />
-                  {activeIncomeTxs.length > 0 
-                    ? `${activeIncomeTxs.length} entrada(s)`
-                    : 'Nenhuma entrada'}
-                </p>
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                  Entrada
+                </span>
               </div>
-            </div>
 
-            <div className="mt-2.5 pt-2 border-t border-emerald-100/80 dark:border-emerald-900/40 flex items-center justify-between text-[11px] font-bold text-emerald-700 dark:text-emerald-400 group-hover:text-emerald-900 dark:group-hover:text-emerald-200 transition-colors">
-              <span>Ver Ranking</span>
-              <span className="flex items-center gap-0.5">Maiores →</span>
+              {/* Coluna 2: Saída - Cápsula Arredondada com valor completo incluindo centavos */}
+              <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
+                <span className="text-[11px] sm:text-xs font-black text-rose-700 dark:text-rose-400 text-center whitespace-nowrap leading-tight">
+                  {formatCurrency(monthTotals.expenses)}
+                </span>
+                <div className="w-8 sm:w-9 bg-slate-200/80 dark:bg-slate-700/80 rounded-full h-36 flex items-end p-1 shadow-inner transition-all">
+                  <div
+                    style={{ height: `${getBarHeightPercent(monthTotals.expenses)}%` }}
+                    className="w-full bg-rose-500 dark:bg-rose-400 rounded-full transition-all duration-500 shadow-sm"
+                  />
+                </div>
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                  Saída
+                </span>
+              </div>
+
+              {/* Coluna 3: Investimento - Cápsula Arredondada com valor completo incluindo centavos */}
+              <div className="flex flex-col items-center gap-2 flex-1 min-w-0">
+                <span className="text-[11px] sm:text-xs font-black text-indigo-700 dark:text-indigo-400 text-center whitespace-nowrap leading-tight">
+                  {formatCurrency(monthTotals.investments)}
+                </span>
+                <div className="w-8 sm:w-9 bg-slate-200/80 dark:bg-slate-700/80 rounded-full h-36 flex items-end p-1 shadow-inner transition-all">
+                  <div
+                    style={{ height: `${getBarHeightPercent(monthTotals.investments)}%` }}
+                    className="w-full bg-indigo-500 dark:bg-indigo-400 rounded-full transition-all duration-500 shadow-sm"
+                  />
+                </div>
+                <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                  Investimento
+                </span>
+              </div>
+
             </div>
           </div>
 
-          {/* Card 2: Despesas */}
-          <div 
-            onClick={() => setRankingModalType('expense')}
-            className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-rose-200 dark:border-rose-800/60 shadow-2xs cursor-pointer hover:border-rose-400 dark:hover:border-rose-600 hover:shadow-md transition-all group flex flex-col justify-between"
-            role="button"
-            tabIndex={0}
-            title="Clique para ver os parâmetros com as maiores despesas até as menores"
-          >
-            <div>
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-extrabold tracking-wider text-rose-800 dark:text-rose-300">
-                  2. Despesas
-                </span>
-                <span className="text-[10px] font-bold bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300 px-2 py-0.5 rounded-full">
-                  {activeExpensePct.toFixed(1)}% da renda
-                </span>
-              </div>
-              <div className="mt-2">
-                <div className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-                  {formatCurrency(activeTotalExpense)}
-                </div>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-1">
-                  {activeTotalExpense > 0 ? (
-                    activeExpensePct <= 70 ? '✅ Saudável (≤70%)' : '⚠️ Acima de 70%'
-                  ) : 'Nenhum gasto'}
-                </p>
-              </div>
+          {/* Lado Direito: Subtítulo "Balanço do mês" e valores ordenados */}
+          <div className="flex flex-col justify-center space-y-3.5 bg-slate-50/80 dark:bg-slate-800/50 p-5 rounded-3xl border border-slate-200/70 dark:border-slate-700/60">
+            <h3 className="text-base font-black text-slate-900 dark:text-white tracking-tight pb-1 border-b border-slate-200/60 dark:border-slate-700/60">
+              Balanço do mês
+            </h3>
+
+            {/* Entrada */}
+            <div className="flex items-center justify-between text-xs sm:text-sm">
+              <span className="font-bold text-slate-600 dark:text-slate-300">
+                Entrada
+              </span>
+              <span className="font-black text-emerald-700 dark:text-emerald-400">
+                {formatCurrency(monthTotals.income)}
+              </span>
             </div>
 
-            <div className="mt-2.5 pt-2 border-t border-rose-100/80 dark:border-rose-900/40 flex items-center justify-between text-[11px] font-bold text-rose-700 dark:text-rose-400 group-hover:text-rose-900 dark:group-hover:text-rose-200 transition-colors">
-              <span>Ver Ranking</span>
-              <span className="flex items-center gap-0.5">Maiores →</span>
-            </div>
-          </div>
-
-          {/* Card 3: Investimentos */}
-          <div 
-            onClick={() => setRankingModalType('investment')}
-            className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-indigo-200 dark:border-indigo-800/60 shadow-2xs cursor-pointer hover:border-indigo-400 dark:hover:border-indigo-600 hover:shadow-md transition-all group flex flex-col justify-between"
-            role="button"
-            tabIndex={0}
-            title="Clique para ver os parâmetros com os maiores investimentos até os menores"
-          >
-            <div>
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-extrabold tracking-wider text-indigo-800 dark:text-indigo-300">
-                  3. Investimentos
-                </span>
-                <span className="text-[10px] font-bold bg-indigo-100 dark:bg-indigo-950/80 text-indigo-800 dark:text-indigo-300 px-2 py-0.5 rounded-full">
-                  {activeInvestmentPct.toFixed(1)}% da renda
-                </span>
-              </div>
-              <div className="mt-2">
-                <div className="text-xl sm:text-2xl font-black text-indigo-950 dark:text-indigo-200 tracking-tight">
-                  {formatCurrency(activeTotalInvestments)}
-                </div>
-                <p className="text-[11px] text-indigo-700 dark:text-indigo-400 font-medium mt-1">
-                  {activeInvestmentPct >= 20 
-                    ? '🎯 Meta de 20% atingida!' 
-                    : activeInvestmentPct > 0 
-                    ? '🌱 Em construção' 
-                    : 'Aguardando aporte'}
-                </p>
-              </div>
+            {/* Saída */}
+            <div className="flex items-center justify-between text-xs sm:text-sm">
+              <span className="font-bold text-slate-600 dark:text-slate-300">
+                Saída
+              </span>
+              <span className="font-black text-rose-700 dark:text-rose-400">
+                {formatCurrency(monthTotals.expenses)}
+              </span>
             </div>
 
-            <div className="mt-2.5 pt-2 border-t border-indigo-100/80 dark:border-indigo-900/40 flex items-center justify-between text-[11px] font-bold text-indigo-700 dark:text-indigo-400 group-hover:text-indigo-900 dark:group-hover:text-indigo-200 transition-colors">
-              <span>Ver Ranking</span>
-              <span className="flex items-center gap-0.5">Maiores →</span>
-            </div>
-          </div>
-
-          {/* Card 4: Sobra Livre */}
-          <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-sky-200 dark:border-sky-800/60 shadow-2xs flex flex-col justify-between">
-            <div>
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-extrabold tracking-wider text-sky-800 dark:text-sky-300">
-                  4. Sobra Livre
-                </span>
-                <span className="text-[10px] font-bold bg-sky-100 dark:bg-sky-950/80 text-sky-800 dark:text-sky-300 px-2 py-0.5 rounded-full">
-                  {activeSurplusPct.toFixed(1)}% da renda
-                </span>
-              </div>
-              <div className="mt-2">
-                <div className={`text-xl sm:text-2xl font-black tracking-tight ${activeSurplus < 0 ? 'text-rose-600 dark:text-rose-400' : 'text-slate-900 dark:text-white'}`}>
-                  {formatCurrency(activeSurplus)}
-                </div>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-1">
-                  {activeSurplus > 0 
-                    ? 'Livre para reserva ou lazer' 
-                    : activeSurplus < 0 
-                    ? '⚠️ Déficit detectado' 
-                    : 'Totalmente alocado'}
-                </p>
-              </div>
+            {/* Investimento */}
+            <div className="flex items-center justify-between text-xs sm:text-sm">
+              <span className="font-bold text-slate-600 dark:text-slate-300">
+                Investimento
+              </span>
+              <span className="font-black text-indigo-700 dark:text-indigo-400">
+                {formatCurrency(monthTotals.investments)}
+              </span>
             </div>
 
-            <div className="mt-2.5 pt-2 border-t border-sky-100/80 dark:border-sky-900/40 text-[11px] font-bold text-sky-700 dark:text-sky-400">
-              <span>Saldo final do mês</span>
+            {/* O Balanço */}
+            <div className="flex items-center justify-between pt-2 border-t border-slate-200/80 dark:border-slate-700/80">
+              <span className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white">
+                Balanço
+              </span>
+              <span className={`text-base sm:text-lg font-black tracking-tight ${
+                monthTotals.balance >= 0 
+                  ? 'text-emerald-700 dark:text-emerald-400' 
+                  : 'text-rose-600 dark:text-rose-400'
+              }`}>
+                {formatCurrency(monthTotals.balance)}
+              </span>
             </div>
+
+            {/* Em baixo centralizado: o status do balanço */}
+            <div className="pt-2 flex justify-center">
+              <span className={`inline-flex items-center gap-1.5 text-xs font-black px-4 py-1.5 rounded-full border shadow-2xs ${monthTotals.statusBadgeColor}`}>
+                {monthTotals.balance >= 0 ? (
+                  <CheckCircle2 className="w-4 h-4 stroke-[2.5]" />
+                ) : (
+                  <AlertCircle className="w-4 h-4 stroke-[2.5]" />
+                )}
+                <span>{monthTotals.statusText}</span>
+              </span>
+            </div>
+
           </div>
 
         </div>
 
-        {/* Diagnóstico */}
-        <div className="p-3.5 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-300 flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-          <span>
-            <strong>Diagnóstico de Parâmetro:</strong>{' '}
-            {activeInvestmentPct >= 20 
-              ? 'Sua distribuição financeira está excelente, garantindo independência patrimonial no longo prazo.' 
-              : activeInvestmentPct > 0 
-              ? `Você está destinando ${activeInvestmentPct.toFixed(1)}% para investimentos. Recomenda-se aproximar da meta de 20% com a sobra de ${formatCurrency(Math.max(0, activeSurplus))}.` 
-              : 'Você ainda não registrou investimentos neste mês. Destine uma parcela da sua receita para multiplicar seu patrimônio.'}
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 2. SEÇÃO CATEGORIAS (TOGGLE SAÍDAS / ENTRADAS, GRÁFICO CÍRCULO E BARRAS)  */}
+      {/* ========================================================================= */}
+      <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-6 border border-slate-200/90 dark:border-slate-800 shadow-2xs transition-colors">
+        
+        {/* Em cima à esquerda: "Saídas" e ao clicar altera para "Entradas" */}
+        <div className="flex items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
+          <button
+            type="button"
+            onClick={() => setCategoryViewType((prev) => (prev === 'expense' ? 'income' : 'expense'))}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-2xl text-xs sm:text-sm font-black transition-all shadow-xs cursor-pointer active:scale-95 ${
+              categoryViewType === 'expense'
+                ? 'bg-rose-600 hover:bg-rose-700 text-white'
+                : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+            }`}
+            title="Clique para alternar entre Saídas e Entradas"
+          >
+            <span>{categoryViewType === 'expense' ? 'Saídas' : 'Entradas'}</span>
+            <ArrowLeftRight className="w-3.5 h-3.5 opacity-80" />
+          </button>
+
+          <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500">
+            {categoriesData.items.length} {categoryViewType === 'expense' ? 'categorias de gastos' : 'categorias de renda'}
           </span>
         </div>
-      </div>
 
-      {/* Tabela de Balanceamento Mês a Mês */}
-      <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-7 border border-slate-200/90 dark:border-slate-800 shadow-sm transition-colors">
-        <div className="pb-4 border-b border-slate-100 dark:border-slate-800 mb-5">
-          <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-            <span>Tabela Geral de Balanceamento Mensal</span>
-          </h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Clique em qualquer mês para carregar suas contas no planejamento e atualizar o extrato
-          </p>
-        </div>
+        {/* Embaixo: Gráfico em círculo com "Total Gasto" e o valor no meio */}
+        <div className="py-6 flex flex-col items-center justify-center">
+          <div className="relative w-48 h-48 sm:w-52 sm:h-52 flex items-center justify-center">
+            
+            {/* SVG Donut Chart */}
+            <svg className="w-full h-full -rotate-90" viewBox="0 0 200 200">
+              {/* Trilha de fundo */}
+              <circle
+                cx="100"
+                cy="100"
+                r="72"
+                fill="none"
+                className="stroke-slate-100 dark:stroke-slate-800"
+                strokeWidth="20"
+              />
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs sm:text-sm">
-            <thead>
-              <tr className="border-b border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 text-[11px] font-extrabold tracking-wider bg-slate-50/70 dark:bg-slate-800/70">
-                <th className="py-3 px-3.5 rounded-l-xl">Mês</th>
-                <th className="py-3 px-3 text-right">Renda (Entradas)</th>
-                <th className="py-3 px-3 text-right">Despesas (Gastos)</th>
-                <th className="py-3 px-3 text-right">Investimentos</th>
-                <th className="py-3 px-3 text-right">Sobra Líquida</th>
-                <th className="py-3 px-3 text-center">Saúde</th>
-                <th className="py-3 px-3.5 text-center rounded-r-xl">Ação</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {monthsData.map((m) => {
-                const isCurrent = m.name === currentMonth;
-                return (
-                  <tr 
-                    key={m.key} 
-                    className={`transition-colors hover:bg-slate-50/80 dark:hover:bg-slate-800/80 ${isCurrent ? 'bg-emerald-50/40 dark:bg-emerald-950/30 font-semibold' : ''}`}
-                  >
-                    <td className="py-3.5 px-3.5 font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                      <div className={`w-2.5 h-2.5 rounded-full ${isCurrent ? 'bg-emerald-600' : 'bg-slate-300 dark:bg-slate-600'}`} />
-                      <span>{m.name}</span>
-                      {isCurrent && (
-                        <span className="text-[10px] font-extrabold bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 px-2 py-0.5 rounded-full">
-                          Mês Ativo
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-3.5 px-3 text-right font-bold text-emerald-700 dark:text-emerald-400">
-                      {formatCurrency(m.income)}
-                    </td>
-                    <td className="py-3.5 px-3 text-right font-bold text-rose-700 dark:text-rose-400">
-                      {formatCurrency(m.expenses)}
-                      <span className="text-[10px] text-slate-400 dark:text-slate-500 block font-normal">
-                        {m.expenseRate.toFixed(0)}%
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-3 text-right font-bold text-indigo-700 dark:text-indigo-400">
-                      {formatCurrency(m.investments)}
-                      <span className="text-[10px] text-indigo-500 dark:text-indigo-400 block font-normal">
-                        {m.savingsRate.toFixed(0)}%
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-3 text-right font-extrabold">
-                      <span className={m.surplus >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}>
-                        {formatCurrency(m.surplus)}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-3 text-center">
-                      {m.status === 'healthy' ? (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
-                          <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-                          Equilibrado
-                        </span>
-                      ) : m.status === 'warning' ? (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 px-2.5 py-1 rounded-full border border-amber-200 dark:border-amber-800">
-                          <AlertTriangle className="w-3 h-3 text-amber-600 dark:text-amber-400" />
-                          Atenção
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-950/60 px-2.5 py-1 rounded-full border border-rose-200 dark:border-rose-800">
-                          <AlertTriangle className="w-3 h-3 text-rose-600 dark:text-rose-400" />
-                          Déficit
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-3.5 px-3.5 text-center">
-                      <button
-                        onClick={() => {
-                          onSelectMonth(m.name);
-                          onGoToPlanning();
-                        }}
-                        className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                          isCurrent 
-                            ? 'bg-emerald-600 text-white shadow-2xs' 
-                            : 'bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300'
-                        }`}
-                        title={`Carregar planejamento e contas de ${m.name}`}
-                      >
-                        {isCurrent ? 'Visualizando' : 'Carregar'}
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
+              {categoriesData.total === 0 ? (
+                <circle
+                  cx="100"
+                  cy="100"
+                  r="72"
+                  fill="none"
+                  className="stroke-slate-200 dark:stroke-slate-700"
+                  strokeWidth="20"
+                  strokeDasharray="452.39"
+                  strokeDashoffset="0"
+                />
+              ) : (
+                (() => {
+                  const circumference = 2 * Math.PI * 72; // ~452.39
+                  let accumulatedOffset = 0;
 
-      {/* Gráfico Visual Comparativo de Barras */}
-      <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-7 border border-slate-200/90 dark:border-slate-800 shadow-sm transition-colors">
-        <div className="pb-4 border-b border-slate-100 dark:border-slate-800 mb-5">
-          <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
-            Evolução Comparativa: Renda vs Despesas vs Investimentos
-          </h3>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Proporção de fluxo financeiro entre os meses
-          </p>
-        </div>
+                  return categoriesData.items.map((cat, idx) => {
+                    const strokeDash = (cat.percent / 100) * circumference;
+                    const strokeOffset = -accumulatedOffset;
+                    accumulatedOffset += strokeDash;
 
-        <div className="space-y-5">
-          {monthsData.map((m) => {
-            const incomeWidth = Math.min(100, Math.max(3, (m.income / maxVal) * 100));
-            const expenseWidth = Math.min(100, Math.max(3, (m.expenses / maxVal) * 100));
-            const investWidth = Math.min(100, Math.max(3, (m.investments / maxVal) * 100));
+                    return (
+                      <circle
+                        key={idx}
+                        cx="100"
+                        cy="100"
+                        r="72"
+                        fill="none"
+                        stroke={cat.color}
+                        strokeWidth="20"
+                        strokeDasharray={`${strokeDash} ${circumference}`}
+                        strokeDashoffset={strokeOffset}
+                        strokeLinecap="round"
+                        className="transition-all duration-700"
+                      />
+                    );
+                  });
+                })()
+              )}
+            </svg>
 
-            return (
-              <div key={m.key} className="p-3 bg-slate-50/80 dark:bg-slate-800/60 rounded-2xl border border-slate-200/60 dark:border-slate-700">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">
-                    {m.name}
-                  </span>
-                  <div className="flex items-center gap-3 text-[11px] font-bold">
-                    <span className="text-emerald-700 dark:text-emerald-400">Renda: {formatCurrency(m.income)}</span>
-                    <span className="text-rose-700 dark:text-rose-400">Gastos: {formatCurrency(m.expenses)}</span>
-                    <span className="text-indigo-700 dark:text-indigo-400">Investido: {formatCurrency(m.investments)}</span>
-                  </div>
-                </div>
-
-                {/* Stacked comparison bars */}
-                <div className="space-y-1.5">
-                  <div className="w-full bg-slate-200/70 dark:bg-slate-700/70 h-2.5 rounded-full overflow-hidden flex">
-                    <div 
-                      className="bg-emerald-500 h-full rounded-full transition-all duration-500"
-                      style={{ width: `${incomeWidth}%` }}
-                      title={`Renda: ${formatCurrency(m.income)}`}
-                    />
-                  </div>
-                  <div className="w-full bg-slate-200/70 dark:bg-slate-700/70 h-2.5 rounded-full overflow-hidden flex">
-                    <div 
-                      className="bg-rose-500 h-full rounded-full transition-all duration-500"
-                      style={{ width: `${expenseWidth}%` }}
-                      title={`Despesas: ${formatCurrency(m.expenses)}`}
-                    />
-                  </div>
-                  <div className="w-full bg-slate-200/70 dark:bg-slate-700/70 h-2.5 rounded-full overflow-hidden flex">
-                    <div 
-                      className="bg-indigo-500 h-full rounded-full transition-all duration-500"
-                      style={{ width: `${investWidth}%` }}
-                      title={`Investimentos: ${formatCurrency(m.investments)}`}
-                    />
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Legend */}
-        <div className="flex items-center justify-center gap-6 mt-5 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-400">
-          <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded-full bg-emerald-500" />
-            <span>Renda (Entradas)</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded-full bg-rose-500" />
-            <span>Despesas (Gastos)</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded-full bg-indigo-500" />
-            <span>Investimentos (Aportes)</span>
-          </div>
-        </div>
-      </div>
-
-      {/* MODAL DE RANKING: MAIORES PARA MENORES */}
-      {rankingModalType && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-5 sm:p-6 shadow-xl border border-slate-200 dark:border-slate-800 space-y-4 max-h-[85vh] flex flex-col transition-colors">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800 shrink-0">
-              <div className="flex items-center gap-2">
-                <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-white font-bold text-xs ${
-                  rankingModalType === 'income' 
-                    ? 'bg-emerald-600' 
-                    : rankingModalType === 'expense' 
-                    ? 'bg-rose-600' 
-                    : 'bg-indigo-600'
-                }`}>
-                  #
-                </div>
-                <div>
-                  <h4 className="font-bold text-slate-900 dark:text-white text-sm sm:text-base">
-                    {rankingModalType === 'income' 
-                      ? 'Ranking de Entradas (Maiores → Menores)' 
-                      : rankingModalType === 'expense' 
-                      ? 'Ranking de Saídas (Maiores → Menores)' 
-                      : 'Ranking de Investimentos (Maiores → Menores)'}
-                  </h4>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    {currentMonth} • {currentRankingItems.length} lançamento(s)
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setRankingModalType(null)}
-                className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
+            {/* No meio do círculo: "Total Gasto" (ou "Total Recebido") e o valor */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none px-4 text-center">
+              <span className="text-[11px] sm:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                {categoryViewType === 'expense' ? 'Total Gasto' : 'Total Recebido'}
+              </span>
+              <span className={`text-base sm:text-lg font-black tracking-tight mt-0.5 ${
+                categoryViewType === 'expense' ? 'text-rose-600 dark:text-rose-400' : 'text-emerald-600 dark:text-emerald-400'
+              }`}>
+                {formatCurrency(categoriesData.total)}
+              </span>
             </div>
 
-            <div className="overflow-y-auto space-y-2 pr-1 flex-1">
-              {currentRankingItems.length === 0 ? (
-                <div className="text-center py-8 text-xs text-slate-500 dark:text-slate-400">
-                  Nenhum lançamento registrado nesta categoria para este mês.
-                </div>
-              ) : (
-                currentRankingItems.map((item, idx) => (
-                  <div
-                    key={item.id}
-                    className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 hover:bg-slate-100/70 dark:hover:bg-slate-750 transition-colors"
+          </div>
+        </div>
+
+        {/* Em baixo: "Saídas por categoria" com nome, barra no meio e valor + porcentagem à direita */}
+        <div className="pt-2 space-y-4">
+          <h3 className="text-sm sm:text-base font-black text-slate-900 dark:text-white tracking-tight">
+            {categoryViewType === 'expense' ? 'Saídas por categoria' : 'Entradas por categoria'}
+          </h3>
+
+          {categoriesData.items.length === 0 ? (
+            <div className="text-center py-6 text-xs text-slate-400 font-medium">
+              Nenhuma movimentação registrada nesta categoria neste mês.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {categoriesData.items.map((cat, idx) => {
+                const visual = getCategoryVisual(cat.name);
+                const IconComponent = visual.icon;
+
+                return (
+                  <div 
+                    key={idx}
+                    className="flex items-center gap-3 p-2.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
                   >
-                    <div className="flex items-center gap-3">
-                      <span className="w-6 h-6 rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-black flex items-center justify-center shrink-0">
-                        {idx + 1}º
-                      </span>
-                      <div>
-                        <span className="font-bold text-slate-900 dark:text-white text-xs sm:text-sm block">
-                          {item.description}
-                        </span>
-                        <span className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mt-0.5">
-                          <span>{item.category}</span>
-                          <span>•</span>
-                          <span>{formatDateBR(item.date)}</span>
-                          {item.bankName && (
-                            <>
-                              <span>•</span>
-                              <span>{item.bankName}</span>
-                            </>
-                          )}
-                        </span>
+                    {/* Categoria à esquerda (ícone + nome) */}
+                    <div className="flex items-center gap-2.5 w-32 sm:w-40 shrink-0">
+                      <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${visual.bgColor} ${visual.textColor} border ${visual.borderColor}`}>
+                        <IconComponent className="w-4 h-4 stroke-[2.2]" />
                       </div>
+                      <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200 truncate">
+                        {cat.name}
+                      </span>
                     </div>
 
-                    <span className="text-xs sm:text-sm font-black text-slate-900 dark:text-white">
-                      {formatCurrency(item.amount)}
-                    </span>
+                    {/* No meio: uma barra para indicar a porcentagem */}
+                    <div className="flex-1 bg-slate-100 dark:bg-slate-800 rounded-full h-2.5 overflow-hidden">
+                      <div
+                        style={{ 
+                          width: `${Math.max(cat.percent, 3)}%`,
+                          backgroundColor: cat.color
+                        }}
+                        className="h-full rounded-full transition-all duration-500"
+                      />
+                    </div>
+
+                    {/* Do lado direito: o valor e embaixo a porcentagem */}
+                    <div className="w-24 sm:w-28 text-right shrink-0">
+                      <span className="text-xs sm:text-sm font-black text-slate-900 dark:text-white block">
+                        {formatCurrency(cat.amount)}
+                      </span>
+                      <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 block">
+                        {cat.percent.toFixed(1)}%
+                      </span>
+                    </div>
+
                   </div>
-                ))
-              )}
+                );
+              })}
+            </div>
+          )}
+
+        </div>
+
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 3. SEÇÃO PATRIMÔNIO (CÁPSULAS DE TENDÊNCIA 12 MESES DO TOTAL DISPONÍVEL)  */}
+      {/* ========================================================================= */}
+      <div className="bg-white dark:bg-slate-900 rounded-3xl p-5 sm:p-6 border border-slate-200/90 dark:border-slate-800 shadow-2xs transition-colors">
+        
+        {/* Título: "Patrimônio" à esquerda e a referência "12 meses" à direita */}
+        <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
+          <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+            Patrimônio
+          </h2>
+
+          <span className="text-xs font-black text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1 rounded-xl border border-slate-200/60 dark:border-slate-700">
+            12 meses
+          </span>
+        </div>
+
+        {/* No bloco do gráfico: à esquerda saldo total e valor, à direita porcentagem e variação */}
+        <div className="pt-5">
+          <div className="flex items-start justify-between gap-4 pb-5">
+            
+            {/* Lado Esquerdo: "saldo total" e embaixo o valor disponível (Total Disponível da tela inicial) */}
+            <div>
+              <span className="text-xs font-bold text-slate-500 dark:text-slate-400 block uppercase tracking-wider">
+                Saldo total
+              </span>
+              <span className={`text-xl sm:text-2xl font-black tracking-tight mt-0.5 block ${
+                patrimonioData.saldoTotal >= 0 ? 'text-slate-900 dark:text-white' : 'text-rose-600 dark:text-rose-400'
+              }`}>
+                {formatCurrency(patrimonioData.saldoTotal)}
+              </span>
+              <span className="text-[11px] font-medium text-slate-400 mt-0.5 block">
+                Total disponível no mês
+              </span>
             </div>
 
-            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end shrink-0">
-              <button
-                onClick={() => setRankingModalType(null)}
-                className="px-4 py-2 bg-slate-900 dark:bg-slate-700 hover:bg-slate-800 dark:hover:bg-slate-600 text-white text-xs font-bold rounded-xl transition-colors cursor-pointer"
-              >
-                Fechar
-              </button>
+            {/* Lado Direito: porcentagem e embaixo o valor a mais ou a menos de patrimônio */}
+            <div className="text-right">
+              <span className={`inline-flex items-center gap-1 text-sm sm:text-base font-black ${
+                patrimonioData.diff >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+              }`}>
+                {patrimonioData.diff >= 0 ? (
+                  <TrendingUp className="w-4 h-4 stroke-[2.5]" />
+                ) : (
+                  <TrendingDown className="w-4 h-4 stroke-[2.5]" />
+                )}
+                <span>{patrimonioData.diff >= 0 ? `+${patrimonioData.percentage.toFixed(1)}%` : `${patrimonioData.percentage.toFixed(1)}%`}</span>
+              </span>
+
+              <span className={`text-xs sm:text-sm font-bold block mt-0.5 ${
+                patrimonioData.diff >= 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'
+              }`}>
+                {patrimonioData.diff >= 0 ? `+${formatCurrency(patrimonioData.diff)}` : formatCurrency(patrimonioData.diff)}
+              </span>
+              <span className="text-[10px] font-medium text-slate-400 block mt-0.5">
+                Variação em 12 meses
+              </span>
+            </div>
+
+          </div>
+
+          {/* GRÁFICO DE PATRIMÔNIO: CÁPSULAS DE TENDÊNCIA 12 MESES COM O MÊS ATUAL EM DESTAQUE */}
+          <div className="bg-slate-50/80 dark:bg-slate-800/50 p-4 sm:p-5 rounded-3xl border border-slate-200/70 dark:border-slate-700/60">
+            <div className="pt-2">
+              <div className="flex items-end justify-between gap-1.5 sm:gap-2.5 h-44 pb-2">
+                {patrimonioData.monthlySeries.map((m, idx) => {
+                  const isCurrent = m.name === currentMonth;
+                  const val = m.totalDisponivel;
+                  const maxSpan = Math.max(patrimonioData.maxVal, 100);
+                  // Altura percentual da barra
+                  const heightPercent = Math.min(Math.max((Math.abs(val) / maxSpan) * 100, 12), 100);
+                  const isPositive = val >= 0;
+
+                  return (
+                    <div
+                      key={idx}
+                      onClick={() => onSelectMonth(m.name)}
+                      className="flex-1 flex flex-col items-center justify-end h-full group cursor-pointer"
+                      title={`${m.name}: ${formatCurrency(val)}`}
+                    >
+                      {/* Valor flutuante no mês selecionado */}
+                      {isCurrent && (
+                        <div className="mb-1.5 animate-bounce">
+                          <span className="text-[10px] sm:text-xs font-black px-2 py-0.5 rounded-full bg-emerald-600 text-white shadow-xs whitespace-nowrap">
+                            {formatCurrency(val)}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Trilha da Cápsula Arredondada */}
+                      <div className={`w-full max-w-[28px] rounded-full h-32 flex items-end p-1 transition-all ${
+                        isCurrent 
+                          ? 'bg-emerald-100 dark:bg-emerald-950/60 ring-2 ring-emerald-500/40' 
+                          : 'bg-slate-200/70 dark:bg-slate-700/60 group-hover:bg-slate-300 dark:group-hover:bg-slate-600'
+                      }`}>
+                        {/* Barra de preenchimento interna arredondada */}
+                        <div
+                          style={{ height: `${heightPercent}%` }}
+                          className={`w-full rounded-full transition-all duration-500 ${
+                            isCurrent
+                              ? 'bg-emerald-500 dark:bg-emerald-400 shadow-sm'
+                              : isPositive
+                              ? 'bg-indigo-400/80 dark:bg-indigo-500/80 group-hover:bg-indigo-500'
+                              : 'bg-rose-400/80 dark:bg-rose-500/80 group-hover:bg-rose-500'
+                          }`}
+                        />
+                      </div>
+
+                      {/* Rótulo do Mês */}
+                      <span className={`text-[10px] sm:text-[11px] font-extrabold uppercase mt-2 transition-colors ${
+                        isCurrent
+                          ? 'text-emerald-700 dark:text-emerald-400 scale-105'
+                          : 'text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white'
+                      }`}>
+                        {m.shortName}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
+
         </div>
-      )}
+
+      </div>
+
     </div>
   );
 };

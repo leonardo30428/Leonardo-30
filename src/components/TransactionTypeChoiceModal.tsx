@@ -3,8 +3,7 @@ import {
   TrendingUp, 
   TrendingDown, 
   PiggyBank, 
-  X, 
-  ArrowRight 
+  X
 } from 'lucide-react';
 import { TransactionType } from '../types';
 
@@ -34,119 +33,87 @@ export const TransactionTypeChoiceModal: React.FC<TransactionTypeChoiceModalProp
 
   return (
     <div 
-      id="modal-escolha-tipo-lancamento"
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/60 backdrop-blur-xs transition-opacity animate-fadeIn"
-      onClick={onClose}
+      id="modal-icones-flutuantes-leque"
+      className="fixed inset-0 z-50 flex flex-col justify-end items-center pb-2.5 sm:pb-3 pointer-events-none"
     >
+      {/* 1. Fundo Translúcido Suave (Backdrop) */}
       <div 
-        className="w-full max-w-md bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden animate-fadeIn transition-colors"
+        className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs pointer-events-auto animate-fadeIn transition-opacity cursor-pointer"
+        onClick={onClose}
+        aria-label="Fechar leque de opções"
+      />
+
+      {/* 2. Container Central do Leque Radial */}
+      <div 
+        className="relative pointer-events-auto flex items-center justify-center w-14 h-14 z-50"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="p-5 sm:p-6 pb-3 flex items-center justify-between border-b border-slate-100 dark:border-slate-800">
-          <div>
-            <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white">
-              O que você deseja lançar?
-            </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">
-              Escolha uma opção para continuar
-            </p>
-          </div>
-          <button
-            type="button"
-            id="btn-fechar-escolha-tipo"
-            onClick={onClose}
-            className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white flex items-center justify-center transition-colors cursor-pointer"
-            title="Fechar"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
 
-        {/* Options List */}
-        <div className="p-5 sm:p-6 space-y-3">
-          
-          {/* 1. Opção ENTRADA */}
+        {/* --- RAMO 1 DO LEQUE: ENTRADA (Esquerda bem aberta) --- */}
+        <div className="absolute -left-26 sm:-left-32 -top-18 sm:-top-22 flex flex-col items-center animate-fanLeft z-10">
           <button
             type="button"
-            id="btn-opcao-receita"
+            id="btn-leque-entrada"
             onClick={() => onSelectType('income')}
-            className="w-full flex items-center justify-between p-4 rounded-2xl bg-emerald-50/70 dark:bg-emerald-950/30 hover:bg-emerald-100/90 dark:hover:bg-emerald-950/50 border border-emerald-200/90 dark:border-emerald-900/50 hover:border-emerald-400 dark:hover:border-emerald-700 text-left transition-colors group cursor-pointer"
+            className="group flex flex-col items-center cursor-pointer"
+            title="Lançar Entrada"
           >
-            <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-xs shadow-emerald-200 dark:shadow-none shrink-0">
-                <TrendingUp className="w-6 h-6 stroke-[2.5]" />
-              </div>
-              <div>
-                <span className="text-base font-extrabold text-emerald-950 dark:text-emerald-100 block">
-                  Entrada
-                </span>
-                <span className="text-xs text-emerald-700 dark:text-emerald-400 font-medium block">
-                  Salários, rendimentos, vendas, PIX recebido e extras
-                </span>
-              </div>
+            <span className="text-white text-xs sm:text-[13px] font-black tracking-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] whitespace-nowrap mb-1.5 group-hover:scale-105 group-active:scale-95 transition-all select-none">
+              Entrada
+            </span>
+            <div className="w-13 h-13 rounded-full bg-emerald-600 group-hover:bg-emerald-700 text-white flex items-center justify-center shadow-xl shadow-emerald-600/40 border-2 border-white dark:border-slate-800 group-hover:scale-110 group-active:scale-95 transition-all">
+              <TrendingUp className="w-6 h-6 stroke-[2.5]" />
             </div>
-            <ArrowRight className="w-5 h-5 text-emerald-600 dark:text-emerald-400 group-hover:translate-x-1 transition-transform shrink-0 ml-2" />
           </button>
+        </div>
 
-          {/* 2. Opção SAÍDA */}
+        {/* --- RAMO 2 DO LEQUE: SAÍDA (Centro / Topo elevado) --- */}
+        <div className="absolute left-1/2 -translate-x-1/2 -top-34 sm:-top-40 flex flex-col items-center animate-fanCenter z-10">
           <button
             type="button"
-            id="btn-opcao-gasto"
+            id="btn-leque-saida"
             onClick={() => onSelectType('expense')}
-            className="w-full flex items-center justify-between p-4 rounded-2xl bg-rose-50/70 dark:bg-rose-950/30 hover:bg-rose-100/90 dark:hover:bg-rose-950/50 border border-rose-200/90 dark:border-rose-900/50 hover:border-rose-400 dark:hover:border-rose-700 text-left transition-colors group cursor-pointer"
+            className="group flex flex-col items-center cursor-pointer"
+            title="Lançar Saída"
           >
-            <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-rose-600 text-white flex items-center justify-center shadow-xs shadow-rose-200 dark:shadow-none shrink-0">
-                <TrendingDown className="w-6 h-6 stroke-[2.5]" />
-              </div>
-              <div>
-                <span className="text-base font-extrabold text-rose-950 dark:text-rose-100 block">
-                  Saída
-                </span>
-                <span className="text-xs text-rose-700 dark:text-rose-400 font-medium block">
-                  Contas do mês, boletos, faturas, compras e despesas
-                </span>
-              </div>
+            <span className="text-white text-xs sm:text-[13px] font-black tracking-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] whitespace-nowrap mb-1.5 group-hover:scale-105 group-active:scale-95 transition-all select-none">
+              Saída
+            </span>
+            <div className="w-13 h-13 rounded-full bg-rose-600 group-hover:bg-rose-700 text-white flex items-center justify-center shadow-xl shadow-rose-600/40 border-2 border-white dark:border-slate-800 group-hover:scale-110 group-active:scale-95 transition-all">
+              <TrendingDown className="w-6 h-6 stroke-[2.5]" />
             </div>
-            <ArrowRight className="w-5 h-5 text-rose-600 dark:text-rose-400 group-hover:translate-x-1 transition-transform shrink-0 ml-2" />
           </button>
+        </div>
 
-          {/* 3. Opção INVESTIMENTO */}
+        {/* --- RAMO 3 DO LEQUE: INVESTIMENTO (Direita bem aberta) --- */}
+        <div className="absolute -right-26 sm:-right-32 -top-18 sm:-top-22 flex flex-col items-center animate-fanRight z-10">
           <button
             type="button"
-            id="btn-opcao-investimento"
+            id="btn-leque-investimento"
             onClick={() => onSelectType('investment')}
-            className="w-full flex items-center justify-between p-4 rounded-2xl bg-indigo-50/70 dark:bg-indigo-950/30 hover:bg-indigo-100/90 dark:hover:bg-indigo-950/50 border border-indigo-200/90 dark:border-indigo-900/50 hover:border-indigo-400 dark:hover:border-indigo-700 text-left transition-colors group cursor-pointer"
+            className="group flex flex-col items-center cursor-pointer"
+            title="Lançar Investimento"
           >
-            <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-xs shadow-indigo-200 dark:shadow-none shrink-0">
-                <PiggyBank className="w-6 h-6 stroke-[2.5]" />
-              </div>
-              <div>
-                <span className="text-base font-extrabold text-indigo-950 dark:text-indigo-100 block">
-                  Investimento
-                </span>
-                <span className="text-xs text-indigo-700 dark:text-indigo-400 font-medium block">
-                  Aportes, reservas de emergência, caixinhas e ativos
-                </span>
-              </div>
+            <span className="text-white text-xs sm:text-[13px] font-black tracking-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] whitespace-nowrap mb-1.5 group-hover:scale-105 group-active:scale-95 transition-all select-none">
+              Investimento
+            </span>
+            <div className="w-13 h-13 rounded-full bg-indigo-600 group-hover:bg-indigo-700 text-white flex items-center justify-center shadow-xl shadow-indigo-600/40 border-2 border-white dark:border-slate-800 group-hover:scale-110 group-active:scale-95 transition-all">
+              <PiggyBank className="w-6 h-6 stroke-[2.2]" />
             </div>
-            <ArrowRight className="w-5 h-5 text-indigo-600 dark:text-indigo-400 group-hover:translate-x-1 transition-transform shrink-0 ml-2" />
-          </button>
-
-        </div>
-
-        {/* Footer info */}
-        <div className="p-4 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800 text-center">
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors cursor-pointer"
-          >
-            Cancelar
           </button>
         </div>
+
+        {/* 3. Botão Central de Fechar (X) na base do leque */}
+        <button
+          type="button"
+          id="btn-fechar-leque"
+          onClick={onClose}
+          className="w-12 h-12 sm:w-13 sm:h-13 rounded-full bg-slate-900 dark:bg-slate-800 hover:bg-slate-800 dark:hover:bg-slate-700 text-white flex items-center justify-center shadow-2xl border-3 border-white dark:border-slate-900 hover:scale-105 active:scale-95 transition-all cursor-pointer z-20"
+          title="Fechar opções"
+        >
+          <X className="w-6 h-6 stroke-[2.5]" />
+        </button>
+
       </div>
     </div>
   );

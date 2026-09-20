@@ -93,6 +93,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   const [date, setDate] = useState(defaultDate || new Date().toISOString().split('T')[0]);
   const [category, setCategory] = useState('');
   const [bankName, setBankName] = useState('');
+  const [descriptionError, setDescriptionError] = useState(false);
+  const [bankNameError, setBankNameError] = useState(false);
   const [isPaid, setIsPaid] = useState<boolean>(true);
   const dateInputRef = useRef<HTMLInputElement>(null);
 
@@ -227,6 +229,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         setInstallmentValueType('total');
         setFrequency('mensal');
         setCustomDays('30');
+        setDescriptionError(false);
+        setBankNameError(false);
         setIsCategoryPickerOpen(false);
         setCategorySearch('');
         setNewCategoryName('');
@@ -305,6 +309,25 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     const rawAmount = parseFloat(amount.replace(',', '.'));
     if (isNaN(rawAmount) || rawAmount <= 0) return;
 
+    let hasError = false;
+    if (!description.trim()) {
+      setDescriptionError(true);
+      hasError = true;
+    } else {
+      setDescriptionError(false);
+    }
+
+    if (!bankName.trim()) {
+      setBankNameError(true);
+      hasError = true;
+    } else {
+      setBankNameError(false);
+    }
+
+    if (hasError) {
+      return;
+    }
+
     let finalAmount = rawAmount;
     if (repetitionMode === 'parcela' && installmentValueType === 'total') {
       finalAmount = Number((rawAmount / installmentsCount).toFixed(2));
@@ -318,13 +341,13 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         : 'Geral';
     const finalCategory = category.trim() || defaultCat;
     
-    const baseDescription = cleanInstallmentDescription(description.trim() || finalCategory);
+    const baseDescription = cleanInstallmentDescription(description.trim());
     let finalDescription = baseDescription;
     if (repetitionMode === 'parcela') {
       finalDescription = `${baseDescription} (${currentInstallment}/${installmentsCount})`;
     }
 
-    const finalBank = bankName.trim() || 'Conta Principal';
+    const finalBank = bankName.trim();
     const today = getTodayDateString();
     const finalDate = date || today;
 
@@ -564,19 +587,37 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             </div>
           </div>
 
-          {/* Description - Título "Descrição" e placeholder "Descrição opcional" */}
+          {/* Description - Obrigatório */}
           <div>
-            <label className="block text-sm sm:text-[15px] font-bold text-slate-800 dark:text-slate-200 mb-1.5 flex items-center gap-1.5">
-              <AlignLeft className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-              Descrição
+            <label className="block text-sm sm:text-[15px] font-bold text-slate-800 dark:text-slate-200 mb-1.5 flex items-center justify-between">
+              <span className="flex items-center gap-1.5">
+                <AlignLeft className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                <span>Descrição</span>
+                <span className="text-rose-500 text-sm">*</span>
+              </span>
+              <span className="text-[10px] font-semibold text-rose-500/90 dark:text-rose-400/90 bg-rose-50 dark:bg-rose-950/40 px-1.5 py-0.5 rounded">
+                Obrigatório
+              </span>
             </label>
             <input
               type="text"
-              placeholder="Descrição opcional"
+              placeholder="Informe a descrição da movimentação (obrigatório)"
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full text-xs placeholder:text-[11.5px] placeholder:text-slate-400 dark:placeholder:text-slate-500 p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:outline-hidden focus:ring-2 focus:ring-slate-900 dark:focus:ring-emerald-500 text-slate-800 dark:text-white transition-colors"
+              onChange={(e) => {
+                setDescription(e.target.value);
+                if (descriptionError) setDescriptionError(false);
+              }}
+              className={`w-full text-xs placeholder:text-[11.5px] placeholder:text-slate-400 dark:placeholder:text-slate-500 p-2.5 rounded-xl border bg-white dark:bg-slate-800 focus:outline-hidden focus:ring-2 text-slate-800 dark:text-white transition-colors ${
+                descriptionError
+                  ? 'border-rose-500 focus:ring-rose-500 bg-rose-50/20 dark:bg-rose-950/20'
+                  : 'border-slate-300 dark:border-slate-700 focus:ring-slate-900 dark:focus:ring-emerald-500'
+              }`}
             />
+            {descriptionError && (
+              <span className="text-[11px] font-semibold text-rose-500 mt-1 block">
+                Por favor, informe a descrição da movimentação.
+              </span>
+            )}
           </div>
 
           {/* Categoria sem escrita direta: clique no campo ou no botão (+) abre as categorias e adicionar categoria */}
@@ -615,21 +656,37 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             </div>
           </div>
 
-          {/* Conta / Banco */}
+          {/* Conta / Banco - Obrigatório */}
           <div>
             <label className="block text-sm sm:text-[15px] font-bold text-slate-800 dark:text-slate-200 mb-1.5 flex items-center justify-between">
               <span className="flex items-center gap-1.5">
                 <Building2 className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-                Conta / Banco
+                <span>Conta / Banco</span>
+                <span className="text-rose-500 text-sm">*</span>
+              </span>
+              <span className="text-[10px] font-semibold text-rose-500/90 dark:text-rose-400/90 bg-rose-50 dark:bg-rose-950/40 px-1.5 py-0.5 rounded">
+                Obrigatório
               </span>
             </label>
             <input
               type="text"
               placeholder="Digite o banco ou conta (ex: Nubank, Itaú, Bradesco, Dinheiro...)"
               value={bankName}
-              onChange={(e) => setBankName(e.target.value)}
-              className="w-full text-xs placeholder:text-[11.5px] placeholder:text-slate-400 dark:placeholder:text-slate-500 p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:outline-hidden focus:ring-2 focus:ring-slate-900 dark:focus:ring-emerald-500 text-slate-800 dark:text-white transition-colors"
+              onChange={(e) => {
+                setBankName(e.target.value);
+                if (bankNameError) setBankNameError(false);
+              }}
+              className={`w-full text-xs placeholder:text-[11.5px] placeholder:text-slate-400 dark:placeholder:text-slate-500 p-2.5 rounded-xl border bg-white dark:bg-slate-800 focus:outline-hidden focus:ring-2 text-slate-800 dark:text-white transition-colors ${
+                bankNameError
+                  ? 'border-rose-500 focus:ring-rose-500 bg-rose-50/20 dark:bg-rose-950/20'
+                  : 'border-slate-300 dark:border-slate-700 focus:ring-slate-900 dark:focus:ring-emerald-500'
+              }`}
             />
+            {bankNameError && (
+              <span className="text-[11px] font-semibold text-rose-500 mt-1 block">
+                Por favor, informe a conta ou banco.
+              </span>
+            )}
           </div>
 
           {/* Seção "Mais detalhes" */}

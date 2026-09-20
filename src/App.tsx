@@ -897,6 +897,7 @@ export default function App() {
             transactions={transactions}
             months={months}
             currentMonth={currentMonth}
+            bankAccounts={bankAccounts}
             onSelectMonth={(monthName) => {
               const idx = months.indexOf(monthName);
               if (idx !== -1) setCurrentMonthIndex(idx);
