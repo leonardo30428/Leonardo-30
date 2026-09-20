@@ -904,6 +904,7 @@ export default function App() {
             }}
             onGoToPlanning={() => setActiveAppTab('planejamento')}
             onCopyMonthContas={handleCopyMonthContas}
+            onOpenMonthlyPdfReport={() => setIsMonthlyReportModalOpen(true)}
           />
         )}
 
