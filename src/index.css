@@ -90,6 +90,19 @@ button, input, a, [role="button"] {
   letter-spacing: normal !important;
 }
 
+/* Acabamento fosco / opaco suave e elegante em todo o app */
+:root {
+  --color-matte-emerald: #059669;
+  --color-matte-rose: #e11d48;
+  --color-matte-indigo: #4f46e5;
+  --color-matte-amber: #d97706;
+}
+
+/* Redução sutil de saturação de néon para aspecto refinado e fosco */
+button, .card, [role="button"] {
+  backdrop-filter: blur(8px);
+}
+
 @keyframes slideUp {
   from {
     opacity: 0;

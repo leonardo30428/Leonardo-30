@@ -12,6 +12,7 @@ import { Transaction, BankAccount } from '../types';
 import { formatCurrency, calculateSummary } from '../utils/finance';
 import { getMonthKey } from '../utils/dateUtils';
 import { getCategoryVisual } from '../utils/categoryIcons';
+import { MonthlyBalanceChart } from './MonthlyBalanceChart';
 
 interface MonthlyBalanceTabProps {
   transactions: Transaction[];
@@ -561,6 +562,16 @@ export const MonthlyBalanceTab: React.FC<MonthlyBalanceTabProps> = ({
         </div>
 
       </div>
+
+      {/* ========================================================================= */}
+      {/* EVOLUÇÃO DO SALDO MENSAL (GRÁFICO RECHARTS EM CIMA DE PATRIMÔNIO)         */}
+      {/* ========================================================================= */}
+      <MonthlyBalanceChart
+        transactions={transactions}
+        currentMonth={currentMonth}
+        availableMonths={months}
+        onSelectMonth={onSelectMonth}
+      />
 
       {/* ========================================================================= */}
       {/* 3. SEÇÃO PATRIMÔNIO (CÁPSULAS DE TENDÊNCIA 12 MESES EM BARRAS)             */}

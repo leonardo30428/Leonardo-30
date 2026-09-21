@@ -16,6 +16,7 @@ import { BottomNavBar } from './components/BottomNavBar';
 import { PendingBillsModal } from './components/PendingBillsModal';
 import { TransactionTypeChoiceModal } from './components/TransactionTypeChoiceModal';
 import { MonthlyReportModal } from './components/MonthlyReportModal';
+import { MaisTab } from './components/MaisTab';
 import { 
   Transaction, 
   BankAccount, 
@@ -88,8 +89,8 @@ export type AppSection =
   | 'relatorios';
 
 export default function App() {
-  // Active App Tab: 'planejamento' (Planejamento) | 'contas' (Contas a Pagar / Receber) | 'balanceamento' (Balanceamento dos Meses) | 'historico' (Histórico de Transações)
-  const [activeAppTab, setActiveAppTab] = useState<'planejamento' | 'balanceamento' | 'historico' | 'contas'>('planejamento');
+  // Active App Tab: 'planejamento' (Planejamento) | 'contas' (Contas a Pagar / Receber) | 'balanceamento' (Balanceamento dos Meses) | 'mais' (Mais Opções & Analisar)
+  const [activeAppTab, setActiveAppTab] = useState<'planejamento' | 'balanceamento' | 'mais' | 'contas'>('planejamento');
   const [contasMode, setContasMode] = useState<'pagar' | 'receber'>('pagar');
   const [historyScope, setHistoryScope] = useState<'currentMonth' | 'all'>('currentMonth');
 
@@ -909,56 +910,28 @@ export default function App() {
         )}
 
         {/* ========================================================================= */}
-        {/* ABA 3: HISTÓRICO COMPLETO DE TRANSAÇÕES COM OPÇÃO DE APAGAR HISTÓRICO   */}
+        {/* ABA 3: MAIS (OPÇÕES: ANALISAR, RELATÓRIO PERSONALIZADO, CONFIGURAÇÕES)     */}
         {/* ========================================================================= */}
-        {activeAppTab === 'historico' && (
-          <div className="space-y-6 animate-fadeIn">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-2xs transition-colors">
-              <div>
-                <h3 className="text-lg font-black text-slate-900 dark:text-white tracking-tight">
-                  Histórico de Transações Registradas
-                </h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                  Consulte todos os lançamentos ou filtre pelo mês de referência selecionado.
-                </p>
-              </div>
-
-              <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 transition-colors">
-                <button
-                  onClick={() => setHistoryScope('currentMonth')}
-                  className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                    historyScope === 'currentMonth'
-                      ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                >
-                  Apenas {currentMonth} ({currentMonthTransactions.length})
-                </button>
-                <button
-                  onClick={() => setHistoryScope('all')}
-                  className={`px-3 py-1.5 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                    historyScope === 'all'
-                      ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                  }`}
-                >
-                  Todos os Meses ({transactions.length})
-                </button>
-              </div>
-            </div>
-
-            <TransactionsList
-              transactions={historyScope === 'currentMonth' ? currentMonthTransactions : transactions}
-              onDeleteTransaction={handleDeleteTransaction}
-              onToggleTransactionPaid={handleToggleTransactionPaid}
-              onClearHistory={handleClearHistory}
-              onEditTransaction={handleOpenEditTransaction}
-              onOpenMonthlyPdfReport={() => setIsMonthlyReportModalOpen(true)}
-              currentMonthName={historyScope === 'currentMonth' ? currentMonth : 'Todos os Meses'}
-              activeFilter={activeFilter}
-              onChangeFilter={setActiveFilter}
-            />
-          </div>
+        {activeAppTab === 'mais' && (
+          <MaisTab
+            transactions={transactions}
+            currentMonthTransactions={currentMonthTransactions}
+            currentMonth={currentMonth}
+            availableMonths={months}
+            onDeleteTransaction={handleDeleteTransaction}
+            onToggleTransactionPaid={handleToggleTransactionPaid}
+            onClearHistory={handleClearHistory}
+            onEditTransaction={handleOpenEditTransaction}
+            onOpenMonthlyPdfReport={() => setIsMonthlyReportModalOpen(true)}
+            activeFilter={activeFilter}
+            onChangeFilter={setActiveFilter}
+            historyScope={historyScope}
+            onChangeHistoryScope={setHistoryScope}
+            onSelectMonth={(month) => {
+              const idx = months.indexOf(month);
+              if (idx !== -1) setCurrentMonthIndex(idx);
+            }}
+          />
         )}
 
       </main>
@@ -1083,6 +1056,14 @@ export default function App() {
         monthName={currentMonth}
         summary={currentMonthSummary}
         transactions={currentMonthTransactions}
+        allTransactions={transactions}
+        availableMonths={months}
+        onSelectMonth={(m) => {
+          const idx = months.indexOf(m);
+          if (idx >= 0) {
+            setCurrentMonthIndex(idx);
+          }
+        }}
       />
 
     </div>

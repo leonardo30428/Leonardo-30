@@ -1,9 +1,11 @@
 import React from 'react';
-import { Home, BarChart3, ArrowLeftRight, History, Plus } from 'lucide-react';
+import { Home, BarChart3, ArrowLeftRight, MoreHorizontal, Plus } from 'lucide-react';
+
+export type AppTabType = 'planejamento' | 'balanceamento' | 'mais' | 'contas';
 
 interface BottomNavBarProps {
-  activeTab: 'planejamento' | 'balanceamento' | 'historico' | 'contas';
-  onChangeTab: (tab: 'planejamento' | 'balanceamento' | 'historico' | 'contas') => void;
+  activeTab: AppTabType;
+  onChangeTab: (tab: AppTabType) => void;
   onOpenNewTransaction: () => void;
   onViewPending: () => void;
   pendingCount: number;
@@ -54,12 +56,12 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
           <BarChart3 className={`w-6 h-6 sm:w-6.5 sm:h-6.5 ${activeTab === 'balanceamento' ? 'stroke-[2.5]' : 'stroke-[2]'}`} />
         </button>
 
-        {/* 3. (+) Botão Central no Centro da Barra Inferior para Adicionar Receita / Gasto */}
+        {/* 3. (+) Botão Central no Centro da Barra Inferior para Adicionar */}
         <div className="flex items-center justify-center -mt-6">
           <button
             id="btn-central-adicionar"
             onClick={onOpenNewTransaction}
-            className="w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white flex items-center justify-center shadow-lg shadow-emerald-600/35 border-3 border-white dark:border-slate-900 transition-all cursor-pointer"
+            className="w-13 h-13 sm:w-14 sm:h-14 rounded-full bg-slate-800 hover:bg-slate-900 dark:bg-slate-700 dark:hover:bg-slate-600 active:scale-95 text-white flex items-center justify-center shadow-lg border-3 border-white dark:border-slate-900 transition-all cursor-pointer"
             title="Adicionar"
             aria-label="Adicionar Entrada, Saída ou Investimento"
           >
@@ -67,7 +69,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
           </button>
         </div>
 
-        {/* 4. Transações do Mês / Contas (Símbolo de Vai e Vem - ArrowLeftRight) */}
+        {/* 4. Transações do Mês / Contas */}
         <button
           id="btn-nav-contas"
           onClick={onViewPending}
@@ -89,22 +91,23 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
           </div>
         </button>
 
-        {/* 5. Histórico de Transações */}
+        {/* 5. Mais Opções (Ícone de Mais) */}
         <button
-          id="btn-nav-historico"
-          onClick={() => onChangeTab('historico')}
+          id="btn-nav-mais"
+          onClick={() => onChangeTab('mais')}
           className={`flex items-center justify-center w-12 h-12 sm:w-13 sm:h-13 rounded-2xl transition-all cursor-pointer ${
-            activeTab === 'historico'
+            activeTab === 'mais'
               ? 'text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800'
               : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-slate-800/60'
           }`}
-          title="Histórico"
-          aria-label="Histórico"
+          title="Mais"
+          aria-label="Mais"
         >
-          <History className={`w-6 h-6 sm:w-6.5 sm:h-6.5 ${activeTab === 'historico' ? 'stroke-[2.5]' : 'stroke-[2]'}`} />
+          <MoreHorizontal className={`w-6 h-6 sm:w-6.5 sm:h-6.5 ${activeTab === 'mais' ? 'stroke-[2.5]' : 'stroke-[2]'}`} />
         </button>
 
       </div>
     </nav>
   );
 };
+

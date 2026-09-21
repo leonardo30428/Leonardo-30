@@ -21,7 +21,7 @@ import {
   Trash2
 } from 'lucide-react';
 import { Transaction, TransactionType } from '../types';
-import { getTodayDateString } from '../utils/finance';
+import { getTodayDateString, formatCurrencyInput, numericToMaskedString } from '../utils/finance';
 import { cleanInstallmentDescription } from '../utils/dateUtils';
 
 interface TransactionModalProps {
@@ -170,7 +170,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         setType(editingTransaction.type);
         const cleanDesc = cleanInstallmentDescription(editingTransaction.description || '');
         setDescription(cleanDesc);
-        setAmount(editingTransaction.amount ? editingTransaction.amount.toString() : '');
+        setAmount(editingTransaction.amount ? numericToMaskedString(editingTransaction.amount) : '');
         setCategory(editingTransaction.category || '');
         setBankName(editingTransaction.bankName || '');
         const initialDate = editingTransaction.date || defaultDate || getTodayDateString();
@@ -329,7 +329,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const rawAmount = parseFloat(amount.replace(',', '.'));
+    const rawAmount = parseFloat(amount.replace(/\./g, '').replace(',', '.'));
     if (isNaN(rawAmount) || rawAmount <= 0) return;
 
     let hasError = false;
@@ -540,16 +540,23 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               <label className="block text-sm sm:text-[15px] font-bold text-slate-800 dark:text-slate-200 mb-1.5">
                 Valor (R$) *
               </label>
-              <input
-                type="number"
-                step="0.01"
-                inputMode="decimal"
-                required
-                placeholder="0,00"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="w-full text-sm placeholder:text-xs font-bold p-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-slate-900 dark:focus:ring-emerald-500 transition-colors"
-              />
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 select-none">
+                  R$
+                </span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  required
+                  placeholder="0,00"
+                  value={amount}
+                  onChange={(e) => {
+                    const { display } = formatCurrencyInput(e.target.value);
+                    setAmount(display);
+                  }}
+                  className="w-full text-sm font-bold pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-slate-900 dark:focus:ring-emerald-500 transition-colors"
+                />
+              </div>
             </div>
 
             <div>

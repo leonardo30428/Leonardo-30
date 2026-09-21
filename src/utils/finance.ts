@@ -136,3 +136,32 @@ export function calculateSummary(transactions: Transaction[]): MonthlySummary {
     healthStatus,
   };
 }
+
+/**
+ * Converte valor digitado (apenas dígitos) para máscara em tempo real com ponto e vírgula.
+ * Exemplo: 1 -> 0,01; 12 -> 0,12; 125 -> 1,25; 125000 -> 1.250,00
+ */
+export function formatCurrencyInput(val: string): { display: string; numeric: number } {
+  const cleanDigits = val.replace(/\D/g, '');
+  if (!cleanDigits) {
+    return { display: '', numeric: 0 };
+  }
+  const numeric = parseInt(cleanDigits, 10) / 100;
+  const display = numeric.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+  return { display, numeric };
+}
+
+/**
+ * Converte um número float para o formato brasileiro com duas casas decimais
+ */
+export function numericToMaskedString(num: number): string {
+  if (!num || isNaN(num)) return '';
+  return num.toLocaleString('pt-BR', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
