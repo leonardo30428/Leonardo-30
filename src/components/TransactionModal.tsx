@@ -39,10 +39,12 @@ import {
   Music,
   Film,
   Sparkles,
-  Palette
+  Palette,
+  Baby
 } from 'lucide-react';
 import { Transaction, TransactionType } from '../types';
 import { getTodayDateString, formatCurrencyInput, numericToMaskedString } from '../utils/finance';
+import { getCategoryVisual } from '../utils/categoryIcons';
 import { cleanInstallmentDescription } from '../utils/dateUtils';
 import { QuickCalculatorModal } from './QuickCalculatorModal';
 
@@ -87,6 +89,7 @@ export const CATEGORY_ICONS = [
   { id: 'Smartphone', label: 'Tecnologia' },
   { id: 'Gift', label: 'Presente' },
   { id: 'Dog', label: 'Pet' },
+  { id: 'Baby', label: 'Pensão' },
   { id: 'DollarSign', label: 'Finanças' },
   { id: 'PiggyBank', label: 'Economia' },
   { id: 'CreditCard', label: 'Cartão' },
@@ -98,25 +101,28 @@ export const CATEGORY_ICONS = [
 
 const DEFAULT_EXPENSE_CATEGORIES = [
   'Alimentação',
+  'Supermercado',
   'Aluguel',
+  'Pensão Alimentícia',
   'Cartão de Crédito',
   'Transporte',
   'Internet',
   'Telefone',
   'Saúde',
-  'Lazer',
-  'Educação',
-  'Contas de Casa',
-  'Supermercado',
   'Farmácia',
+  'Educação',
+  'Lazer',
+  'Contas de Casa',
   'Vestuário',
   'Assinaturas',
+  'Pets',
   'Outro',
 ];
 
 const DEFAULT_INCOME_CATEGORIES = [
   'Salário',
   'Freelance',
+  'Pensão Alimentícia',
   'Rendimentos',
   'Vendas',
   'Bônus / PLR',
@@ -192,6 +198,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       case 'Music': return <Music className={className} />;
       case 'Film': return <Film className={className} />;
       case 'Sparkles': return <Sparkles className={className} />;
+      case 'Baby': return <Baby className={className} />;
       default: return <Tag className={className} />;
     }
   };
@@ -642,31 +649,42 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
             </div>
           )}
           
-          {/* Botão de Deslizar: PAGO (para gasto) / RECEBIDO (para receita) */}
-          <div className="flex items-center justify-between py-1.5 px-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200/90 dark:border-slate-700/80 rounded-xl">
+          {/* Botão de Deslizar: PAGO / NÃO PAGO (ou RECEBIDO / NÃO RECEBIDO) - texto limpo e botão puro */}
+          <div 
+            onClick={() => setIsPaid(!isPaid)}
+            className="flex items-center justify-between py-2 px-3 sm:py-2.5 sm:px-4 bg-slate-50 dark:bg-slate-800/70 hover:bg-slate-100/80 dark:hover:bg-slate-800 border border-slate-200/90 dark:border-slate-700/80 rounded-2xl cursor-pointer transition-colors select-none shadow-2xs"
+            title={isPaid ? 'Clique para alternar' : 'Clique para alternar'}
+          >
             <span className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white">
-              {type === 'income' ? 'Recebido' : type === 'investment' ? 'Aportado' : 'Pago'}
+              {type === 'income' 
+                ? (isPaid ? 'Recebido' : 'Não recebido') 
+                : type === 'investment' 
+                ? (isPaid ? 'Aportado' : 'Não aportado') 
+                : (isPaid ? 'Pago' : 'Não pago')}
             </span>
             
-            {/* Botão para deslizar (Toggle switch) */}
+            {/* Botão para deslizar (Toggle switch puro, sem ícones internos) */}
             <button
               type="button"
               role="switch"
               aria-checked={isPaid}
-              onClick={() => setIsPaid(!isPaid)}
-              className={`relative inline-flex h-5.5 w-10.5 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden ${
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsPaid(!isPaid);
+              }}
+              className={`relative inline-flex items-center h-7 w-12 shrink-0 cursor-pointer rounded-full p-0.5 transition-colors duration-200 ease-in-out focus:outline-hidden ml-3 shadow-inner ${
                 isPaid 
                   ? type === 'expense' 
-                    ? 'bg-[#be4357]' 
+                    ? 'bg-rose-600' 
                     : type === 'investment' 
-                    ? 'bg-[#43529c]' 
-                    : 'bg-[#278672]' 
-                  : 'bg-slate-300 dark:bg-slate-700'
+                    ? 'bg-indigo-600' 
+                    : 'bg-emerald-600' 
+                  : 'bg-slate-300 dark:bg-slate-600'
               }`}
-              title={isPaid ? 'Marcar como pendente' : 'Marcar como concluído'}
+              title={isPaid ? 'Alternar' : 'Alternar'}
             >
               <span
-                className={`pointer-events-none inline-block h-4.5 w-4.5 transform rounded-full bg-white shadow-xs ring-0 transition duration-200 ease-in-out ${
+                className={`pointer-events-none block h-6 w-6 rounded-full bg-white shadow-md transform transition-transform duration-200 ease-in-out ${
                   isPaid ? 'translate-x-5' : 'translate-x-0'
                 }`}
               />
@@ -694,7 +712,13 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     setAmount(display);
                     if (formWarningMessage) setFormWarningMessage(null);
                   }}
-                  className="w-full text-xs sm:text-sm font-bold pl-8.5 pr-9 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-slate-900 dark:focus:ring-emerald-500 transition-colors"
+                  className={`w-full text-xs sm:text-sm font-bold pl-8.5 pr-9 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 transition-colors ${
+                    type === 'expense'
+                      ? 'focus:ring-rose-500 dark:focus:ring-rose-500 focus:border-rose-400'
+                      : type === 'investment'
+                      ? 'focus:ring-indigo-500 dark:focus:ring-indigo-500 focus:border-indigo-400'
+                      : 'focus:ring-emerald-500 dark:focus:ring-emerald-500 focus:border-emerald-400'
+                  }`}
                 />
                 <button
                   type="button"
@@ -715,7 +739,13 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               </label>
 
               {/* Caixa com formato '20 set 2026' e botões (< >) para passar o dia */}
-              <div className="relative flex items-center justify-between bg-white dark:bg-slate-800 py-1.5 px-3 rounded-xl border border-slate-300 dark:border-slate-700 focus-within:ring-2 focus-within:ring-slate-900 dark:focus-within:ring-emerald-500 transition-colors">
+              <div className={`relative flex items-center justify-between bg-white dark:bg-slate-800 py-1.5 px-3 rounded-xl border border-slate-300 dark:border-slate-700 focus-within:ring-2 transition-colors ${
+                type === 'expense'
+                  ? 'focus-within:ring-rose-500 dark:focus-within:ring-rose-500 focus-within:border-rose-400'
+                  : type === 'investment'
+                  ? 'focus-within:ring-indigo-500 dark:focus-within:ring-indigo-500 focus-within:border-indigo-400'
+                  : 'focus-within:ring-emerald-500 dark:focus-within:ring-emerald-500 focus-within:border-emerald-400'
+              }`}>
                 {/* Clique no texto/ícone abre o calendário */}
                 <div 
                   onClick={() => {
@@ -795,7 +825,11 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               className={`w-full text-xs placeholder:text-[11.5px] placeholder:text-slate-400 dark:placeholder:text-slate-500 py-2 px-3 rounded-xl border bg-white dark:bg-slate-800 focus:outline-hidden focus:ring-2 text-slate-800 dark:text-white transition-colors ${
                 descriptionError
                   ? 'border-rose-400/80 focus:ring-rose-400/60 bg-rose-50/20 dark:bg-rose-950/20'
-                  : 'border-slate-300 dark:border-slate-700 focus:ring-slate-900 dark:focus:ring-emerald-500'
+                  : type === 'expense'
+                  ? 'border-slate-300 dark:border-slate-700 focus:ring-rose-500 dark:focus:ring-rose-500 focus:border-rose-400'
+                  : type === 'investment'
+                  ? 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500 dark:focus:ring-indigo-500 focus:border-indigo-400'
+                  : 'border-slate-300 dark:border-slate-700 focus:ring-emerald-500 dark:focus:ring-emerald-500 focus:border-emerald-400'
               }`}
             />
           </div>
@@ -809,12 +843,31 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
             <div 
               onClick={() => setIsCategoryPickerOpen(true)}
-              className="relative flex items-center justify-between bg-white dark:bg-slate-800 py-2 px-3 rounded-xl border border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-600 cursor-pointer transition-colors"
+              className={`relative flex items-center justify-between bg-white dark:bg-slate-800 py-2 px-3 rounded-xl border cursor-pointer transition-colors ${
+                type === 'expense'
+                  ? 'border-slate-300 dark:border-slate-700 hover:border-rose-400 dark:hover:border-rose-500'
+                  : type === 'investment'
+                  ? 'border-slate-300 dark:border-slate-700 hover:border-indigo-400 dark:hover:border-indigo-500'
+                  : 'border-slate-300 dark:border-slate-700 hover:border-emerald-400 dark:hover:border-emerald-500'
+              }`}
               title="Clique para escolher ou adicionar categoria"
             >
-              <span className={`text-xs sm:text-sm font-semibold truncate ${category ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500'}`}>
-                {category || 'Selecione uma categoria...'}
-              </span>
+              <div className="flex items-center gap-2.5 min-w-0">
+                {category ? (
+                  <>
+                    <span className="w-5 h-5 flex items-center justify-center text-slate-600 dark:text-slate-300 shrink-0">
+                      {React.createElement(getCategoryVisual(category).icon, { className: "w-4 h-4" })}
+                    </span>
+                    <span className="text-xs sm:text-sm font-semibold truncate text-slate-900 dark:text-white">
+                      {category}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-xs sm:text-sm font-semibold truncate text-slate-400 dark:text-slate-500">
+                    Selecione uma categoria...
+                  </span>
+                )}
+              </div>
 
               <button
                 type="button"
@@ -854,7 +907,11 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               className={`w-full text-xs placeholder:text-[11.5px] placeholder:text-slate-400 dark:placeholder:text-slate-500 py-2 px-3 rounded-xl border bg-white dark:bg-slate-800 focus:outline-hidden focus:ring-2 text-slate-800 dark:text-white transition-colors ${
                 bankNameError
                   ? 'border-rose-400/80 focus:ring-rose-400/60 bg-rose-50/20 dark:bg-rose-950/20'
-                  : 'border-slate-300 dark:border-slate-700 focus:ring-slate-900 dark:focus:ring-emerald-500'
+                  : type === 'expense'
+                  ? 'border-slate-300 dark:border-slate-700 focus:ring-rose-500 dark:focus:ring-rose-500 focus:border-rose-400'
+                  : type === 'investment'
+                  ? 'border-slate-300 dark:border-slate-700 focus:ring-indigo-500 dark:focus:ring-indigo-500 focus:border-indigo-400'
+                  : 'border-slate-300 dark:border-slate-700 focus:ring-emerald-500 dark:focus:ring-emerald-500 focus:border-emerald-400'
               }`}
             />
           </div>
@@ -1043,7 +1100,13 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                           min="1"
                           value={customDays}
                           onChange={(e) => setCustomDays(e.target.value)}
-                          className="w-14 p-1 text-xs text-center font-bold border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-850 text-slate-900 dark:text-white rounded-lg focus:outline-hidden focus:ring-1 focus:ring-slate-900 dark:focus:ring-emerald-500"
+                          className={`w-14 p-1 text-xs text-center font-bold border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-850 text-slate-900 dark:text-white rounded-lg focus:outline-hidden focus:ring-1 ${
+                            type === 'expense'
+                              ? 'focus:ring-rose-500 dark:focus:ring-rose-500'
+                              : type === 'investment'
+                              ? 'focus:ring-indigo-500 dark:focus:ring-indigo-500'
+                              : 'focus:ring-emerald-500 dark:focus:ring-emerald-500'
+                          }`}
                         />
                         <span className="text-xs text-slate-600 dark:text-slate-300">dias</span>
                       </div>
@@ -1160,7 +1223,13 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                       placeholder="Buscar categoria..."
                       value={categorySearch}
                       onChange={(e) => setCategorySearch(e.target.value)}
-                      className="w-full text-xs pl-8.5 pr-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 focus:outline-hidden focus:ring-2 focus:ring-slate-900 dark:focus:ring-emerald-500 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white"
+                      className={`w-full text-xs pl-8.5 pr-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 focus:outline-hidden focus:ring-2 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white ${
+                        type === 'expense'
+                          ? 'focus:ring-rose-500 dark:focus:ring-rose-500'
+                          : type === 'investment'
+                          ? 'focus:ring-indigo-500 dark:focus:ring-indigo-500'
+                          : 'focus:ring-emerald-500 dark:focus:ring-emerald-500'
+                      }`}
                     />
                   </div>
                 </div>
@@ -1175,6 +1244,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                       {filteredCategories.map((catName) => {
                         const isSelected = category === catName;
+                        const visual = getCategoryVisual(catName);
+                        const CatIcon = visual.icon;
                         return (
                           <button
                             key={catName}
@@ -1185,13 +1256,26 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                             }}
                             className={`p-2.5 rounded-xl border text-xs font-bold text-left transition-all flex items-center justify-between cursor-pointer ${
                               isSelected
-                                ? 'bg-slate-900 dark:bg-slate-700 text-white border-slate-900 dark:border-slate-700 shadow-2xs'
+                                ? type === 'expense'
+                                  ? 'bg-rose-600 text-white border-rose-600 shadow-2xs'
+                                  : type === 'investment'
+                                  ? 'bg-indigo-600 text-white border-indigo-600 shadow-2xs'
+                                  : 'bg-emerald-600 text-white border-emerald-600 shadow-2xs'
                                 : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                             }`}
                           >
-                            <span className="truncate">{catName}</span>
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <span className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
+                                isSelected 
+                                  ? 'bg-white/20 text-white' 
+                                  : 'bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300'
+                              }`}>
+                                <CatIcon className="w-4 h-4" />
+                              </span>
+                              <span className="truncate">{catName}</span>
+                            </div>
                             {isSelected && (
-                              <Check className="w-3.5 h-3.5 shrink-0 ml-1 text-slate-300" />
+                              <Check className="w-3.5 h-3.5 shrink-0 ml-1 text-white" />
                             )}
                           </button>
                         );
@@ -1218,7 +1302,11 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                 <div className="p-3.5 sm:p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800 shrink-0">
                   <button
                     type="button"
-                    onClick={() => setCategoryModalView('list')}
+                    onClick={() => {
+                      setIsCatIconPickerOpen(false);
+                      setIsCatColorPickerOpen(false);
+                      setCategoryModalView('list');
+                    }}
                     className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                     title="Voltar para a lista"
                   >
@@ -1229,7 +1317,11 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                   </h4>
                   <button
                     type="button"
-                    onClick={() => setIsCategoryPickerOpen(false)}
+                    onClick={() => {
+                      setIsCatIconPickerOpen(false);
+                      setIsCatColorPickerOpen(false);
+                      setIsCategoryPickerOpen(false);
+                    }}
                     className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-white rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                     title="Fechar"
                   >
@@ -1307,7 +1399,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     </div>
                   </div>
 
-                  {/* 1. Item Cor: lado esquerdo ícone + Cor, lado direito círculo com a cor + serrinha pro lado esquerdo que ao clicar aparece as opções de cor */}
+                  {/* 1. Item Cor: alinhado com o item Ícone, seta pra direita, paleta em colunas */}
                   <div className="bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 overflow-hidden transition-all">
                     <button
                       type="button"
@@ -1315,8 +1407,10 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                       className="w-full flex items-center justify-between p-3 cursor-pointer hover:bg-slate-100/70 dark:hover:bg-slate-800 transition-colors"
                       title="Clique para escolher a cor"
                     >
-                      <div className="flex items-center gap-2">
-                        <Palette className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                      <div className="flex items-center gap-3">
+                        <div className="w-5 h-5 flex items-center justify-center text-slate-500 dark:text-slate-400 shrink-0">
+                          <Palette className="w-4.5 h-4.5" />
+                        </div>
                         <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200">
                           Cor
                         </span>
@@ -1326,34 +1420,38 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                           className="w-6 h-6 rounded-full border-2 border-white dark:border-slate-700 shadow-xs shrink-0" 
                           style={{ backgroundColor: newCatColor }} 
                         />
-                        <ChevronLeft className={`w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform duration-200 ${isCatColorPickerOpen ? '-rotate-90' : ''}`} />
+                        <ChevronRight className={`w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform duration-200 ${isCatColorPickerOpen ? 'rotate-90' : ''}`} />
                       </div>
                     </button>
 
-                    {/* Paleta de cores ao clicar */}
+                    {/* Paleta de cores em colunas */}
                     {isCatColorPickerOpen && (
-                      <div className="px-3 pb-3 pt-1 border-t border-slate-200/60 dark:border-slate-700/60 animate-fadeIn">
-                        <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1">
-                          {CATEGORY_COLORS.map((c) => (
-                            <button
-                              key={c.hex}
-                              type="button"
-                              onClick={() => setNewCatColor(c.hex)}
-                              className={`w-7.5 h-7.5 rounded-full shrink-0 flex items-center justify-center transition-all cursor-pointer ${
-                                newCatColor === c.hex ? 'ring-2 ring-offset-2 ring-slate-700 dark:ring-slate-300 scale-105' : 'hover:scale-105 opacity-85 hover:opacity-100'
-                              }`}
-                              style={{ backgroundColor: c.hex }}
-                              title={c.name}
-                            >
-                              {newCatColor === c.hex && <Check className="w-3.5 h-3.5 text-white stroke-[3]" />}
-                            </button>
-                          ))}
+                      <div className="px-3 pb-3.5 pt-2 border-t border-slate-200/60 dark:border-slate-700/60 animate-fadeIn">
+                        <div className="grid grid-cols-5 gap-3 max-w-xs mx-auto py-1 justify-items-center">
+                          {CATEGORY_COLORS.map((c) => {
+                            const isSelected = newCatColor === c.hex;
+                            return (
+                              <button
+                                key={c.hex}
+                                type="button"
+                                onClick={() => setNewCatColor(c.hex)}
+                                className={`w-8.5 h-8.5 rounded-full shrink-0 flex items-center justify-center transition-all cursor-pointer ${
+                                  isSelected ? 'ring-2 ring-offset-2 ring-slate-800 dark:ring-slate-200 scale-110 shadow-xs' : 'hover:scale-105 opacity-85 hover:opacity-100'
+                                }`}
+                                style={{ backgroundColor: c.hex }}
+                                title={c.name}
+                                aria-label={`Cor ${c.name}`}
+                              >
+                                {isSelected && <Check className="w-4 h-4 text-white stroke-[3]" />}
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
                     )}
                   </div>
 
-                  {/* 2. Item Categoria: abaixo da cor, ícone da categoria + texto Categoria, lado direito seta pro lado direito que ao clicar abre os ícones */}
+                  {/* 2. Item Ícone: alinhado perfeitamente com Cor, sem quadrado ao redor do símbolo, seta pra direita, grade em colunas sem nomes */}
                   <div className="bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 overflow-hidden transition-all">
                     <button
                       type="button"
@@ -1361,15 +1459,12 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                       className="w-full flex items-center justify-between p-3 cursor-pointer hover:bg-slate-100/70 dark:hover:bg-slate-800 transition-colors"
                       title="Clique para escolher o ícone da categoria"
                     >
-                      <div className="flex items-center gap-2.5">
-                        <div 
-                          className="w-7 h-7 rounded-xl flex items-center justify-center text-white shrink-0 shadow-2xs"
-                          style={{ backgroundColor: newCatColor }}
-                        >
-                          {renderCategoryIcon(newCatIcon, "w-4 h-4")}
+                      <div className="flex items-center gap-3">
+                        <div className="w-5 h-5 flex items-center justify-center text-slate-500 dark:text-slate-400 shrink-0">
+                          {renderCategoryIcon(newCatIcon, "w-4.5 h-4.5")}
                         </div>
                         <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200">
-                          Categoria
+                          Ícone
                         </span>
                       </div>
                       <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500">
@@ -1377,10 +1472,10 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                       </div>
                     </button>
 
-                    {/* Grade de opções de ícones ao clicar */}
+                    {/* Grade de ícones: todos visíveis num quadrado só sem precisar deslizar pra baixo */}
                     {isCatIconPickerOpen && (
-                      <div className="px-3 pb-3 pt-1 border-t border-slate-200/60 dark:border-slate-700/60 animate-fadeIn">
-                        <div className="grid grid-cols-5 gap-1.5 max-h-40 overflow-y-auto p-1.5 bg-white dark:bg-slate-850 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
+                      <div className="px-2.5 pb-3 pt-2 border-t border-slate-200/60 dark:border-slate-700/60 animate-fadeIn">
+                        <div className="grid grid-cols-7 gap-1.5 p-2 bg-slate-100/70 dark:bg-slate-900/60 rounded-xl border border-slate-200/60 dark:border-slate-700/60 justify-items-center">
                           {CATEGORY_ICONS.map((item) => {
                             const isSelected = newCatIcon === item.id;
                             return (
@@ -1388,15 +1483,16 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                                 key={item.id}
                                 type="button"
                                 onClick={() => setNewCatIcon(item.id)}
-                                className={`p-2 rounded-xl flex flex-col items-center justify-center gap-1 transition-all cursor-pointer ${
+                                style={isSelected ? { backgroundColor: newCatColor, color: '#ffffff' } : undefined}
+                                className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
                                   isSelected
-                                    ? 'bg-slate-800 text-white shadow-xs'
-                                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/60'
+                                    ? 'ring-2 ring-offset-2 ring-slate-800 dark:ring-white shadow-xs scale-105'
+                                    : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs'
                                 }`}
                                 title={item.label}
+                                aria-label={item.label}
                               >
-                                {renderCategoryIcon(item.id, "w-4 h-4")}
-                                <span className="text-[9px] font-semibold truncate w-full text-center">{item.label}</span>
+                                {renderCategoryIcon(item.id, "w-4.5 h-4.5 sm:w-5 sm:h-5")}
                               </button>
                             );
                           })}
@@ -1418,6 +1514,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                       handleSaveCustomCategoryRich(name, newCatType, newCatColor, newCatIcon);
                       setCategory(name);
                       setIsCategoryPickerOpen(false);
+                      setIsCatIconPickerOpen(false);
+                      setIsCatColorPickerOpen(false);
                       setCategoryModalView('list');
                     }}
                     className={`w-12 h-12 rounded-full flex items-center justify-center shadow-md transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed ${
