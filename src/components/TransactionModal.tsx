@@ -855,8 +855,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               <div className="flex items-center gap-2.5 min-w-0">
                 {category ? (
                   <>
-                    <span className="w-5 h-5 flex items-center justify-center text-slate-600 dark:text-slate-300 shrink-0">
-                      {React.createElement(getCategoryVisual(category).icon, { className: "w-4 h-4" })}
+                    <span className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 border ${getCategoryVisual(category).bgColor} ${getCategoryVisual(category).textColor} ${getCategoryVisual(category).borderColor}`}>
+                      {React.createElement(getCategoryVisual(category).icon, { className: "w-3.5 h-3.5" })}
                     </span>
                     <span className="text-xs sm:text-sm font-semibold truncate text-slate-900 dark:text-white">
                       {category}
@@ -992,7 +992,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                             setInstallmentsCount(next);
                             if (currentInstallment > next) setCurrentInstallment(next);
                           }}
-                          className="w-7 h-7 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center justify-center font-bold text-slate-700 dark:text-slate-200 text-sm shadow-2xs transition-colors cursor-pointer"
+                          className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-200/80 dark:hover:bg-slate-700 flex items-center justify-center font-bold text-slate-700 dark:text-slate-200 text-sm shadow-2xs transition-colors cursor-pointer"
                           title="Diminuir quantidade de parcelas"
                         >
                           -
@@ -1003,7 +1003,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                         <button
                           type="button"
                           onClick={() => setInstallmentsCount((prev) => prev + 1)}
-                          className="w-7 h-7 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center justify-center font-bold text-slate-700 dark:text-slate-200 text-sm shadow-2xs transition-colors cursor-pointer"
+                          className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-200/80 dark:hover:bg-slate-700 flex items-center justify-center font-bold text-slate-700 dark:text-slate-200 text-sm shadow-2xs transition-colors cursor-pointer"
                           title="Aumentar quantidade de parcelas"
                         >
                           +
@@ -1018,7 +1018,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                         <button
                           type="button"
                           onClick={() => setCurrentInstallment((prev) => Math.max(1, prev - 1))}
-                          className="w-7 h-7 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center justify-center font-bold text-slate-700 dark:text-slate-200 text-sm shadow-2xs transition-colors cursor-pointer"
+                          className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-200/80 dark:hover:bg-slate-700 flex items-center justify-center font-bold text-slate-700 dark:text-slate-200 text-sm shadow-2xs transition-colors cursor-pointer"
                           title="Parcela anterior"
                         >
                           -
@@ -1029,7 +1029,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                         <button
                           type="button"
                           onClick={() => setCurrentInstallment((prev) => Math.min(installmentsCount, prev + 1))}
-                          className="w-7 h-7 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center justify-center font-bold text-slate-700 dark:text-slate-200 text-sm shadow-2xs transition-colors cursor-pointer"
+                          className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-200/80 dark:hover:bg-slate-700 flex items-center justify-center font-bold text-slate-700 dark:text-slate-200 text-sm shadow-2xs transition-colors cursor-pointer"
                           title="Próxima parcela"
                         >
                           +
@@ -1261,14 +1261,14 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                                   : type === 'investment'
                                   ? 'bg-indigo-600 text-white border-indigo-600 shadow-2xs'
                                   : 'bg-emerald-600 text-white border-emerald-600 shadow-2xs'
-                                : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                                : 'bg-slate-50/80 dark:bg-slate-800/80 text-slate-800 dark:text-slate-200 border-slate-200/80 dark:border-slate-700/80 hover:bg-slate-100 dark:hover:bg-slate-700/80'
                             }`}
                           >
                             <div className="flex items-center gap-2.5 min-w-0">
                               <span className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
                                 isSelected 
                                   ? 'bg-white/20 text-white' 
-                                  : 'bg-slate-100 dark:bg-slate-700/60 text-slate-600 dark:text-slate-300'
+                                  : `${visual.bgColor} ${visual.textColor} border ${visual.borderColor}`
                               }`}>
                                 <CatIcon className="w-4 h-4" />
                               </span>
@@ -1404,7 +1404,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     <button
                       type="button"
                       onClick={() => setIsCatColorPickerOpen(!isCatColorPickerOpen)}
-                      className="w-full flex items-center justify-between p-3 cursor-pointer hover:bg-slate-100/70 dark:hover:bg-slate-800 transition-colors"
+                      className="w-full flex items-center justify-between p-3 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
                       title="Clique para escolher a cor"
                     >
                       <div className="flex items-center gap-3">
@@ -1456,11 +1456,11 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     <button
                       type="button"
                       onClick={() => setIsCatIconPickerOpen(!isCatIconPickerOpen)}
-                      className="w-full flex items-center justify-between p-3 cursor-pointer hover:bg-slate-100/70 dark:hover:bg-slate-800 transition-colors"
+                      className="w-full flex items-center justify-between p-3 cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
                       title="Clique para escolher o ícone da categoria"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-5 h-5 flex items-center justify-center text-slate-500 dark:text-slate-400 shrink-0">
+                        <div className="w-5 h-5 flex items-center justify-center shrink-0" style={{ color: newCatColor }}>
                           {renderCategoryIcon(newCatIcon, "w-4.5 h-4.5")}
                         </div>
                         <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200">
@@ -1475,7 +1475,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     {/* Grade de ícones: todos visíveis num quadrado só sem precisar deslizar pra baixo */}
                     {isCatIconPickerOpen && (
                       <div className="px-2.5 pb-3 pt-2 border-t border-slate-200/60 dark:border-slate-700/60 animate-fadeIn">
-                        <div className="grid grid-cols-7 gap-1.5 p-2 bg-slate-100/70 dark:bg-slate-900/60 rounded-xl border border-slate-200/60 dark:border-slate-700/60 justify-items-center">
+                        <div className="grid grid-cols-7 gap-1.5 p-2 rounded-xl border border-slate-200/80 dark:border-slate-700/80 bg-slate-100/70 dark:bg-slate-900/80 justify-items-center transition-colors">
                           {CATEGORY_ICONS.map((item) => {
                             const isSelected = newCatIcon === item.id;
                             return (
@@ -1487,7 +1487,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                                 className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center transition-all cursor-pointer ${
                                   isSelected
                                     ? 'ring-2 ring-offset-2 ring-slate-800 dark:ring-white shadow-xs scale-105'
-                                    : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200/80 dark:border-slate-700/80 shadow-2xs'
+                                    : 'bg-slate-500/10 hover:bg-slate-500/20 text-slate-700 dark:text-slate-200 border border-slate-500/15 dark:border-slate-400/20 shadow-2xs'
                                 }`}
                                 title={item.label}
                                 aria-label={item.label}

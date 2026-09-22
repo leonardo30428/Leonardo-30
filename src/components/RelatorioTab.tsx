@@ -658,10 +658,6 @@ export const RelatorioTab: React.FC<RelatorioTabProps> = ({
                     
                     {/* Categoria com ícone e nome */}
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <div 
-                        className="w-3 h-3 rounded-full shrink-0"
-                        style={{ backgroundColor: colorDot }}
-                      />
                       <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${visual.bgColor} ${visual.textColor} border ${visual.borderColor}`}>
                         <IconComp className="w-4 h-4" />
                       </div>

@@ -297,7 +297,7 @@ export const MaisTab: React.FC<MaisTabProps> = ({
                       }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className="shrink-0 p-2 bg-white dark:bg-slate-800 rounded-xl shadow-2xs border border-slate-200/60 dark:border-slate-700">
+                        <div className="shrink-0 p-2 bg-slate-100 dark:bg-slate-800 rounded-xl shadow-2xs border border-slate-200/60 dark:border-slate-700">
                           {opt.icon}
                         </div>
                         <div className="min-w-0">
