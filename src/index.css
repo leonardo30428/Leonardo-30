@@ -98,11 +98,6 @@ button, input, a, [role="button"] {
   --color-matte-amber: #b87514;
 }
 
-/* Redução do excesso de vibração e saturação para visual elegante e fosco */
-body {
-  filter: saturate(0.92);
-}
-
 /* Redução sutil de saturação de néon para aspecto refinado e fosco */
 button, .card, [role="button"] {
   backdrop-filter: blur(8px);

@@ -38,7 +38,8 @@ import {
   CreditCard,
   Music,
   Film,
-  Sparkles
+  Sparkles,
+  Palette
 } from 'lucide-react';
 import { Transaction, TransactionType } from '../types';
 import { getTodayDateString, formatCurrencyInput, numericToMaskedString } from '../utils/finance';
@@ -167,6 +168,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   const [newCatType, setNewCatType] = useState<TransactionType>(defaultType);
   const [newCatColor, setNewCatColor] = useState<string>(CATEGORY_COLORS[0].hex);
   const [newCatIcon, setNewCatIcon] = useState<string>('Tag');
+  const [isCatColorPickerOpen, setIsCatColorPickerOpen] = useState(false);
+  const [isCatIconPickerOpen, setIsCatIconPickerOpen] = useState(false);
 
   const renderCategoryIcon = (iconId: string, className = "w-5 h-5") => {
     switch (iconId) {
@@ -1121,6 +1124,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                   onClick={() => {
                     setNewCatName('');
                     setNewCatType(type);
+                    setIsCatColorPickerOpen(false);
+                    setIsCatIconPickerOpen(false);
                     setCategoryModalView('create');
                   }}
                   className="p-3.5 sm:p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/80 cursor-pointer transition-colors group"
@@ -1134,6 +1139,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                       e.stopPropagation();
                       setNewCatName('');
                       setNewCatType(type);
+                      setIsCatColorPickerOpen(false);
+                      setIsCatIconPickerOpen(false);
                       setCategoryModalView('create');
                     }}
                     className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 group-hover:bg-slate-200 dark:group-hover:bg-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
@@ -1208,14 +1215,14 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               <>
                 {/* Nova Aba de Criação de Categoria */}
                 {/* Header */}
-                <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800">
+                <div className="p-3.5 sm:p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800 shrink-0">
                   <button
                     type="button"
                     onClick={() => setCategoryModalView('list')}
-                    className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                    className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                     title="Voltar para a lista"
                   >
-                    <ArrowLeft className="w-4 h-4 stroke-[2.5]" />
+                    <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
                   </button>
                   <h4 className="font-extrabold text-slate-900 dark:text-white text-sm sm:text-base">
                     Nova categoria
@@ -1223,7 +1230,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                   <button
                     type="button"
                     onClick={() => setIsCategoryPickerOpen(false)}
-                    className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-white rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                    className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-white rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
                     title="Fechar"
                   >
                     <X className="w-4 h-4" />
@@ -1231,12 +1238,12 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                 </div>
 
                 {/* Corpo da Nova Aba */}
-                <div className="p-4 sm:p-5 space-y-4 overflow-y-auto flex-1">
+                <div className="p-3.5 sm:p-4 space-y-3 overflow-y-auto flex-1">
                   
                   {/* Ícone da categoria e do lado para adicionar o nome */}
                   <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200/80 dark:border-slate-700/80">
                     <div 
-                      className="w-13 h-13 rounded-2xl flex items-center justify-center text-white shrink-0 shadow-xs transition-all"
+                      className="w-12 h-12 rounded-2xl flex items-center justify-center text-white shrink-0 shadow-xs transition-all"
                       style={{ backgroundColor: newCatColor }}
                       title="Pré-visualização do ícone"
                     >
@@ -1261,15 +1268,15 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                             setCategoryModalView('list');
                           }
                         }}
-                        className="w-full text-xs sm:text-sm font-semibold p-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-slate-700 dark:focus:ring-slate-500 transition-colors"
+                        className="w-full text-xs sm:text-sm font-semibold p-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-slate-700 dark:focus:ring-slate-500 transition-colors"
                         autoFocus
                       />
                     </div>
                   </div>
 
-                  {/* Embaixo: Tipo da categoria se é saída ou entrada */}
+                  {/* Tipo da categoria: Saída ou Entrada */}
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
                       Tipo da categoria
                     </label>
                     <div className="grid grid-cols-2 gap-2">
@@ -1300,68 +1307,108 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     </div>
                   </div>
 
-                  {/* Embaixo ainda a cor (paleta opaca e sofisticada) */}
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                      Cor
-                    </label>
-                    <div className="flex items-center gap-2 overflow-x-auto pb-1.5 pt-0.5">
-                      {CATEGORY_COLORS.map((c) => (
-                        <button
-                          key={c.hex}
-                          type="button"
-                          onClick={() => setNewCatColor(c.hex)}
-                          className={`w-7.5 h-7.5 rounded-full shrink-0 flex items-center justify-center transition-all cursor-pointer ${
-                            newCatColor === c.hex ? 'ring-2 ring-offset-2 ring-slate-700 dark:ring-slate-300 scale-105' : 'hover:scale-105 opacity-85 hover:opacity-100'
-                          }`}
-                          style={{ backgroundColor: c.hex }}
-                          title={c.name}
-                        >
-                          {newCatColor === c.hex && <Check className="w-3.5 h-3.5 text-white stroke-[3]" />}
-                        </button>
-                      ))}
-                    </div>
+                  {/* 1. Item Cor: lado esquerdo ícone + Cor, lado direito círculo com a cor + serrinha pro lado esquerdo que ao clicar aparece as opções de cor */}
+                  <div className="bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 overflow-hidden transition-all">
+                    <button
+                      type="button"
+                      onClick={() => setIsCatColorPickerOpen(!isCatColorPickerOpen)}
+                      className="w-full flex items-center justify-between p-3 cursor-pointer hover:bg-slate-100/70 dark:hover:bg-slate-800 transition-colors"
+                      title="Clique para escolher a cor"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Palette className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                        <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200">
+                          Cor
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span 
+                          className="w-6 h-6 rounded-full border-2 border-white dark:border-slate-700 shadow-xs shrink-0" 
+                          style={{ backgroundColor: newCatColor }} 
+                        />
+                        <ChevronLeft className={`w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform duration-200 ${isCatColorPickerOpen ? '-rotate-90' : ''}`} />
+                      </div>
+                    </button>
+
+                    {/* Paleta de cores ao clicar */}
+                    {isCatColorPickerOpen && (
+                      <div className="px-3 pb-3 pt-1 border-t border-slate-200/60 dark:border-slate-700/60 animate-fadeIn">
+                        <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1">
+                          {CATEGORY_COLORS.map((c) => (
+                            <button
+                              key={c.hex}
+                              type="button"
+                              onClick={() => setNewCatColor(c.hex)}
+                              className={`w-7.5 h-7.5 rounded-full shrink-0 flex items-center justify-center transition-all cursor-pointer ${
+                                newCatColor === c.hex ? 'ring-2 ring-offset-2 ring-slate-700 dark:ring-slate-300 scale-105' : 'hover:scale-105 opacity-85 hover:opacity-100'
+                              }`}
+                              style={{ backgroundColor: c.hex }}
+                              title={c.name}
+                            >
+                              {newCatColor === c.hex && <Check className="w-3.5 h-3.5 text-white stroke-[3]" />}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
-                  {/* E em embaixo o ícone da categoria */}
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                      Ícone da categoria
-                    </label>
-                    <div className="grid grid-cols-5 gap-2 max-h-40 overflow-y-auto p-1.5 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-200/60 dark:border-slate-700/60">
-                      {CATEGORY_ICONS.map((item) => {
-                        const isSelected = newCatIcon === item.id;
-                        return (
-                          <button
-                            key={item.id}
-                            type="button"
-                            onClick={() => setNewCatIcon(item.id)}
-                            className={`p-2 rounded-xl flex flex-col items-center justify-center gap-1 transition-all cursor-pointer ${
-                              isSelected
-                                ? 'bg-slate-800 text-white shadow-xs'
-                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-700/60'
-                            }`}
-                            title={item.label}
-                          >
-                            {renderCategoryIcon(item.id, "w-4 h-4")}
-                            <span className="text-[9px] font-semibold truncate w-full text-center">{item.label}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
+                  {/* 2. Item Categoria: abaixo da cor, ícone da categoria + texto Categoria, lado direito seta pro lado direito que ao clicar abre os ícones */}
+                  <div className="bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 overflow-hidden transition-all">
+                    <button
+                      type="button"
+                      onClick={() => setIsCatIconPickerOpen(!isCatIconPickerOpen)}
+                      className="w-full flex items-center justify-between p-3 cursor-pointer hover:bg-slate-100/70 dark:hover:bg-slate-800 transition-colors"
+                      title="Clique para escolher o ícone da categoria"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div 
+                          className="w-7 h-7 rounded-xl flex items-center justify-center text-white shrink-0 shadow-2xs"
+                          style={{ backgroundColor: newCatColor }}
+                        >
+                          {renderCategoryIcon(newCatIcon, "w-4 h-4")}
+                        </div>
+                        <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-200">
+                          Categoria
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500">
+                        <ChevronRight className={`w-4 h-4 transition-transform duration-200 ${isCatIconPickerOpen ? 'rotate-90' : ''}`} />
+                      </div>
+                    </button>
+
+                    {/* Grade de opções de ícones ao clicar */}
+                    {isCatIconPickerOpen && (
+                      <div className="px-3 pb-3 pt-1 border-t border-slate-200/60 dark:border-slate-700/60 animate-fadeIn">
+                        <div className="grid grid-cols-5 gap-1.5 max-h-40 overflow-y-auto p-1.5 bg-white dark:bg-slate-850 rounded-xl border border-slate-200/60 dark:border-slate-700/60">
+                          {CATEGORY_ICONS.map((item) => {
+                            const isSelected = newCatIcon === item.id;
+                            return (
+                              <button
+                                key={item.id}
+                                type="button"
+                                onClick={() => setNewCatIcon(item.id)}
+                                className={`p-2 rounded-xl flex flex-col items-center justify-center gap-1 transition-all cursor-pointer ${
+                                  isSelected
+                                    ? 'bg-slate-800 text-white shadow-xs'
+                                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/60'
+                                }`}
+                                title={item.label}
+                              >
+                                {renderCategoryIcon(item.id, "w-4 h-4")}
+                                <span className="text-[9px] font-semibold truncate w-full text-center">{item.label}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                 </div>
 
-                {/* Footer da Nova Aba */}
-                <div className="p-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2 bg-slate-50 dark:bg-slate-800">
-                  <button
-                    type="button"
-                    onClick={() => setCategoryModalView('list')}
-                    className="px-3.5 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-colors cursor-pointer"
-                  >
-                    Voltar
-                  </button>
+                {/* Footer da Nova Aba: Somente o ícone de confirmar sem escrita */}
+                <div className="p-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-center bg-slate-50 dark:bg-slate-800 shrink-0">
                   <button
                     type="button"
                     disabled={!newCatName.trim()}
@@ -1373,9 +1420,15 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                       setIsCategoryPickerOpen(false);
                       setCategoryModalView('list');
                     }}
-                    className="px-4 py-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-white text-xs font-extrabold rounded-xl shadow-xs transition-all cursor-pointer"
+                    className={`w-12 h-12 rounded-full flex items-center justify-center shadow-md transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed ${
+                      newCatType === 'expense'
+                        ? 'bg-[#b84357] hover:bg-[#a6394c] text-white shadow-rose-950/20 ring-4 ring-white/60 dark:ring-slate-900/60'
+                        : 'bg-[#278672] hover:bg-[#206f5e] text-white shadow-teal-950/20 ring-4 ring-white/60 dark:ring-slate-900/60'
+                    }`}
+                    title="Confirmar criação da categoria"
+                    aria-label="Confirmar criação da categoria"
                   >
-                    Criar categoria
+                    <Check className="w-6.5 h-6.5 text-white stroke-[2.75]" />
                   </button>
                 </div>
               </>

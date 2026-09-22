@@ -22,7 +22,8 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
     <nav 
       id="bottom-navigation-bar"
       aria-label="Navegação Principal"
-      className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200/90 dark:border-slate-800 shadow-lg transition-colors"
+      style={{ position: 'fixed', bottom: 0, left: 0, right: 0 }}
+      className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200/90 dark:border-slate-800 shadow-xl transition-colors pb-[env(safe-area-inset-bottom,0px)]"
     >
       <div className="max-w-md sm:max-w-lg mx-auto px-4 sm:px-6 py-2.5 sm:py-3.5 flex items-center justify-between">
         
