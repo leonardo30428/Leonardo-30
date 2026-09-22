@@ -18,11 +18,32 @@ import {
   ScanLine,
   ChevronLeft,
   ChevronRight,
-  Trash2
+  Trash2,
+  Calculator,
+  AlertCircle,
+  Utensils,
+  ShoppingCart,
+  Home,
+  Car,
+  Heart,
+  Briefcase,
+  GraduationCap,
+  Plane,
+  Dumbbell,
+  Coffee,
+  Smartphone,
+  Gift,
+  Dog,
+  DollarSign,
+  CreditCard,
+  Music,
+  Film,
+  Sparkles
 } from 'lucide-react';
 import { Transaction, TransactionType } from '../types';
 import { getTodayDateString, formatCurrencyInput, numericToMaskedString } from '../utils/finance';
 import { cleanInstallmentDescription } from '../utils/dateUtils';
+import { QuickCalculatorModal } from './QuickCalculatorModal';
 
 interface TransactionModalProps {
   isOpen: boolean;
@@ -35,6 +56,44 @@ interface TransactionModalProps {
   defaultDate?: string;
   onOpenReceiptScanner?: () => void;
 }
+
+// Cores opacas, foscas e sofisticadas para categorias
+export const CATEGORY_COLORS = [
+  { name: 'Ardósia', hex: '#475569' },
+  { name: 'Grafite', hex: '#334155' },
+  { name: 'Verde Sálvia', hex: '#2e5a44' },
+  { name: 'Petróleo', hex: '#27525b' },
+  { name: 'Azul Aço', hex: '#2b4c6f' },
+  { name: 'Índigo Fosco', hex: '#3730a3' },
+  { name: 'Ameixa', hex: '#582c4d' },
+  { name: 'Terracota', hex: '#873d32' },
+  { name: 'Mostarda Queimado', hex: '#855923' },
+  { name: 'Oliva', hex: '#445135' },
+];
+
+// Ícones variados para categorias
+export const CATEGORY_ICONS = [
+  { id: 'Utensils', label: 'Alimentação' },
+  { id: 'ShoppingCart', label: 'Compras' },
+  { id: 'Home', label: 'Moradia' },
+  { id: 'Car', label: 'Transporte' },
+  { id: 'Heart', label: 'Saúde' },
+  { id: 'Briefcase', label: 'Trabalho' },
+  { id: 'GraduationCap', label: 'Educação' },
+  { id: 'Plane', label: 'Viagem' },
+  { id: 'Dumbbell', label: 'Fitness' },
+  { id: 'Coffee', label: 'Lazer' },
+  { id: 'Smartphone', label: 'Tecnologia' },
+  { id: 'Gift', label: 'Presente' },
+  { id: 'Dog', label: 'Pet' },
+  { id: 'DollarSign', label: 'Finanças' },
+  { id: 'PiggyBank', label: 'Economia' },
+  { id: 'CreditCard', label: 'Cartão' },
+  { id: 'Music', label: 'Música' },
+  { id: 'Film', label: 'Cinema' },
+  { id: 'Sparkles', label: 'Geral' },
+  { id: 'Tag', label: 'Outros' },
+];
 
 const DEFAULT_EXPENSE_CATEGORIES = [
   'Alimentação',
@@ -95,8 +154,44 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   const [bankName, setBankName] = useState('');
   const [descriptionError, setDescriptionError] = useState(false);
   const [bankNameError, setBankNameError] = useState(false);
+  const [formWarningMessage, setFormWarningMessage] = useState<string | null>(null);
   const [isPaid, setIsPaid] = useState<boolean>(true);
+  const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
   const dateInputRef = useRef<HTMLInputElement>(null);
+  const formScrollRef = useRef<HTMLDivElement>(null);
+  const moreDetailsRef = useRef<HTMLDivElement>(null);
+
+  // Estados da nova aba de criação de categoria
+  const [categoryModalView, setCategoryModalView] = useState<'list' | 'create'>('list');
+  const [newCatName, setNewCatName] = useState('');
+  const [newCatType, setNewCatType] = useState<TransactionType>(defaultType);
+  const [newCatColor, setNewCatColor] = useState<string>(CATEGORY_COLORS[0].hex);
+  const [newCatIcon, setNewCatIcon] = useState<string>('Tag');
+
+  const renderCategoryIcon = (iconId: string, className = "w-5 h-5") => {
+    switch (iconId) {
+      case 'Utensils': return <Utensils className={className} />;
+      case 'ShoppingCart': return <ShoppingCart className={className} />;
+      case 'Home': return <Home className={className} />;
+      case 'Car': return <Car className={className} />;
+      case 'Heart': return <Heart className={className} />;
+      case 'Briefcase': return <Briefcase className={className} />;
+      case 'GraduationCap': return <GraduationCap className={className} />;
+      case 'Plane': return <Plane className={className} />;
+      case 'Dumbbell': return <Dumbbell className={className} />;
+      case 'Coffee': return <Coffee className={className} />;
+      case 'Smartphone': return <Smartphone className={className} />;
+      case 'Gift': return <Gift className={className} />;
+      case 'Dog': return <Dog className={className} />;
+      case 'DollarSign': return <DollarSign className={className} />;
+      case 'PiggyBank': return <PiggyBank className={className} />;
+      case 'CreditCard': return <CreditCard className={className} />;
+      case 'Music': return <Music className={className} />;
+      case 'Film': return <Film className={className} />;
+      case 'Sparkles': return <Sparkles className={className} />;
+      default: return <Tag className={className} />;
+    }
+  };
 
   const formatBRDisplayDate = (dateStr: string) => {
     if (!dateStr) return '';
@@ -163,6 +258,16 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   // Recorrente state
   const [frequency, setFrequency] = useState<'semanal' | 'quinzenal' | 'mensal' | 'bimestral' | 'personalizar'>('mensal');
   const [customDays, setCustomDays] = useState<string>('30');
+
+  // Rolar suavemente quando abrir 'Mais detalhes' para que as opções fiquem visíveis imediatamente sem precisar rolar para cima
+  useEffect(() => {
+    if (showMoreDetails && moreDetailsRef.current) {
+      const timer = setTimeout(() => {
+        moreDetailsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [showMoreDetails]);
 
   useEffect(() => {
     if (isOpen) {
@@ -231,9 +336,12 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         setCustomDays('30');
         setDescriptionError(false);
         setBankNameError(false);
+        setFormWarningMessage(null);
         setIsCategoryPickerOpen(false);
+        setCategoryModalView('list');
         setCategorySearch('');
         setNewCategoryName('');
+        setNewCatName('');
         setIsCustomDatePickerOpen(false);
         const parts = initialDate.split('-');
         setCalendarViewDate({
@@ -244,8 +352,13 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
     }
   }, [defaultType, defaultDate, isOpen, editingTransaction]);
 
-  // Salvar categorias personalizadas no localStorage
-  const handleSaveCustomCategory = (name: string) => {
+  // Salvar categorias personalizadas com metadados (tipo, cor e ícone)
+  const handleSaveCustomCategoryRich = (
+    name: string, 
+    catType: TransactionType = type, 
+    catColor: string = CATEGORY_COLORS[0].hex, 
+    catIcon: string = 'Tag'
+  ) => {
     const trimmed = name.trim();
     if (!trimmed) return;
     if (!customCategories.includes(trimmed)) {
@@ -253,11 +366,20 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       setCustomCategories(updated);
       try {
         localStorage.setItem('finance_user_custom_categories', JSON.stringify(updated));
+        const metaRaw = localStorage.getItem('finance_user_custom_categories_metadata');
+        const meta = metaRaw ? JSON.parse(metaRaw) : {};
+        meta[trimmed] = { type: catType, color: catColor, icon: catIcon };
+        localStorage.setItem('finance_user_custom_categories_metadata', JSON.stringify(meta));
       } catch (e) {
         console.error(e);
       }
     }
     setCategory(trimmed);
+    setNewCatName('');
+  };
+
+  const handleSaveCustomCategory = (name: string) => {
+    handleSaveCustomCategoryRich(name, type, newCatColor, newCatIcon);
     setNewCategoryName('');
     setIsCategoryPickerOpen(false);
   };
@@ -330,26 +452,38 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const rawAmount = parseFloat(amount.replace(/\./g, '').replace(',', '.'));
-    if (isNaN(rawAmount) || rawAmount <= 0) return;
-
-    let hasError = false;
-    if (!description.trim()) {
-      setDescriptionError(true);
-      hasError = true;
-    } else {
-      setDescriptionError(false);
-    }
-
-    if (!bankName.trim()) {
-      setBankNameError(true);
-      hasError = true;
-    } else {
-      setBankNameError(false);
-    }
-
-    if (hasError) {
+    if (isNaN(rawAmount) || rawAmount <= 0) {
+      setFormWarningMessage('Por favor, informe um valor válido maior que zero.');
       return;
     }
+
+    const isDescEmpty = !description.trim();
+    const isBankEmpty = !bankName.trim();
+
+    if (isDescEmpty && isBankEmpty) {
+      setDescriptionError(true);
+      setBankNameError(true);
+      setFormWarningMessage('Por favor, preencha a Descrição e a Conta / Banco para continuar.');
+      return;
+    }
+
+    if (isDescEmpty) {
+      setDescriptionError(true);
+      setBankNameError(false);
+      setFormWarningMessage('Por favor, preencha a Descrição para continuar.');
+      return;
+    }
+
+    if (isBankEmpty) {
+      setDescriptionError(false);
+      setBankNameError(true);
+      setFormWarningMessage('Por favor, preencha a Conta / Banco para continuar.');
+      return;
+    }
+
+    setDescriptionError(false);
+    setBankNameError(false);
+    setFormWarningMessage(null);
 
     let finalAmount = rawAmount;
     if (repetitionMode === 'parcela' && installmentValueType === 'total') {
@@ -435,24 +569,24 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         style={{
           maxHeight: isKeyboardOpen && viewportMetrics.height > 0 
             ? `${Math.max(260, viewportMetrics.height - 12)}px` 
-            : '92vh',
+            : 'min(94dvh, 720px)',
           height: isKeyboardOpen ? `${Math.max(260, viewportMetrics.height - 12)}px` : undefined,
         }}
       >
         {/* Header - Título centralizado, com ícone < no canto superior esquerdo e escaner no canto superior direito */}
-        <div className="relative p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-800/80 shrink-0">
+        <div className="relative px-4 py-2.5 sm:px-5 sm:py-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-800/80 shrink-0">
           {/* Canto superior esquerdo: somente o ícone < para voltar */}
           <button
             type="button"
             onClick={onClose}
-            className="p-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-xl hover:bg-slate-200/70 dark:hover:bg-slate-700 transition-colors cursor-pointer z-10"
+            className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-xl hover:bg-slate-200/70 dark:hover:bg-slate-700 transition-colors cursor-pointer z-10"
             title="Voltar"
           >
-            <ChevronLeft className="w-6 h-6 stroke-[2.5]" />
+            <ChevronLeft className="w-5 h-5 stroke-[2.5]" />
           </button>
 
-          <div className="absolute inset-x-0 text-center pointer-events-none px-14">
-            <h3 className="font-extrabold text-slate-900 dark:text-white text-base sm:text-lg">
+          <div className="absolute inset-x-0 text-center pointer-events-none px-12">
+            <h3 className="font-extrabold text-slate-900 dark:text-white text-sm sm:text-base">
               {editingTransaction
                 ? (editingTransaction.type === 'income' 
                     ? 'Editar Entrada' 
@@ -465,15 +599,6 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     ? 'Novo Investimento'
                     : 'Nova Saída')}
             </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
-              {editingTransaction
-                ? 'Atualize as informações do lançamento'
-                : (type === 'income' 
-                    ? 'Adicione suas entradas financeiras' 
-                    : type === 'investment'
-                    ? 'Registre seus aportes e investimentos'
-                    : 'Registre suas saídas e contas do mês')}
-            </p>
           </div>
 
           {/* Canto superior direito: escaner de conta ou cupom fiscal (sem o botão de fechar X) */}
@@ -484,28 +609,39 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                 onClose();
                 onOpenReceiptScanner();
               }}
-              className={`p-2 text-slate-500 dark:text-slate-400 rounded-xl transition-colors cursor-pointer z-10 ml-auto ${
+              className={`p-1.5 text-slate-500 dark:text-slate-400 rounded-xl transition-colors cursor-pointer z-10 ml-auto ${
                 type === 'expense'
                   ? 'hover:text-rose-700 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40'
                   : 'hover:text-emerald-700 dark:hover:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/40'
               }`}
               title="Escanear conta ou cupom fiscal"
             >
-              <ScanLine className="w-5 h-5" />
+              <ScanLine className="w-4.5 h-4.5" />
             </button>
           ) : (
-            <div className="w-9 h-9" />
+            <div className="w-8 h-8" />
           )}
         </div>
 
-        {/* Form Body com Scroll suave */}
-        <form onSubmit={handleSubmit} className="relative flex flex-col flex-1 overflow-hidden min-h-0">
+        {/* Form Body com Scroll suave e layout compacto para caber de ponta a ponta na tela */}
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden min-h-0">
           
-          <div className="p-5 sm:p-6 space-y-4 overflow-y-auto overflow-x-hidden flex-1 pb-24">
+          <div 
+            ref={formScrollRef}
+            className="p-3.5 sm:p-5 space-y-2.5 sm:space-y-3 overflow-y-auto overflow-x-hidden flex-1 min-h-0"
+          >
+
+          {/* Aviso quando o usuário tenta adicionar sem preencher os campos necessários */}
+          {formWarningMessage && (
+            <div className="flex items-center gap-2 p-2.5 rounded-xl bg-amber-500/10 dark:bg-amber-500/15 border border-amber-500/30 text-amber-800 dark:text-amber-200 text-xs font-bold animate-fadeIn">
+              <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+              <span>{formWarningMessage}</span>
+            </div>
+          )}
           
           {/* Botão de Deslizar: PAGO (para gasto) / RECEBIDO (para receita) */}
-          <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200/90 dark:border-slate-700/80 rounded-2xl">
-            <span className="text-sm sm:text-base font-extrabold text-slate-900 dark:text-white">
+          <div className="flex items-center justify-between py-1.5 px-3 bg-slate-50 dark:bg-slate-800/60 border border-slate-200/90 dark:border-slate-700/80 rounded-xl">
+            <span className="text-xs sm:text-sm font-extrabold text-slate-900 dark:text-white">
               {type === 'income' ? 'Recebido' : type === 'investment' ? 'Aportado' : 'Pago'}
             </span>
             
@@ -515,32 +651,32 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               role="switch"
               aria-checked={isPaid}
               onClick={() => setIsPaid(!isPaid)}
-              className={`relative inline-flex h-6.5 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden ${
+              className={`relative inline-flex h-5.5 w-10.5 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden ${
                 isPaid 
                   ? type === 'expense' 
-                    ? 'bg-rose-600' 
+                    ? 'bg-[#be4357]' 
                     : type === 'investment' 
-                    ? 'bg-indigo-600' 
-                    : 'bg-emerald-600' 
+                    ? 'bg-[#43529c]' 
+                    : 'bg-[#278672]' 
                   : 'bg-slate-300 dark:bg-slate-700'
               }`}
               title={isPaid ? 'Marcar como pendente' : 'Marcar como concluído'}
             >
               <span
-                className={`pointer-events-none inline-block h-5.5 w-5.5 transform rounded-full bg-white shadow-md ring-0 transition duration-200 ease-in-out ${
-                  isPaid ? 'translate-x-5.5' : 'translate-x-0'
+                className={`pointer-events-none inline-block h-4.5 w-4.5 transform rounded-full bg-white shadow-xs ring-0 transition duration-200 ease-in-out ${
+                  isPaid ? 'translate-x-5' : 'translate-x-0'
                 }`}
               />
             </button>
           </div>
 
           {/* Amount and Date */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
             <div>
-              <label className="block text-sm sm:text-[15px] font-bold text-slate-800 dark:text-slate-200 mb-1.5">
-                Valor (R$) *
+              <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 mb-1">
+                Valor (R$)
               </label>
-              <div className="relative">
+              <div className="relative flex items-center">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 select-none">
                   R$
                 </span>
@@ -553,20 +689,30 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                   onChange={(e) => {
                     const { display } = formatCurrencyInput(e.target.value);
                     setAmount(display);
+                    if (formWarningMessage) setFormWarningMessage(null);
                   }}
-                  className="w-full text-sm font-bold pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-slate-900 dark:focus:ring-emerald-500 transition-colors"
+                  className="w-full text-xs sm:text-sm font-bold pl-8.5 pr-9 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-slate-900 dark:focus:ring-emerald-500 transition-colors"
                 />
+                <button
+                  type="button"
+                  onClick={() => setIsCalculatorOpen(true)}
+                  className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors cursor-pointer"
+                  title="Abrir calculadora"
+                  aria-label="Calculadora"
+                >
+                  <Calculator className="w-4 h-4" />
+                </button>
               </div>
             </div>
 
             <div>
-              <label className="block text-sm sm:text-[15px] font-bold text-slate-800 dark:text-slate-200 mb-1.5 flex items-center gap-1.5">
-                <Calendar className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-                Data *
+              <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+                Data
               </label>
 
               {/* Caixa com formato '20 set 2026' e botões (< >) para passar o dia */}
-              <div className="relative flex items-center justify-between bg-white dark:bg-slate-800 p-2 px-3 rounded-xl border border-slate-300 dark:border-slate-700 focus-within:ring-2 focus-within:ring-slate-900 dark:focus-within:ring-emerald-500 transition-colors">
+              <div className="relative flex items-center justify-between bg-white dark:bg-slate-800 py-1.5 px-3 rounded-xl border border-slate-300 dark:border-slate-700 focus-within:ring-2 focus-within:ring-slate-900 dark:focus-within:ring-emerald-500 transition-colors">
                 {/* Clique no texto/ícone abre o calendário */}
                 <div 
                   onClick={() => {
@@ -587,7 +733,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                   className="flex items-center gap-2 cursor-pointer flex-1 py-0.5"
                   title="Clique para abrir o calendário"
                 >
-                  <Calendar className={`w-4 h-4 shrink-0 ${
+                  <Calendar className={`w-3.5 h-3.5 shrink-0 ${
                     type === 'expense' ? 'text-rose-600' : type === 'investment' ? 'text-indigo-600' : 'text-emerald-600'
                   }`} />
                   <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white select-none">
@@ -606,14 +752,14 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                 />
 
                 {/* Ícones (< >) para passar o dia sem precisar do calendário */}
-                <div className="flex items-center gap-1 shrink-0 ml-2">
+                <div className="flex items-center gap-0.5 shrink-0 ml-1">
                   <button
                     type="button"
                     onClick={() => handleAdjustDay(-1)}
                     className="p-1 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors cursor-pointer"
                     title="Dia anterior"
                   >
-                    <ChevronLeft className="w-4 h-4 stroke-[2.5]" />
+                    <ChevronLeft className="w-3.5 h-3.5 stroke-[2.5]" />
                   </button>
                   <button
                     type="button"
@@ -621,56 +767,46 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     className="p-1 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors cursor-pointer"
                     title="Próximo dia"
                   >
-                    <ChevronRight className="w-4 h-4 stroke-[2.5]" />
+                    <ChevronRight className="w-3.5 h-3.5 stroke-[2.5]" />
                   </button>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Description - Obrigatório */}
+          {/* Description */}
           <div>
-            <label className="block text-sm sm:text-[15px] font-bold text-slate-800 dark:text-slate-200 mb-1.5 flex items-center justify-between">
-              <span className="flex items-center gap-1.5">
-                <AlignLeft className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-                <span>Descrição</span>
-                <span className="text-rose-500 text-sm">*</span>
-              </span>
-              <span className="text-[10px] font-semibold text-rose-500/90 dark:text-rose-400/90 bg-rose-50 dark:bg-rose-950/40 px-1.5 py-0.5 rounded">
-                Obrigatório
-              </span>
+            <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-1.5">
+              <AlignLeft className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+              <span>Descrição</span>
             </label>
             <input
               type="text"
-              placeholder="Informe a descrição da movimentação (obrigatório)"
+              placeholder="Informe a descrição da movimentação"
               value={description}
               onChange={(e) => {
                 setDescription(e.target.value);
                 if (descriptionError) setDescriptionError(false);
+                if (formWarningMessage) setFormWarningMessage(null);
               }}
-              className={`w-full text-xs placeholder:text-[11.5px] placeholder:text-slate-400 dark:placeholder:text-slate-500 p-2.5 rounded-xl border bg-white dark:bg-slate-800 focus:outline-hidden focus:ring-2 text-slate-800 dark:text-white transition-colors ${
+              className={`w-full text-xs placeholder:text-[11.5px] placeholder:text-slate-400 dark:placeholder:text-slate-500 py-2 px-3 rounded-xl border bg-white dark:bg-slate-800 focus:outline-hidden focus:ring-2 text-slate-800 dark:text-white transition-colors ${
                 descriptionError
-                  ? 'border-rose-500 focus:ring-rose-500 bg-rose-50/20 dark:bg-rose-950/20'
+                  ? 'border-rose-400/80 focus:ring-rose-400/60 bg-rose-50/20 dark:bg-rose-950/20'
                   : 'border-slate-300 dark:border-slate-700 focus:ring-slate-900 dark:focus:ring-emerald-500'
               }`}
             />
-            {descriptionError && (
-              <span className="text-[11px] font-semibold text-rose-500 mt-1 block">
-                Por favor, informe a descrição da movimentação.
-              </span>
-            )}
           </div>
 
           {/* Categoria sem escrita direta: clique no campo ou no botão (+) abre as categorias e adicionar categoria */}
           <div>
-            <label className="block text-sm sm:text-[15px] font-bold text-slate-800 dark:text-slate-200 mb-1.5 flex items-center gap-1.5">
-              <Tag className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-              Categoria
+            <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-1.5">
+              <Tag className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+              <span>Categoria</span>
             </label>
 
             <div 
               onClick={() => setIsCategoryPickerOpen(true)}
-              className="relative flex items-center justify-between bg-white dark:bg-slate-800 p-2.5 px-3 rounded-xl border border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-600 cursor-pointer transition-colors"
+              className="relative flex items-center justify-between bg-white dark:bg-slate-800 py-2 px-3 rounded-xl border border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-600 cursor-pointer transition-colors"
               title="Clique para escolher ou adicionar categoria"
             >
               <span className={`text-xs sm:text-sm font-semibold truncate ${category ? 'text-slate-900 dark:text-white' : 'text-slate-400 dark:text-slate-500'}`}>
@@ -690,24 +826,18 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                 }`}
                 title="Abrir categorias e adicionar categoria"
               >
-                <Plus className={`w-4 h-4 stroke-[2.5] ${
+                <Plus className={`w-3.5 h-3.5 stroke-[2.5] ${
                   type === 'expense' ? 'text-rose-600' : type === 'investment' ? 'text-indigo-600' : 'text-emerald-600'
                 }`} />
               </button>
             </div>
           </div>
 
-          {/* Conta / Banco - Obrigatório */}
+          {/* Conta / Banco */}
           <div>
-            <label className="block text-sm sm:text-[15px] font-bold text-slate-800 dark:text-slate-200 mb-1.5 flex items-center justify-between">
-              <span className="flex items-center gap-1.5">
-                <Building2 className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-                <span>Conta / Banco</span>
-                <span className="text-rose-500 text-sm">*</span>
-              </span>
-              <span className="text-[10px] font-semibold text-rose-500/90 dark:text-rose-400/90 bg-rose-50 dark:bg-rose-950/40 px-1.5 py-0.5 rounded">
-                Obrigatório
-              </span>
+            <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-1.5">
+              <Building2 className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+              <span>Conta / Banco</span>
             </label>
             <input
               type="text"
@@ -716,29 +846,25 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
               onChange={(e) => {
                 setBankName(e.target.value);
                 if (bankNameError) setBankNameError(false);
+                if (formWarningMessage) setFormWarningMessage(null);
               }}
-              className={`w-full text-xs placeholder:text-[11.5px] placeholder:text-slate-400 dark:placeholder:text-slate-500 p-2.5 rounded-xl border bg-white dark:bg-slate-800 focus:outline-hidden focus:ring-2 text-slate-800 dark:text-white transition-colors ${
+              className={`w-full text-xs placeholder:text-[11.5px] placeholder:text-slate-400 dark:placeholder:text-slate-500 py-2 px-3 rounded-xl border bg-white dark:bg-slate-800 focus:outline-hidden focus:ring-2 text-slate-800 dark:text-white transition-colors ${
                 bankNameError
-                  ? 'border-rose-500 focus:ring-rose-500 bg-rose-50/20 dark:bg-rose-950/20'
+                  ? 'border-rose-400/80 focus:ring-rose-400/60 bg-rose-50/20 dark:bg-rose-950/20'
                   : 'border-slate-300 dark:border-slate-700 focus:ring-slate-900 dark:focus:ring-emerald-500'
               }`}
             />
-            {bankNameError && (
-              <span className="text-[11px] font-semibold text-rose-500 mt-1 block">
-                Por favor, informe a conta ou banco.
-              </span>
-            )}
           </div>
 
           {/* Seção "Mais detalhes" */}
-          <div className="pt-2 border-t border-slate-100 dark:border-slate-800">
+          <div ref={moreDetailsRef} className="pt-1.5 border-t border-slate-100 dark:border-slate-800">
             <button
               type="button"
               onClick={() => setShowMoreDetails(!showMoreDetails)}
-              className="w-full flex items-center justify-between py-2 text-sm font-bold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
+              className="w-full flex items-center justify-between py-1.5 text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
             >
               <span className="flex items-center gap-1.5">
-                <SlidersHorizontal className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                <SlidersHorizontal className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                 <span>Mais detalhes</span>
               </span>
               {showMoreDetails ? (
@@ -750,7 +876,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
             {/* Conteúdo de Mais Detalhes: "Uma vez", "Parcela" e "Recorrente" */}
             {showMoreDetails && (
-              <div className="mt-2.5 p-3.5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-4 animate-in fade-in duration-150">
+              <div className="mt-2 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700 space-y-3 animate-in fade-in duration-150">
                 
                 {/* Abas das opções */}
                 <div className="grid grid-cols-3 gap-1.5 p-1 bg-white dark:bg-slate-850 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-2xs">
@@ -793,12 +919,12 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
                 {/* Sub-opções quando for "Parcela" */}
                 {repetitionMode === 'parcela' && (
-                  <div className="space-y-3 pt-1 border-t border-slate-200/60 dark:border-slate-700">
+                  <div className="space-y-2.5 pt-1 border-t border-slate-200/60 dark:border-slate-700">
                     
                     {/* Parcelas: botões do lado - 2 + */}
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Parcelas</span>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5">
                         <button
                           type="button"
                           onClick={() => {
@@ -806,18 +932,18 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                             setInstallmentsCount(next);
                             if (currentInstallment > next) setCurrentInstallment(next);
                           }}
-                          className="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center justify-center font-bold text-slate-700 dark:text-slate-200 text-base shadow-2xs transition-colors cursor-pointer"
+                          className="w-7 h-7 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center justify-center font-bold text-slate-700 dark:text-slate-200 text-sm shadow-2xs transition-colors cursor-pointer"
                           title="Diminuir quantidade de parcelas"
                         >
                           -
                         </button>
-                        <span className="w-8 text-center font-black text-slate-900 dark:text-white text-sm">
+                        <span className="w-7 text-center font-black text-slate-900 dark:text-white text-xs sm:text-sm">
                           {installmentsCount}
                         </span>
                         <button
                           type="button"
                           onClick={() => setInstallmentsCount((prev) => prev + 1)}
-                          className="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center justify-center font-bold text-slate-700 dark:text-slate-200 text-base shadow-2xs transition-colors cursor-pointer"
+                          className="w-7 h-7 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center justify-center font-bold text-slate-700 dark:text-slate-200 text-sm shadow-2xs transition-colors cursor-pointer"
                           title="Aumentar quantidade de parcelas"
                         >
                           +
@@ -828,22 +954,22 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     {/* Embaixo: Parcela atual */}
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Parcela atual</span>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5">
                         <button
                           type="button"
                           onClick={() => setCurrentInstallment((prev) => Math.max(1, prev - 1))}
-                          className="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center justify-center font-bold text-slate-700 dark:text-slate-200 text-base shadow-2xs transition-colors cursor-pointer"
+                          className="w-7 h-7 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center justify-center font-bold text-slate-700 dark:text-slate-200 text-sm shadow-2xs transition-colors cursor-pointer"
                           title="Parcela anterior"
                         >
                           -
                         </button>
-                        <span className="min-w-14 text-center font-bold text-slate-900 dark:text-white text-xs">
+                        <span className="min-w-12 text-center font-bold text-slate-900 dark:text-white text-xs">
                           {currentInstallment} de {installmentsCount}
                         </span>
                         <button
                           type="button"
                           onClick={() => setCurrentInstallment((prev) => Math.min(installmentsCount, prev + 1))}
-                          className="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center justify-center font-bold text-slate-700 dark:text-slate-200 text-base shadow-2xs transition-colors cursor-pointer"
+                          className="w-7 h-7 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-700 flex items-center justify-center font-bold text-slate-700 dark:text-slate-200 text-sm shadow-2xs transition-colors cursor-pointer"
                           title="Próxima parcela"
                         >
                           +
@@ -858,7 +984,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                         <button
                           type="button"
                           onClick={() => setInstallmentValueType('total')}
-                          className={`px-3 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
+                          className={`px-2.5 py-0.5 text-xs font-bold rounded-md transition-all cursor-pointer ${
                             installmentValueType === 'total'
                               ? 'bg-slate-900 dark:bg-slate-700 text-white shadow-2xs'
                               : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
@@ -869,7 +995,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                         <button
                           type="button"
                           onClick={() => setInstallmentValueType('parcela')}
-                          className={`px-3 py-1 text-xs font-bold rounded-md transition-all cursor-pointer ${
+                          className={`px-2.5 py-0.5 text-xs font-bold rounded-md transition-all cursor-pointer ${
                             installmentValueType === 'parcela'
                               ? 'bg-slate-900 dark:bg-slate-700 text-white shadow-2xs'
                               : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
@@ -885,7 +1011,7 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
                 {/* Sub-opções quando for "Recorrente" */}
                 {repetitionMode === 'recorrente' && (
-                  <div className="space-y-2.5 pt-1 border-t border-slate-200/60 dark:border-slate-700">
+                  <div className="space-y-2 pt-1 border-t border-slate-200/60 dark:border-slate-700">
                     <span className="block text-xs font-bold text-slate-700 dark:text-slate-300">
                       Frequência
                     </span>
@@ -907,14 +1033,14 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     </div>
 
                     {frequency === 'personalizar' && (
-                      <div className="mt-2 flex items-center gap-2 bg-white dark:bg-slate-800 p-2.5 rounded-xl border border-slate-200 dark:border-slate-700">
+                      <div className="mt-1.5 flex items-center gap-2 bg-white dark:bg-slate-800 p-2 rounded-xl border border-slate-200 dark:border-slate-700">
                         <span className="text-xs text-slate-600 dark:text-slate-300">Repetir a cada</span>
                         <input
                           type="number"
                           min="1"
                           value={customDays}
                           onChange={(e) => setCustomDays(e.target.value)}
-                          className="w-16 p-1 text-xs text-center font-bold border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-850 text-slate-900 dark:text-white rounded-lg focus:outline-hidden focus:ring-1 focus:ring-slate-900 dark:focus:ring-emerald-500"
+                          className="w-14 p-1 text-xs text-center font-bold border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-850 text-slate-900 dark:text-white rounded-lg focus:outline-hidden focus:ring-1 focus:ring-slate-900 dark:focus:ring-emerald-500"
                         />
                         <span className="text-xs text-slate-600 dark:text-slate-300">dias</span>
                       </div>
@@ -928,8 +1054,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
 
           </div>
 
-          {/* Action: Ícone circular flutuante idêntico ao da imagem, sem retângulo ou barra, repousando acima do teclado */}
-          <div className="absolute bottom-3 sm:bottom-4 inset-x-0 flex items-center justify-center pointer-events-none z-30 px-6">
+          {/* Action Footer: Botões sempre visíveis na tela sem sobrepor campos */}
+          <div className="shrink-0 px-4 py-2.5 sm:py-3 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xs border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-center relative z-20">
             {editingTransaction && onDeleteTransaction ? (
               <button
                 type="button"
@@ -939,26 +1065,26 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
                     onClose();
                   }
                 }}
-                className="pointer-events-auto absolute left-6 w-11 h-11 rounded-full text-rose-600 dark:text-rose-400 bg-white/95 dark:bg-slate-800/95 hover:bg-rose-50 dark:hover:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 shadow-lg flex items-center justify-center transition-all cursor-pointer hover:scale-105 active:scale-95"
+                className="absolute left-4 sm:left-6 w-10 h-10 rounded-full text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/40 border border-rose-200 dark:border-rose-900/60 shadow-md flex items-center justify-center transition-all cursor-pointer hover:scale-105 active:scale-95"
                 title="Excluir este lançamento"
               >
-                <Trash2 className="w-5 h-5" />
+                <Trash2 className="w-4.5 h-4.5" />
               </button>
             ) : null}
 
             <button
               type="submit"
               id="btn-submit-new-transaction"
-              className={`pointer-events-auto w-14 h-14 rounded-full flex items-center justify-center shadow-xl transition-all duration-200 cursor-pointer hover:scale-110 active:scale-95 ${
+              className={`w-12 h-12 sm:w-13 sm:h-13 rounded-full flex items-center justify-center shadow-md transition-all duration-200 cursor-pointer hover:scale-105 active:scale-95 ${
                 type === 'expense'
-                  ? 'bg-[#E5536D] hover:bg-[#D4415C] text-white shadow-rose-900/30 ring-4 ring-white/60 dark:ring-slate-900/60'
+                  ? 'bg-[#b84357] hover:bg-[#a6394c] text-white shadow-rose-950/20 ring-4 ring-white/60 dark:ring-slate-900/60'
                   : type === 'investment'
-                  ? 'bg-[#5B67F6] hover:bg-[#4955E4] text-white shadow-indigo-900/30 ring-4 ring-white/60 dark:ring-slate-900/60'
-                  : 'bg-[#40B5A6] hover:bg-[#349E91] text-white shadow-teal-900/30 ring-4 ring-white/60 dark:ring-slate-900/60'
+                  ? 'bg-[#43529c] hover:bg-[#394685] text-white shadow-indigo-950/20 ring-4 ring-white/60 dark:ring-slate-900/60'
+                  : 'bg-[#278672] hover:bg-[#206f5e] text-white shadow-teal-950/20 ring-4 ring-white/60 dark:ring-slate-900/60'
               }`}
               title={editingTransaction ? 'Salvar alterações' : `Confirmar ${type === 'expense' ? 'Saída' : type === 'investment' ? 'Investimento' : 'Entrada'}`}
             >
-              <Check className="w-7 h-7 text-white stroke-[2.75]" />
+              <Check className="w-6.5 h-6.5 text-white stroke-[2.75]" />
             </button>
           </div>
 
@@ -969,123 +1095,291 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
       {/* Modal / Sheet Interno de Seleção e Criação de Categorias */}
       {isCategoryPickerOpen && (
         <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-slate-950/50 backdrop-blur-xs animate-in fade-in duration-100 overflow-x-hidden">
-          <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[85vh] animate-fadeIn transition-colors">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-md rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[88vh] animate-fadeIn transition-colors">
             
-            {/* Header do Picker de Categorias */}
-            <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800">
-              <div className="flex items-center gap-2">
-                <Tag className={`w-4 h-4 ${type === 'expense' ? 'text-rose-600' : 'text-emerald-600'}`} />
-                <h4 className="font-extrabold text-slate-900 dark:text-white text-sm sm:text-base">
-                  Categorias
-                </h4>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsCategoryPickerOpen(false)}
-                className="p-1 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-white rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Criar nova categoria */}
-            <div className={`p-4 border-b border-slate-100 dark:border-slate-800 space-y-2 ${type === 'expense' ? 'bg-rose-50/50 dark:bg-rose-950/20' : 'bg-emerald-50/50 dark:bg-emerald-950/20'}`}>
-              <span className={`text-xs font-extrabold block ${type === 'expense' ? 'text-rose-900 dark:text-rose-300' : 'text-emerald-900 dark:text-emerald-300'}`}>
-                Criar nova categoria
-              </span>
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  placeholder="Nome da nova categoria..."
-                  value={newCategoryName}
-                  onChange={(e) => setNewCategoryName(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleSaveCustomCategory(newCategoryName);
-                    }
-                  }}
-                  className={`flex-1 text-xs p-2 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white border font-medium focus:outline-hidden focus:ring-2 ${
-                    type === 'expense'
-                      ? 'border-rose-300 dark:border-rose-800 focus:ring-rose-500'
-                      : 'border-emerald-300 dark:border-emerald-800 focus:ring-emerald-500'
-                  }`}
-                />
-                <button
-                  type="button"
-                  onClick={() => handleSaveCustomCategory(newCategoryName)}
-                  disabled={!newCategoryName.trim()}
-                  className={`px-3 py-2 disabled:opacity-50 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer shrink-0 ${
-                    type === 'expense'
-                      ? 'bg-rose-600 hover:bg-rose-700'
-                      : 'bg-emerald-600 hover:bg-emerald-700'
-                  }`}
-                >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Criar</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Busca de Categorias Existentes */}
-            <div className="p-4 border-b border-slate-100 dark:border-slate-800">
-              <div className="relative flex items-center">
-                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3" />
-                <input
-                  type="text"
-                  placeholder="Buscar categoria..."
-                  value={categorySearch}
-                  onChange={(e) => setCategorySearch(e.target.value)}
-                  className="w-full text-xs pl-8.5 pr-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 focus:outline-hidden focus:ring-2 focus:ring-slate-900 dark:focus:ring-emerald-500 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white"
-                />
-              </div>
-            </div>
-
-            {/* Lista de Categorias Disponíveis */}
-            <div className="p-4 overflow-y-auto flex-1 space-y-1.5">
-              {filteredCategories.length === 0 ? (
-                <div className="text-center py-8 text-xs text-slate-400 dark:text-slate-500">
-                  Nenhuma categoria encontrada. Digite acima para criar!
+            {categoryModalView === 'list' ? (
+              <>
+                {/* Header do Picker de Categorias (Lista) */}
+                <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800">
+                  <div className="flex items-center gap-2">
+                    <Tag className="w-4 h-4 text-slate-600 dark:text-slate-300" />
+                    <h4 className="font-extrabold text-slate-900 dark:text-white text-sm sm:text-base">
+                      Categorias
+                    </h4>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsCategoryPickerOpen(false)}
+                    className="p-1 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-white rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
                 </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                  {filteredCategories.map((catName) => {
-                    const isSelected = category === catName;
-                    return (
-                      <button
-                        key={catName}
-                        type="button"
-                        onClick={() => {
-                          setCategory(catName);
-                          setIsCategoryPickerOpen(false);
+
+                {/* Linha: Criar nova categoria (texto à esquerda e ícone +) */}
+                <div 
+                  onClick={() => {
+                    setNewCatName('');
+                    setNewCatType(type);
+                    setCategoryModalView('create');
+                  }}
+                  className="p-3.5 sm:p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800/80 cursor-pointer transition-colors group"
+                >
+                  <span className="text-xs sm:text-sm font-extrabold text-slate-800 dark:text-slate-200">
+                    Criar nova categoria
+                  </span>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setNewCatName('');
+                      setNewCatType(type);
+                      setCategoryModalView('create');
+                    }}
+                    className="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-800 group-hover:bg-slate-200 dark:group-hover:bg-slate-700 flex items-center justify-center text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
+                    title="Criar nova categoria"
+                    aria-label="Criar nova categoria"
+                  >
+                    <Plus className="w-4 h-4 stroke-[2.5]" />
+                  </button>
+                </div>
+
+                {/* Busca de Categorias Existentes */}
+                <div className="p-3 sm:p-4 border-b border-slate-100 dark:border-slate-800">
+                  <div className="relative flex items-center">
+                    <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3" />
+                    <input
+                      type="text"
+                      placeholder="Buscar categoria..."
+                      value={categorySearch}
+                      onChange={(e) => setCategorySearch(e.target.value)}
+                      className="w-full text-xs pl-8.5 pr-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 focus:outline-hidden focus:ring-2 focus:ring-slate-900 dark:focus:ring-emerald-500 bg-slate-50 dark:bg-slate-800 text-slate-900 dark:text-white"
+                    />
+                  </div>
+                </div>
+
+                {/* Lista de Categorias Disponíveis */}
+                <div className="p-4 overflow-y-auto flex-1 space-y-1.5">
+                  {filteredCategories.length === 0 ? (
+                    <div className="text-center py-8 text-xs text-slate-400 dark:text-slate-500">
+                      Nenhuma categoria encontrada. Clique em &quot;Criar nova categoria&quot; acima!
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                      {filteredCategories.map((catName) => {
+                        const isSelected = category === catName;
+                        return (
+                          <button
+                            key={catName}
+                            type="button"
+                            onClick={() => {
+                              setCategory(catName);
+                              setIsCategoryPickerOpen(false);
+                            }}
+                            className={`p-2.5 rounded-xl border text-xs font-bold text-left transition-all flex items-center justify-between cursor-pointer ${
+                              isSelected
+                                ? 'bg-slate-900 dark:bg-slate-700 text-white border-slate-900 dark:border-slate-700 shadow-2xs'
+                                : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                            }`}
+                          >
+                            <span className="truncate">{catName}</span>
+                            {isSelected && (
+                              <Check className="w-3.5 h-3.5 shrink-0 ml-1 text-slate-300" />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Footer do Picker */}
+                <div className="p-3 border-t border-slate-100 dark:border-slate-800 flex justify-end bg-slate-50 dark:bg-slate-800">
+                  <button
+                    type="button"
+                    onClick={() => setIsCategoryPickerOpen(false)}
+                    className="px-4 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/70 dark:hover:bg-slate-700 rounded-xl transition-colors cursor-pointer"
+                  >
+                    Concluir
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Nova Aba de Criação de Categoria */}
+                {/* Header */}
+                <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800">
+                  <button
+                    type="button"
+                    onClick={() => setCategoryModalView('list')}
+                    className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                    title="Voltar para a lista"
+                  >
+                    <ArrowLeft className="w-4 h-4 stroke-[2.5]" />
+                  </button>
+                  <h4 className="font-extrabold text-slate-900 dark:text-white text-sm sm:text-base">
+                    Nova categoria
+                  </h4>
+                  <button
+                    type="button"
+                    onClick={() => setIsCategoryPickerOpen(false)}
+                    className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-white rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                    title="Fechar"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Corpo da Nova Aba */}
+                <div className="p-4 sm:p-5 space-y-4 overflow-y-auto flex-1">
+                  
+                  {/* Ícone da categoria e do lado para adicionar o nome */}
+                  <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/60 rounded-2xl border border-slate-200/80 dark:border-slate-700/80">
+                    <div 
+                      className="w-13 h-13 rounded-2xl flex items-center justify-center text-white shrink-0 shadow-xs transition-all"
+                      style={{ backgroundColor: newCatColor }}
+                      title="Pré-visualização do ícone"
+                    >
+                      {renderCategoryIcon(newCatIcon, "w-6 h-6")}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <label className="block text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">
+                        Nome da categoria
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Ex: Supermercado, Aluguel, Freelance..."
+                        value={newCatName}
+                        onChange={(e) => setNewCatName(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' && newCatName.trim()) {
+                            e.preventDefault();
+                            const name = newCatName.trim();
+                            handleSaveCustomCategoryRich(name, newCatType, newCatColor, newCatIcon);
+                            setCategory(name);
+                            setIsCategoryPickerOpen(false);
+                            setCategoryModalView('list');
+                          }
                         }}
-                        className={`p-2.5 rounded-xl border text-xs font-bold text-left transition-all flex items-center justify-between cursor-pointer ${
-                          isSelected
-                            ? 'bg-slate-900 dark:bg-slate-700 text-white border-slate-900 dark:border-slate-700 shadow-2xs'
-                            : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                        className="w-full text-xs sm:text-sm font-semibold p-2.5 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-slate-700 dark:focus:ring-slate-500 transition-colors"
+                        autoFocus
+                      />
+                    </div>
+                  </div>
+
+                  {/* Embaixo: Tipo da categoria se é saída ou entrada */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                      Tipo da categoria
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setNewCatType('expense')}
+                        className={`py-2 px-3 rounded-xl border text-xs font-extrabold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                          newCatType === 'expense'
+                            ? 'bg-rose-950/25 dark:bg-rose-950/40 text-rose-300 border-rose-800/80 ring-1 ring-rose-700/50'
+                            : 'bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-100'
                         }`}
                       >
-                        <span className="truncate">{catName}</span>
-                        {isSelected && (
-                          <Check className={`w-3.5 h-3.5 shrink-0 ml-1 ${type === 'expense' ? 'text-rose-400' : 'text-emerald-400'}`} />
-                        )}
+                        <TrendingDown className="w-3.5 h-3.5 text-rose-400" />
+                        <span>Saída</span>
                       </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
+                      <button
+                        type="button"
+                        onClick={() => setNewCatType('income')}
+                        className={`py-2 px-3 rounded-xl border text-xs font-extrabold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                          newCatType === 'income'
+                            ? 'bg-emerald-950/25 dark:bg-emerald-950/40 text-emerald-300 border-emerald-800/80 ring-1 ring-emerald-700/50'
+                            : 'bg-slate-50 dark:bg-slate-800/50 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:bg-slate-100'
+                        }`}
+                      >
+                        <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>Entrada</span>
+                      </button>
+                    </div>
+                  </div>
 
-            {/* Footer do Picker */}
-            <div className="p-3 border-t border-slate-100 dark:border-slate-800 flex justify-end bg-slate-50 dark:bg-slate-800">
-              <button
-                type="button"
-                onClick={() => setIsCategoryPickerOpen(false)}
-                className="px-4 py-1.5 text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/70 dark:hover:bg-slate-700 rounded-xl transition-colors cursor-pointer"
-              >
-                Concluir
-              </button>
-            </div>
+                  {/* Embaixo ainda a cor (paleta opaca e sofisticada) */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                      Cor
+                    </label>
+                    <div className="flex items-center gap-2 overflow-x-auto pb-1.5 pt-0.5">
+                      {CATEGORY_COLORS.map((c) => (
+                        <button
+                          key={c.hex}
+                          type="button"
+                          onClick={() => setNewCatColor(c.hex)}
+                          className={`w-7.5 h-7.5 rounded-full shrink-0 flex items-center justify-center transition-all cursor-pointer ${
+                            newCatColor === c.hex ? 'ring-2 ring-offset-2 ring-slate-700 dark:ring-slate-300 scale-105' : 'hover:scale-105 opacity-85 hover:opacity-100'
+                          }`}
+                          style={{ backgroundColor: c.hex }}
+                          title={c.name}
+                        >
+                          {newCatColor === c.hex && <Check className="w-3.5 h-3.5 text-white stroke-[3]" />}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* E em embaixo o ícone da categoria */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                      Ícone da categoria
+                    </label>
+                    <div className="grid grid-cols-5 gap-2 max-h-40 overflow-y-auto p-1.5 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-200/60 dark:border-slate-700/60">
+                      {CATEGORY_ICONS.map((item) => {
+                        const isSelected = newCatIcon === item.id;
+                        return (
+                          <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => setNewCatIcon(item.id)}
+                            className={`p-2 rounded-xl flex flex-col items-center justify-center gap-1 transition-all cursor-pointer ${
+                              isSelected
+                                ? 'bg-slate-800 text-white shadow-xs'
+                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-700/60'
+                            }`}
+                            title={item.label}
+                          >
+                            {renderCategoryIcon(item.id, "w-4 h-4")}
+                            <span className="text-[9px] font-semibold truncate w-full text-center">{item.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* Footer da Nova Aba */}
+                <div className="p-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2 bg-slate-50 dark:bg-slate-800">
+                  <button
+                    type="button"
+                    onClick={() => setCategoryModalView('list')}
+                    className="px-3.5 py-2 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-colors cursor-pointer"
+                  >
+                    Voltar
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!newCatName.trim()}
+                    onClick={() => {
+                      const name = newCatName.trim();
+                      if (!name) return;
+                      handleSaveCustomCategoryRich(name, newCatType, newCatColor, newCatIcon);
+                      setCategory(name);
+                      setIsCategoryPickerOpen(false);
+                      setCategoryModalView('list');
+                    }}
+                    className="px-4 py-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-white text-xs font-extrabold rounded-xl shadow-xs transition-all cursor-pointer"
+                  >
+                    Criar categoria
+                  </button>
+                </div>
+              </>
+            )}
 
           </div>
         </div>
@@ -1226,6 +1520,19 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
           </div>
         </div>
       )}
+
+      {/* Modal da Calculadora Integrada ao Campo de Valor */}
+      <QuickCalculatorModal
+        isOpen={isCalculatorOpen}
+        initialValue={amount}
+        onClose={() => setIsCalculatorOpen(false)}
+        onChangeLive={(liveVal) => {
+          setAmount(liveVal);
+        }}
+        onApply={(calculatedValue) => {
+          setAmount(calculatedValue);
+        }}
+      />
 
     </div>
   );

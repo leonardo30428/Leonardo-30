@@ -92,10 +92,15 @@ button, input, a, [role="button"] {
 
 /* Acabamento fosco / opaco suave e elegante em todo o app */
 :root {
-  --color-matte-emerald: #059669;
-  --color-matte-rose: #e11d48;
-  --color-matte-indigo: #4f46e5;
-  --color-matte-amber: #d97706;
+  --color-matte-emerald: #1e7e68;
+  --color-matte-rose: #b84357;
+  --color-matte-indigo: #43529c;
+  --color-matte-amber: #b87514;
+}
+
+/* Redução do excesso de vibração e saturação para visual elegante e fosco */
+body {
+  filter: saturate(0.92);
 }
 
 /* Redução sutil de saturação de néon para aspecto refinado e fosco */

@@ -937,7 +937,7 @@ export default function App() {
       </main>
 
       {/* Floating Action Button for Gemini AI Assistant (elevado para não sobrepor a barra de navegação inferior) */}
-      <div className="fixed bottom-20 right-4 sm:right-6 z-30">
+      <div className="fixed bottom-23 sm:bottom-25 right-4 sm:right-6 z-30">
         <button
           id="fab-ai-assistant"
           onClick={() => handleOpenAIChatWithPrompt()}

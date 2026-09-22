@@ -242,25 +242,25 @@ export const MonthlyBalanceTab: React.FC<MonthlyBalanceTabProps> = ({
             Análise
           </h2>
 
-          {/* Navegação do mês: < setembro 2026 > (sem parênteses) */}
-          <div className="flex items-center gap-1.5 text-xs sm:text-sm font-extrabold text-slate-700 dark:text-slate-300 bg-slate-100/80 dark:bg-slate-800/90 px-3 py-1.5 rounded-2xl border border-slate-200/80 dark:border-slate-700 shadow-2xs">
+          {/* Navegação do mês pura: < setembro 2026 > (sem moldura retangular) */}
+          <div className="flex items-center gap-1 text-xs sm:text-sm font-extrabold text-slate-800 dark:text-slate-200">
             <button
               type="button"
               onClick={handlePrevMonth}
-              className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg transition-colors cursor-pointer"
+              className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg transition-colors cursor-pointer"
               title="Mês anterior"
             >
               <ChevronLeft className="w-4 h-4 stroke-[2.5]" />
             </button>
 
-            <span className="px-2 text-slate-900 dark:text-white capitalize">
+            <span className="px-1 text-slate-800 dark:text-slate-200 capitalize select-none">
               {currentMonth.toLowerCase()}
             </span>
 
             <button
               type="button"
               onClick={handleNextMonth}
-              className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg transition-colors cursor-pointer"
+              className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-lg transition-colors cursor-pointer"
               title="Próximo mês"
             >
               <ChevronRight className="w-4 h-4 stroke-[2.5]" />
