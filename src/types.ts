@@ -1,5 +1,14 @@
 export type TransactionType = 'income' | 'expense' | 'investment';
 
+export interface UserProfile {
+  id: string;
+  name: string;
+  avatarEmoji?: string;
+  color?: string;
+  email?: string;
+  createdAt: string;
+}
+
 export interface Transaction {
   id: string;
   description: string;

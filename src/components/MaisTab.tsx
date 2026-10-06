@@ -11,7 +11,9 @@ import {
   Check, 
   X,
   SlidersHorizontal,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Users,
+  BarChart3
 } from 'lucide-react';
 import { useTheme, ThemeMode } from '../context/ThemeContext';
 import { Transaction } from '../types';
@@ -33,6 +35,8 @@ interface MaisTabProps {
   historyScope: 'currentMonth' | 'all';
   onChangeHistoryScope: (scope: 'currentMonth' | 'all') => void;
   onSelectMonth?: (month: string) => void;
+  onOpenProfiles?: () => void;
+  onNavigateComparativo?: () => void;
 }
 
 export const MaisTab: React.FC<MaisTabProps> = ({
@@ -50,6 +54,8 @@ export const MaisTab: React.FC<MaisTabProps> = ({
   historyScope,
   onChangeHistoryScope,
   onSelectMonth,
+  onOpenProfiles,
+  onNavigateComparativo,
 }) => {
   const { themeMode, setThemeMode } = useTheme();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -167,6 +173,52 @@ export const MaisTab: React.FC<MaisTabProps> = ({
             </div>
             <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:translate-x-1 transition-all" />
           </div>
+
+          {/* Opção 3: Perfis de Usuário */}
+          <div
+            id="card-opcao-perfis-usuario"
+            onClick={onOpenProfiles}
+            className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-2xs hover:border-emerald-300 dark:hover:border-emerald-800/80 hover:shadow-xs transition-all cursor-pointer group flex items-center justify-between"
+          >
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                <Users className="w-6 h-6 stroke-[2.2]" />
+              </div>
+              <div>
+                <h3 className="text-base font-extrabold text-slate-900 dark:text-white group-hover:text-emerald-700 dark:group-hover:text-emerald-400 transition-colors">
+                  Perfis de Usuário
+                </h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  Gerenciar, alternar ou criar novos perfis com contas separadas
+                </p>
+              </div>
+            </div>
+            <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 group-hover:translate-x-1 transition-all" />
+          </div>
+
+          {/* Opção 4: Comparativo e Balanceamento dos Meses */}
+          {onNavigateComparativo && (
+            <div
+              id="card-opcao-comparativo"
+              onClick={onNavigateComparativo}
+              className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-2xs hover:border-violet-300 dark:hover:border-violet-800/80 hover:shadow-xs transition-all cursor-pointer group flex items-center justify-between"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-950/60 border border-violet-200/80 dark:border-violet-800/60 text-violet-700 dark:text-violet-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                  <BarChart3 className="w-6 h-6 stroke-[2.2]" />
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white group-hover:text-violet-700 dark:group-hover:text-violet-400 transition-colors">
+                    Comparativo dos Meses
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Balanceamento mensal, patrimônio e projeções
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-violet-600 dark:group-hover:text-violet-400 group-hover:translate-x-1 transition-all" />
+            </div>
+          )}
 
         </div>
       )}

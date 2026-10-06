@@ -17,12 +17,16 @@ import { PendingBillsModal } from './components/PendingBillsModal';
 import { TransactionTypeChoiceModal } from './components/TransactionTypeChoiceModal';
 import { MonthlyReportModal } from './components/MonthlyReportModal';
 import { MaisTab } from './components/MaisTab';
+import { FaturaPage } from './components/FaturaPage';
+import { UserProfileModal } from './components/UserProfileModal';
+import { ChoiceModalType } from './components/TransactionTypeChoiceModal';
 import { 
   Transaction, 
   BankAccount, 
   SavingGoal, 
   BillReminder, 
-  TransactionType 
+  TransactionType,
+  UserProfile
 } from './types';
 import { 
   initialTransactions, 
@@ -88,11 +92,57 @@ export type AppSection =
   | 'extrato' 
   | 'relatorios';
 
+const DEFAULT_PROFILES: UserProfile[] = [
+  {
+    id: 'profile-pessoal',
+    name: 'Perfil Pessoal',
+    avatarEmoji: '👤',
+    color: '#10b981',
+    createdAt: '2026-01-01',
+  },
+  {
+    id: 'profile-comercial',
+    name: 'Perfil Comercial',
+    avatarEmoji: '💼',
+    color: '#6366f1',
+    createdAt: '2026-01-01',
+  },
+];
+
 export default function App() {
-  // Active App Tab: 'planejamento' (Planejamento) | 'contas' (Contas a Pagar / Receber) | 'balanceamento' (Balanceamento dos Meses) | 'mais' (Mais Opções & Analisar)
-  const [activeAppTab, setActiveAppTab] = useState<'planejamento' | 'balanceamento' | 'mais' | 'contas'>('planejamento');
+  // Active App Tab: 'planejamento' | 'cartoes' | 'contas' | 'balanceamento' | 'mais'
+  const [activeAppTab, setActiveAppTab] = useState<'planejamento' | 'cartoes' | 'balanceamento' | 'mais' | 'contas'>('planejamento');
   const [contasMode, setContasMode] = useState<'pagar' | 'receber'>('pagar');
   const [historyScope, setHistoryScope] = useState<'currentMonth' | 'all'>('currentMonth');
+
+  // User Profiles State - cada usuário tem suas próprias contas
+  const [profiles, setProfiles] = useState<UserProfile[]>(() => {
+    try {
+      const saved = localStorage.getItem('finansmart_user_profiles_v1');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+      return DEFAULT_PROFILES;
+    } catch {
+      return DEFAULT_PROFILES;
+    }
+  });
+
+  const [activeProfileId, setActiveProfileId] = useState<string>(() => {
+    try {
+      const saved = localStorage.getItem('finansmart_active_profile_id');
+      return saved || 'profile-pessoal';
+    } catch {
+      return 'profile-pessoal';
+    }
+  });
+
+  const activeProfile = useMemo(() => {
+    return profiles.find((p) => p.id === activeProfileId) || profiles[0] || DEFAULT_PROFILES[0];
+  }, [profiles, activeProfileId]);
+
+  const [isUserProfileModalOpen, setIsUserProfileModalOpen] = useState(false);
 
   // Month navigation: includes 2026 and 2027 with seamless December to January rollover
   const months = DEFAULT_MONTHS_LIST;
@@ -105,6 +155,14 @@ export default function App() {
   // Transactions local persistence - seeds initial multi-month accounts cleanly
   const [transactions, setTransactions] = useState<Transaction[]>(() => {
     try {
+      const activeId = localStorage.getItem('finansmart_active_profile_id') || 'profile-pessoal';
+      const perUserKey = `finansmart_user_${activeId}_transactions`;
+      const perUserSaved = localStorage.getItem(perUserKey);
+      if (perUserSaved) {
+        const parsed = JSON.parse(perUserSaved);
+        if (Array.isArray(parsed)) return parsed;
+      }
+
       const isSynced = localStorage.getItem('finansmart_multimonth_v12');
       if (isSynced !== 'v12') {
         localStorage.setItem('finansmart_multimonth_v12', 'v12');
@@ -128,6 +186,14 @@ export default function App() {
 
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>(() => {
     try {
+      const activeId = localStorage.getItem('finansmart_active_profile_id') || 'profile-pessoal';
+      const perUserKey = `finansmart_user_${activeId}_bank_accounts`;
+      const perUserSaved = localStorage.getItem(perUserKey);
+      if (perUserSaved) {
+        const parsed = JSON.parse(perUserSaved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+
       const isSynced = localStorage.getItem('finansmart_clean_v11_synced');
       if (isSynced !== CLEAN_SLATE_VERSION) return emptyBankAccounts;
       const saved = localStorage.getItem('finansmart_bank_accounts');
@@ -139,6 +205,14 @@ export default function App() {
 
   const [savingGoals, setSavingGoals] = useState<SavingGoal[]>(() => {
     try {
+      const activeId = localStorage.getItem('finansmart_active_profile_id') || 'profile-pessoal';
+      const perUserKey = `finansmart_user_${activeId}_saving_goals`;
+      const perUserSaved = localStorage.getItem(perUserKey);
+      if (perUserSaved) {
+        const parsed = JSON.parse(perUserSaved);
+        if (Array.isArray(parsed)) return parsed;
+      }
+
       const isSynced = localStorage.getItem('finansmart_clean_v11_synced');
       if (isSynced !== CLEAN_SLATE_VERSION) return [];
       const saved = localStorage.getItem('finansmart_saving_goals');
@@ -150,6 +224,14 @@ export default function App() {
 
   const [billReminders, setBillReminders] = useState<BillReminder[]>(() => {
     try {
+      const activeId = localStorage.getItem('finansmart_active_profile_id') || 'profile-pessoal';
+      const perUserKey = `finansmart_user_${activeId}_bill_reminders`;
+      const perUserSaved = localStorage.getItem(perUserKey);
+      if (perUserSaved) {
+        const parsed = JSON.parse(perUserSaved);
+        if (Array.isArray(parsed)) return parsed;
+      }
+
       const isSynced = localStorage.getItem('finansmart_clean_v11_synced');
       if (isSynced !== CLEAN_SLATE_VERSION) return [];
       const saved = localStorage.getItem('finansmart_bill_reminders');
@@ -159,22 +241,175 @@ export default function App() {
     }
   });
 
-  // Save to localStorage on changes
+  // Save to localStorage on changes per user profile
   useEffect(() => {
+    localStorage.setItem('finansmart_user_profiles_v1', JSON.stringify(profiles));
+  }, [profiles]);
+
+  useEffect(() => {
+    localStorage.setItem(`finansmart_user_${activeProfileId}_transactions`, JSON.stringify(transactions));
     localStorage.setItem('finansmart_transactions', JSON.stringify(transactions));
-  }, [transactions]);
+  }, [transactions, activeProfileId]);
 
   useEffect(() => {
+    localStorage.setItem(`finansmart_user_${activeProfileId}_bank_accounts`, JSON.stringify(bankAccounts));
     localStorage.setItem('finansmart_bank_accounts', JSON.stringify(bankAccounts));
-  }, [bankAccounts]);
+  }, [bankAccounts, activeProfileId]);
 
   useEffect(() => {
+    localStorage.setItem(`finansmart_user_${activeProfileId}_saving_goals`, JSON.stringify(savingGoals));
     localStorage.setItem('finansmart_saving_goals', JSON.stringify(savingGoals));
-  }, [savingGoals]);
+  }, [savingGoals, activeProfileId]);
 
   useEffect(() => {
+    localStorage.setItem(`finansmart_user_${activeProfileId}_bill_reminders`, JSON.stringify(billReminders));
     localStorage.setItem('finansmart_bill_reminders', JSON.stringify(billReminders));
-  }, [billReminders]);
+  }, [billReminders, activeProfileId]);
+
+  // Profile actions: switch, create, update, delete
+  const handleSelectProfile = (newProfileId: string) => {
+    if (newProfileId === activeProfileId) return;
+
+    // 1. Salva os dados do perfil atual
+    try {
+      localStorage.setItem(`finansmart_user_${activeProfileId}_transactions`, JSON.stringify(transactions));
+      localStorage.setItem(`finansmart_user_${activeProfileId}_bank_accounts`, JSON.stringify(bankAccounts));
+      localStorage.setItem(`finansmart_user_${activeProfileId}_saving_goals`, JSON.stringify(savingGoals));
+      localStorage.setItem(`finansmart_user_${activeProfileId}_bill_reminders`, JSON.stringify(billReminders));
+    } catch (e) {
+      console.error(e);
+    }
+
+    // 2. Carrega os dados do novo perfil
+    setActiveProfileId(newProfileId);
+    localStorage.setItem('finansmart_active_profile_id', newProfileId);
+
+    try {
+      const txSaved = localStorage.getItem(`finansmart_user_${newProfileId}_transactions`);
+      const accSaved = localStorage.getItem(`finansmart_user_${newProfileId}_bank_accounts`);
+      const goalsSaved = localStorage.getItem(`finansmart_user_${newProfileId}_saving_goals`);
+      const billsSaved = localStorage.getItem(`finansmart_user_${newProfileId}_bill_reminders`);
+
+      const targetProfile = profiles.find((p) => p.id === newProfileId);
+
+      const nextTxs: Transaction[] = txSaved ? JSON.parse(txSaved) : (newProfileId === 'profile-pessoal' ? initialTransactions : []);
+      const nextAccs: BankAccount[] = accSaved ? JSON.parse(accSaved) : [
+        {
+          id: `card-${newProfileId}`,
+          name: `Cartão ${targetProfile?.name || 'Principal'}`,
+          institution: 'Nubank',
+          type: 'credit_card',
+          balance: 0,
+          availableLimit: 5000,
+          lastSync: 'Recém-conectado',
+          color: targetProfile?.color || '#10b981',
+          status: 'connected',
+          accountNumber: 'Final 8421',
+        },
+        {
+          id: `bank-${newProfileId}`,
+          name: `Conta Corrente - ${targetProfile?.name || 'Principal'}`,
+          institution: 'Nubank',
+          type: 'checking',
+          balance: 0,
+          lastSync: 'Sincronizado',
+          color: targetProfile?.color || '#10b981',
+          status: 'connected',
+          accountNumber: 'Conta 0001',
+        },
+      ];
+      const nextGoals: SavingGoal[] = goalsSaved ? JSON.parse(goalsSaved) : [];
+      const nextBills: BillReminder[] = billsSaved ? JSON.parse(billsSaved) : [];
+
+      setTransactions(nextTxs);
+      setBankAccounts(nextAccs);
+      setSavingGoals(nextGoals);
+      setBillReminders(nextBills);
+
+      setNotifications((prev) => [
+        {
+          id: `notif-${Date.now()}`,
+          type: 'sync',
+          title: 'Perfil Selecionado',
+          message: `Você agora está gerenciando as contas de "${targetProfile?.name || 'Perfil'}".`,
+          time: 'Agora',
+          unread: true,
+        },
+        ...prev,
+      ]);
+    } catch {
+      // fallback safe
+    }
+  };
+
+  const handleCreateProfile = (newProfileData: Omit<UserProfile, 'id' | 'createdAt'>) => {
+    const newId = `profile-${Date.now()}`;
+    const newProfile: UserProfile = {
+      ...newProfileData,
+      id: newId,
+      createdAt: new Date().toISOString(),
+    };
+
+    const updated = [...profiles, newProfile];
+    setProfiles(updated);
+    localStorage.setItem('finansmart_user_profiles_v1', JSON.stringify(updated));
+
+    // Salva contas iniciais separadas para este novo perfil
+    const initialAccs: BankAccount[] = [
+      {
+        id: `card-${newId}`,
+        name: `Cartão de Crédito - ${newProfile.name}`,
+        institution: 'Nubank',
+        type: 'credit_card',
+        balance: 0,
+        availableLimit: 5000,
+        lastSync: 'Novo Perfil',
+        color: newProfile.color || '#10b981',
+        status: 'connected',
+        accountNumber: 'Final ****',
+      },
+      {
+        id: `bank-${newId}`,
+        name: `Conta Corrente - ${newProfile.name}`,
+        institution: 'Nubank',
+        type: 'checking',
+        balance: 0,
+        lastSync: 'Novo Perfil',
+        color: newProfile.color || '#10b981',
+        status: 'connected',
+        accountNumber: 'Conta 0001',
+      },
+    ];
+
+    localStorage.setItem(`finansmart_user_${newId}_transactions`, JSON.stringify([]));
+    localStorage.setItem(`finansmart_user_${newId}_bank_accounts`, JSON.stringify(initialAccs));
+    localStorage.setItem(`finansmart_user_${newId}_saving_goals`, JSON.stringify([]));
+    localStorage.setItem(`finansmart_user_${newId}_bill_reminders`, JSON.stringify([]));
+
+    handleSelectProfile(newId);
+  };
+
+  const handleUpdateProfile = (updated: UserProfile) => {
+    const updatedProfiles = profiles.map((p) => (p.id === updated.id ? updated : p));
+    setProfiles(updatedProfiles);
+    localStorage.setItem('finansmart_user_profiles_v1', JSON.stringify(updatedProfiles));
+  };
+
+  const handleDeleteProfile = (profileId: string) => {
+    if (profiles.length <= 1) return;
+    const updatedProfiles = profiles.filter((p) => p.id !== profileId);
+    setProfiles(updatedProfiles);
+    localStorage.setItem('finansmart_user_profiles_v1', JSON.stringify(updatedProfiles));
+
+    localStorage.removeItem(`finansmart_user_${profileId}_transactions`);
+    localStorage.removeItem(`finansmart_user_${profileId}_bank_accounts`);
+    localStorage.removeItem(`finansmart_user_${profileId}_saving_goals`);
+    localStorage.removeItem(`finansmart_user_${profileId}_bill_reminders`);
+
+    if (activeProfileId === profileId) {
+      handleSelectProfile(updatedProfiles[0].id);
+    }
+  };
 
   // Notifications State - initialized clean
   const [notifications, setNotifications] = useState<SmartNotification[]>([]);
@@ -184,17 +419,27 @@ export default function App() {
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [transactionModalDefaultType, setTransactionModalDefaultType] = useState<TransactionType>('expense');
+  const [transactionModalInitialCategory, setTransactionModalInitialCategory] = useState<string | undefined>(undefined);
 
-  const handleSelectTransactionType = (type: TransactionType) => {
+  const handleSelectTransactionType = (type: ChoiceModalType) => {
     setEditingTransaction(null);
-    setTransactionModalDefaultType(type);
-    setIsTypeChoiceModalOpen(false);
-    setIsTransactionModalOpen(true);
+    if (type === 'card_expense') {
+      setTransactionModalDefaultType('expense');
+      setTransactionModalInitialCategory('Cartão de Crédito');
+      setIsTypeChoiceModalOpen(false);
+      setIsTransactionModalOpen(true);
+    } else {
+      setTransactionModalDefaultType(type);
+      setTransactionModalInitialCategory(undefined);
+      setIsTypeChoiceModalOpen(false);
+      setIsTransactionModalOpen(true);
+    }
   };
 
   const handleOpenEditTransaction = (tx: Transaction) => {
     setEditingTransaction(tx);
     setTransactionModalDefaultType(tx.type);
+    setTransactionModalInitialCategory(tx.category);
     setIsTransactionModalOpen(true);
   };
 
@@ -818,6 +1063,8 @@ export default function App() {
         onOpenNotifications={() => setIsNotificationsOpen(true)}
         unreadNotificationsCount={unreadNotificationsCount}
         onNavigateHome={() => setActiveAppTab('planejamento')}
+        activeProfile={activeProfile}
+        onOpenProfiles={() => setIsUserProfileModalOpen(true)}
       />
 
       {/* Main Container */}
@@ -858,11 +1105,13 @@ export default function App() {
               summary={currentMonthSummary}
             />
 
-            {/* 2. Seção CONTAS com 2 cartões clicáveis Pagar / Receber e Despesas Recentes */}
+            {/* 2. Seção CONTAS com 3 cartões clicáveis Pagar, Receber e Faturas */}
             <div id="section-contas">
               <ContasSection
                 transactions={currentMonthTransactions}
                 onSelectTab={handleOpenContasTab}
+                onSelectFatura={() => setActiveAppTab('cartoes')}
+                invoiceAmount={mainCardInvoiceAmount}
                 onEditTransaction={handleOpenEditTransaction}
               />
             </div>
@@ -871,7 +1120,47 @@ export default function App() {
         )}
 
         {/* ========================================================================= */}
-        {/* ABA: CONTAS (PAGAR / RECEBER) EM UMA ABA DEDICADA                       */}
+        {/* ABA: CARTÃO E FATURAS EM UMA ABA DEDICADA                                  */}
+        {/* ========================================================================= */}
+        {activeAppTab === 'cartoes' && (
+          <FaturaPage
+            cards={bankAccounts}
+            transactions={currentMonthTransactions}
+            onPayInvoice={handlePayInvoice}
+            onDeleteTransaction={handleDeleteTransaction}
+            onAddCard={(newCard) => {
+              setBankAccounts((prev) => [...prev, newCard]);
+              setNotifications((prev) => [
+                {
+                  id: `notif-${Date.now()}`,
+                  type: 'sync',
+                  title: 'Novo Cartão Adicionado',
+                  message: `${newCard.name} foi adicionado à sua conta com sucesso.`,
+                  time: 'Agora',
+                  unread: true,
+                },
+                ...prev,
+              ]);
+            }}
+            onDeleteCard={(cardId) => {
+              setBankAccounts((prev) => prev.filter((c) => c.id !== cardId));
+              setNotifications((prev) => [
+                {
+                  id: `notif-${Date.now()}`,
+                  type: 'alert',
+                  title: 'Cartão Removido',
+                  message: 'O cartão foi removido com sucesso.',
+                  time: 'Agora',
+                  unread: true,
+                },
+                ...prev,
+              ]);
+            }}
+          />
+        )}
+
+        {/* ========================================================================= */}
+        {/* ABA: CONTAS (PAGAR / RECEBER) EM UMA ABA DEDICADA                         */}
         {/* ========================================================================= */}
         {activeAppTab === 'contas' && (
           <ContasTab
@@ -931,6 +1220,8 @@ export default function App() {
               const idx = months.indexOf(month);
               if (idx !== -1) setCurrentMonthIndex(idx);
             }}
+            onOpenProfiles={() => setIsUserProfileModalOpen(true)}
+            onNavigateComparativo={() => setActiveAppTab('balanceamento')}
           />
         )}
 
@@ -980,12 +1271,13 @@ export default function App() {
         onSelectType={handleSelectTransactionType}
       />
       
-      {/* 1. Transaction Modal (Add Income, Expense or Investment, or Edit Gasto) */}
+      {/* 1. Transaction Modal (Add Income, Expense, Card Expense or Investment, or Edit Gasto) */}
       <TransactionModal
         isOpen={isTransactionModalOpen}
         onClose={() => {
           setIsTransactionModalOpen(false);
           setEditingTransaction(null);
+          setTransactionModalInitialCategory(undefined);
         }}
         onAddTransaction={handleAddTransaction}
         onEditTransaction={handleUpdateTransaction}
@@ -993,6 +1285,7 @@ export default function App() {
         editingTransaction={editingTransaction}
         defaultType={transactionModalDefaultType}
         defaultDate={`${currentMonthKey}-10`}
+        initialCategory={transactionModalInitialCategory}
         onOpenReceiptScanner={() => setIsReceiptScannerOpen(true)}
       />
 
@@ -1064,6 +1357,18 @@ export default function App() {
             setCurrentMonthIndex(idx);
           }
         }}
+      />
+
+      {/* 7. User Profile Management Modal */}
+      <UserProfileModal
+        isOpen={isUserProfileModalOpen}
+        onClose={() => setIsUserProfileModalOpen(false)}
+        profiles={profiles}
+        activeProfileId={activeProfileId}
+        onSelectProfile={handleSelectProfile}
+        onCreateProfile={handleCreateProfile}
+        onUpdateProfile={handleUpdateProfile}
+        onDeleteProfile={handleDeleteProfile}
       />
 
     </div>

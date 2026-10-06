@@ -1,7 +1,8 @@
 import React from 'react';
 import { 
-  TrendingDown,
-  TrendingUp, 
+  ArrowDown,
+  ArrowUp, 
+  CreditCard,
   ChevronRight,
   Receipt
 } from 'lucide-react';
@@ -12,12 +13,16 @@ import { getCategoryVisual, formatShortDateWithMonth } from '../utils/categoryIc
 interface ContasSectionProps {
   transactions: Transaction[];
   onSelectTab: (type: 'pagar' | 'receber') => void;
+  onSelectFatura: () => void;
+  invoiceAmount?: number;
   onEditTransaction?: (transaction: Transaction) => void;
 }
 
 export const ContasSection: React.FC<ContasSectionProps> = ({
   transactions,
   onSelectTab,
+  onSelectFatura,
+  invoiceAmount = 0,
   onEditTransaction,
 }) => {
   // Contas de Saídas/Gastos (Despesas e Investimentos)
@@ -45,66 +50,90 @@ export const ContasSection: React.FC<ContasSectionProps> = ({
   return (
     <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-xs p-4 sm:p-5 transition-colors">
       
-      {/* 2 Cartões Clicáveis: "Pagar" e "Receber" (Abrem aba dedicada de Contas) */}
-      <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+      {/* 3 Cartões Clicáveis Lado a Lado: "Pagar", "Receber" e "Faturas" - Sem fundo colorido, sem quadrado no ícone, apenas linha separadora */}
+      <div className="grid grid-cols-3 gap-1.5 sm:gap-3">
         
-        {/* Cartão Clicável: PAGAR (Compacto) */}
+        {/* 1. Cartão Clicável: PAGAR (Seta para baixo direta, sem quadrado, fundo neutro) */}
         <button
           type="button"
           id="card-filtro-pagar"
           onClick={() => onSelectTab('pagar')}
-          className="flex flex-col items-start p-3 sm:p-3.5 rounded-2xl border border-slate-200/90 dark:border-rose-950/60 bg-rose-50/40 dark:bg-rose-950/30 hover:bg-rose-50/90 dark:hover:bg-rose-950/50 hover:border-rose-300 dark:hover:border-rose-800 hover:shadow-xs text-left transition-colors cursor-pointer relative group"
+          className="flex flex-col items-start p-2 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-xs text-left transition-all cursor-pointer relative group min-w-0"
           title="Ver contas a pagar em aba dedicada"
         >
-          {/* Topo do card: Ícone menor + Título */}
-          <div className="flex items-center justify-between w-full mb-1">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-rose-600 text-white flex items-center justify-center shadow-xs shadow-rose-200 dark:shadow-none shrink-0">
-                <TrendingDown className="w-3.5 h-3.5 stroke-[2.5]" />
-              </div>
-              <span className="text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-300 truncate">
+          {/* Topo do card: Ícone direto de seta para baixo + Título */}
+          <div className="flex items-center justify-between w-full mb-0.5 sm:mb-1">
+            <div className="flex items-center gap-1 sm:gap-2 min-w-0">
+              <ArrowDown className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-rose-600 dark:text-rose-400 stroke-[2.5] shrink-0" />
+              <span className="text-[11px] sm:text-sm font-bold text-slate-700 dark:text-slate-300 truncate">
                 Pagar
               </span>
             </div>
-            <ChevronRight className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 group-hover:text-rose-600 dark:group-hover:text-rose-400 group-hover:translate-x-0.5 transition-all" />
+            <ChevronRight className="hidden sm:block w-3.5 h-3.5 text-slate-400 dark:text-slate-500 group-hover:text-rose-600 dark:group-hover:text-rose-400 group-hover:translate-x-0.5 transition-all shrink-0" />
           </div>
 
-          <span className="text-base sm:text-xl font-black text-slate-900 dark:text-white tracking-tight mt-0.5 truncate w-full">
+          <span className="text-xs sm:text-lg font-black text-slate-900 dark:text-white tracking-tight mt-0.5 sm:mt-1 truncate w-full">
             {formatCurrency(totalToPay)}
           </span>
 
-          <div className="flex items-center gap-1 mt-1 text-[10px] sm:text-[11px] font-semibold text-rose-700 dark:text-rose-400">
-            <span className="truncate">{countToPay > 0 ? `${countToPay} pendente(s)` : 'Tudo em dia'}</span>
+          <div className="flex items-center gap-1 mt-0.5 sm:mt-1 text-[9px] sm:text-[11px] font-semibold text-rose-600 dark:text-rose-400 w-full">
+            <span className="truncate">{countToPay > 0 ? `${countToPay} pend.` : 'Em dia'}</span>
           </div>
         </button>
 
-        {/* Cartão Clicável: RECEBER (Compacto) */}
+        {/* 2. Cartão Clicável: RECEBER (Seta para cima direta, sem quadrado, fundo neutro) */}
         <button
           type="button"
           id="card-filtro-receber"
           onClick={() => onSelectTab('receber')}
-          className="flex flex-col items-start p-3 sm:p-3.5 rounded-2xl border border-slate-200/90 dark:border-emerald-950/60 bg-emerald-50/40 dark:bg-emerald-950/30 hover:bg-emerald-50/90 dark:hover:bg-emerald-950/50 hover:border-emerald-300 dark:hover:border-emerald-800 hover:shadow-xs text-left transition-colors cursor-pointer relative group"
+          className="flex flex-col items-start p-2 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-xs text-left transition-all cursor-pointer relative group min-w-0"
           title="Ver contas a receber em aba dedicada"
         >
-          {/* Topo do card: Ícone menor + Título */}
-          <div className="flex items-center justify-between w-full mb-1">
-            <div className="flex items-center gap-2">
-              <div className="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center shadow-xs shadow-emerald-200 dark:shadow-none shrink-0">
-                <TrendingUp className="w-3.5 h-3.5 stroke-[2.5]" />
-              </div>
-              <span className="text-[11px] sm:text-xs font-bold text-slate-700 dark:text-slate-300 truncate">
+          {/* Topo do card: Ícone direto de seta para cima + Título */}
+          <div className="flex items-center justify-between w-full mb-0.5 sm:mb-1">
+            <div className="flex items-center gap-1 sm:gap-2 min-w-0">
+              <ArrowUp className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-emerald-600 dark:text-emerald-400 stroke-[2.5] shrink-0" />
+              <span className="text-[11px] sm:text-sm font-bold text-slate-700 dark:text-slate-300 truncate">
                 Receber
               </span>
             </div>
-            <ChevronRight className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all" />
+            <ChevronRight className="hidden sm:block w-3.5 h-3.5 text-slate-400 dark:text-slate-500 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all shrink-0" />
           </div>
 
-          <span className="text-base sm:text-xl font-black text-slate-900 dark:text-white tracking-tight mt-0.5 truncate w-full">
+          <span className="text-xs sm:text-lg font-black text-slate-900 dark:text-white tracking-tight mt-0.5 sm:mt-1 truncate w-full">
             {formatCurrency(totalToReceive)}
           </span>
 
-          <div className="flex items-center gap-1 mt-1 text-[10px] sm:text-[11px] font-semibold text-emerald-700 dark:text-emerald-400">
-            <span className="truncate">{countToReceive > 0 ? `${countToReceive} a receber` : 'Tudo recebido'}</span>
+          <div className="flex items-center gap-1 mt-0.5 sm:mt-1 text-[9px] sm:text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 w-full">
+            <span className="truncate">{countToReceive > 0 ? `${countToReceive} a rec.` : 'Recebido'}</span>
+          </div>
+        </button>
+
+        {/* 3. Cartão Clicável: FATURAS (Ícone de cartão direto, sem quadrado, fundo neutro) */}
+        <button
+          type="button"
+          id="card-filtro-faturas"
+          onClick={onSelectFatura}
+          className="flex flex-col items-start p-2 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30 hover:bg-slate-100/70 dark:hover:bg-slate-800/60 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-xs text-left transition-all cursor-pointer relative group min-w-0"
+          title="Abrir aba de Cartões e Faturas"
+        >
+          {/* Topo do card: Ícone direto de cartão + Título */}
+          <div className="flex items-center justify-between w-full mb-0.5 sm:mb-1">
+            <div className="flex items-center gap-1 sm:gap-2 min-w-0">
+              <CreditCard className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5 text-indigo-600 dark:text-indigo-400 stroke-[2.2] shrink-0" />
+              <span className="text-[11px] sm:text-sm font-bold text-slate-700 dark:text-slate-300 truncate">
+                Faturas
+              </span>
+            </div>
+            <ChevronRight className="hidden sm:block w-3.5 h-3.5 text-slate-400 dark:text-slate-500 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:translate-x-0.5 transition-all shrink-0" />
+          </div>
+
+          <span className="text-xs sm:text-lg font-black text-slate-900 dark:text-white tracking-tight mt-0.5 sm:mt-1 truncate w-full">
+            {formatCurrency(invoiceAmount)}
+          </span>
+
+          <div className="flex items-center gap-1 mt-0.5 sm:mt-1 text-[9px] sm:text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 w-full">
+            <span className="truncate">{invoiceAmount > 0 ? 'Fatura aberta' : 'Em dia'}</span>
           </div>
         </button>
 

@@ -57,6 +57,8 @@ interface TransactionModalProps {
   editingTransaction?: Transaction | null;
   defaultType?: TransactionType;
   defaultDate?: string;
+  initialCategory?: string;
+  initialBankName?: string;
   onOpenReceiptScanner?: () => void;
 }
 
@@ -151,6 +153,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
   editingTransaction,
   defaultType = 'expense',
   defaultDate,
+  initialCategory,
+  initialBankName,
   onOpenReceiptScanner,
 }) => {
   const [type, setType] = useState<TransactionType>(defaultType);
@@ -326,8 +330,8 @@ export const TransactionModal: React.FC<TransactionModalProps> = ({
         setType(defaultType);
         setDescription('');
         setAmount('');
-        setCategory('');
-        setBankName('');
+        setCategory(initialCategory || '');
+        setBankName(initialBankName || (initialCategory === 'Cartão de Crédito' ? 'Cartão de Crédito' : ''));
         const initialDate = defaultDate || getTodayDateString();
         const today = getTodayDateString();
         setDate(initialDate);

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Home, BarChart3, ArrowLeftRight, MoreHorizontal, Plus } from 'lucide-react';
 
-export type AppTabType = 'planejamento' | 'balanceamento' | 'mais' | 'contas';
+export type AppTabType = 'planejamento' | 'cartoes' | 'contas' | 'balanceamento' | 'mais';
 
 interface BottomNavBarProps {
   activeTab: AppTabType;
@@ -27,7 +27,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
     >
       <div className="max-w-md sm:max-w-lg mx-auto px-4 sm:px-6 py-2.5 sm:py-3.5 flex items-center justify-between">
         
-        {/* 1. Início / Planejamento & Contas (Símbolo de Casa) */}
+        {/* 1. Início / Visão Geral (Símbolo de Casa) */}
         <button
           id="btn-nav-inicio"
           onClick={() => onChangeTab('planejamento')}
@@ -42,7 +42,7 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
           <Home className={`w-7 h-7 sm:w-7.5 sm:h-7.5 ${activeTab === 'planejamento' ? 'stroke-[2.5]' : 'stroke-[2]'}`} />
         </button>
 
-        {/* 2. Comparativo / Balanceamento dos Meses (Ícone de Gráfico) */}
+        {/* 2. Comparativo / Análise dos Meses (Ícone de Gráfico) */}
         <button
           id="btn-nav-comparativo"
           onClick={() => onChangeTab('balanceamento')}
@@ -51,8 +51,8 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
               ? 'text-indigo-700 dark:text-indigo-400 bg-indigo-50/80 dark:bg-indigo-950/40'
               : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-slate-800/60'
           }`}
-          title="Comparativo"
-          aria-label="Comparativo"
+          title="Análise e Comparativo"
+          aria-label="Análise e Comparativo"
         >
           <BarChart3 className={`w-7 h-7 sm:w-7.5 sm:h-7.5 ${activeTab === 'balanceamento' ? 'stroke-[2.5]' : 'stroke-[2]'}`} />
         </button>
@@ -64,13 +64,13 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
             onClick={onOpenNewTransaction}
             className="w-15 h-15 sm:w-16.5 sm:h-16.5 rounded-full bg-slate-800 hover:bg-slate-900 dark:bg-slate-700 dark:hover:bg-slate-600 active:scale-95 text-white flex items-center justify-center shadow-xl border-3 sm:border-4 border-white dark:border-slate-900 transition-all cursor-pointer"
             title="Adicionar"
-            aria-label="Adicionar Entrada, Saída ou Investimento"
+            aria-label="Adicionar Entrada, Saída, Despesas do Cartão ou Investimento"
           >
             <Plus className="w-8 h-8 sm:w-9 sm:h-9 stroke-[2.5]" />
           </button>
         </div>
 
-        {/* 4. Transações do Mês / Contas */}
+        {/* 4. Contas a Pagar / Receber */}
         <button
           id="btn-nav-contas"
           onClick={onViewPending}
@@ -79,8 +79,8 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
               ? 'text-rose-600 dark:text-rose-400 bg-rose-50/80 dark:bg-rose-950/40'
               : 'text-slate-500 dark:text-slate-400 hover:text-rose-700 dark:hover:text-rose-300 hover:bg-slate-100/70 dark:hover:bg-slate-800/60'
           }`}
-          title="Transações do Mês"
-          aria-label="Transações do Mês"
+          title="Contas a Pagar e Receber"
+          aria-label="Contas a Pagar e Receber"
         >
           <div className="relative flex items-center justify-center">
             <ArrowLeftRight className={`w-7 h-7 sm:w-7.5 sm:h-7.5 ${activeTab === 'contas' ? 'stroke-[2.5]' : 'stroke-[2]'}`} />
@@ -101,8 +101,8 @@ export const BottomNavBar: React.FC<BottomNavBarProps> = ({
               ? 'text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800'
               : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-slate-800/60'
           }`}
-          title="Mais"
-          aria-label="Mais"
+          title="Mais Opções"
+          aria-label="Mais Opções"
         >
           <MoreHorizontal className={`w-7 h-7 sm:w-7.5 sm:h-7.5 ${activeTab === 'mais' ? 'stroke-[2.5]' : 'stroke-[2]'}`} />
         </button>

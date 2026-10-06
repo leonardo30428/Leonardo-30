@@ -138,6 +138,28 @@ button, .card, [role="button"] {
   }
 }
 
+@keyframes fanCenterLeft {
+  from {
+    opacity: 0;
+    transform: translate(25px, 75px) scale(0.25);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+@keyframes fanCenterRight {
+  from {
+    opacity: 0;
+    transform: translate(-25px, 75px) scale(0.25);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+}
+
 @keyframes fanCenter {
   from {
     opacity: 0;
@@ -162,6 +184,14 @@ button, .card, [role="button"] {
 
 .animate-fanLeft {
   animation: fanLeft 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fanCenterLeft {
+  animation: fanCenterLeft 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fanCenterRight {
+  animation: fanCenterRight 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 .animate-fanCenter {
