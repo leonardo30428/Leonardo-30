@@ -1313,6 +1313,7 @@ export default function App() {
             onOpenProfiles={() => setIsUserProfileModalOpen(true)}
             onNavigateComparativo={() => setActiveAppTab('balanceamento')}
             onLogout={handleLogout}
+            activeProfile={activeProfile}
           />
         )}
 

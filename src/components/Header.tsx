@@ -44,37 +44,8 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           </div>
 
-          {/* Action Buttons: User Profile Selector + Notifications */}
+          {/* Action Buttons: Notifications (o ícone de perfil foi movido para aparecer apenas na aba "Mais") */}
           <div className="flex items-center gap-2 sm:gap-2.5">
-            {/* User Profile Selector Pill */}
-            {activeProfile && (
-              <button
-                type="button"
-                id="header-user-profile-btn"
-                onClick={onOpenProfiles}
-                className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl border border-slate-200/90 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700/80 transition-all cursor-pointer group"
-                title={`Perfil de usuário: ${activeProfile.name} (Clique para alternar ou criar perfis)`}
-              >
-                <div 
-                  className="w-6 h-6 sm:w-6.5 sm:h-6.5 rounded-lg flex items-center justify-center text-xs text-white shadow-2xs font-bold shrink-0"
-                  style={{ backgroundColor: activeProfile.color || '#10b981' }}
-                >
-                  {activeProfile.avatarEmoji || <User className="w-3.5 h-3.5" />}
-                </div>
-                <div className="flex flex-col text-left">
-                  <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 max-w-[100px] sm:max-w-[140px] truncate leading-tight">
-                    {activeProfile.name}
-                  </span>
-                  {activeProfile.email && (
-                    <span className="text-[10px] text-slate-400 dark:text-slate-400 max-w-[100px] sm:max-w-[140px] truncate hidden sm:block leading-tight">
-                      {activeProfile.email}
-                    </span>
-                  )}
-                </div>
-                <ChevronDown className="w-3.5 h-3.5 text-slate-400 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors shrink-0" />
-              </button>
-            )}
-
             {/* Notifications Button */}
             <button
               id="header-notifications-btn"

@@ -14,10 +14,11 @@ import {
   FileSpreadsheet,
   Users,
   BarChart3,
-  LogOut
+  LogOut,
+  User
 } from 'lucide-react';
 import { useTheme, ThemeMode } from '../context/ThemeContext';
-import { Transaction } from '../types';
+import { Transaction, UserProfile } from '../types';
 import { TransactionsList, TransactionFilterType } from './TransactionsList';
 import { RelatorioTab } from './RelatorioTab';
 
@@ -39,6 +40,7 @@ interface MaisTabProps {
   onOpenProfiles?: () => void;
   onNavigateComparativo?: () => void;
   onLogout?: () => void;
+  activeProfile?: UserProfile;
 }
 
 export const MaisTab: React.FC<MaisTabProps> = ({
@@ -59,6 +61,7 @@ export const MaisTab: React.FC<MaisTabProps> = ({
   onOpenProfiles,
   onNavigateComparativo,
   onLogout,
+  activeProfile,
 }) => {
   const { themeMode, setThemeMode } = useTheme();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -133,6 +136,39 @@ export const MaisTab: React.FC<MaisTabProps> = ({
       {activeView === 'menu' && (
         <div className="space-y-3.5">
           
+          {/* Perfil de Usuário Ativo (acessível exclusivamente aqui na aba Mais) */}
+          <div
+            id="card-mais-perfil-ativo"
+            onClick={onOpenProfiles}
+            className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-2xs hover:border-emerald-300 dark:hover:border-emerald-700/70 hover:shadow-xs transition-all cursor-pointer group flex items-center justify-between"
+          >
+            <div className="flex items-center gap-3.5">
+              <div 
+                className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl text-white shadow-xs font-black shrink-0 group-hover:scale-105 transition-transform"
+                style={{ backgroundColor: activeProfile?.color || '#10b981' }}
+              >
+                {activeProfile?.avatarEmoji || <User className="w-6 h-6" />}
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+                    {activeProfile?.name || 'Perfil de Usuário'}
+                  </h3>
+                  <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300">
+                    Perfil Ativo
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  Alternar, editar ou criar novo perfil
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-all">
+              <span className="hidden sm:inline">Gerenciar</span>
+              <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-all" />
+            </div>
+          </div>
+
           {/* Opção 1: Analisar */}
           <div
             id="card-opcao-analisar"

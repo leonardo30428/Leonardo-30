@@ -160,7 +160,7 @@ export const FaturaPage: React.FC<FaturaPageProps> = ({
                 return (
                   <div
                     key={card.id}
-                    className="w-full max-w-[380px] rounded-3xl p-5 sm:p-6 text-white shadow-md relative overflow-hidden flex flex-col justify-between h-52 sm:h-56 ring-2 ring-offset-2 ring-slate-900 dark:ring-white/80 transition-all duration-300"
+                    className="w-full max-w-[380px] rounded-3xl p-5 sm:p-6 text-white shadow-xl relative overflow-hidden flex flex-col justify-between h-52 sm:h-56 transition-all duration-300"
                     style={{
                       background: `linear-gradient(135deg, ${card.color || '#820ad1'}, #0f172a)`,
                     }}
@@ -192,7 +192,7 @@ export const FaturaPage: React.FC<FaturaPageProps> = ({
                     </div>
 
                     {/* Rodapé do Cartão com Vencimento Escolhido */}
-                    <div className="flex items-center justify-between text-xs font-semibold pt-2 border-t border-white/20 opacity-90">
+                    <div className="flex items-center justify-between text-xs font-semibold pt-2 opacity-90">
                       <span>{card.accountNumber || 'Final 8421'}</span>
                       <span>Vencimento dia {card.dueDay || 10}</span>
                     </div>
@@ -218,8 +218,8 @@ export const FaturaPage: React.FC<FaturaPageProps> = ({
                   <div
                     key={card.id}
                     onClick={() => scrollToCard(idx)}
-                    className={`snap-center shrink-0 w-[84vw] xs:w-[320px] sm:w-[380px] rounded-3xl p-5 sm:p-6 text-white shadow-md relative overflow-hidden flex flex-col justify-between h-52 sm:h-56 transition-all duration-300 cursor-pointer ${
-                      isActive ? 'scale-100 ring-2 ring-offset-2 ring-slate-900 dark:ring-white/80 opacity-100' : 'scale-95 opacity-60 hover:opacity-80'
+                    className={`snap-center shrink-0 w-[84vw] xs:w-[320px] sm:w-[380px] rounded-3xl p-5 sm:p-6 text-white shadow-xl relative overflow-hidden flex flex-col justify-between h-52 sm:h-56 transition-all duration-300 cursor-pointer ${
+                      isActive ? 'scale-100 opacity-100' : 'scale-95 opacity-60 hover:opacity-80'
                     }`}
                     style={{
                       background: `linear-gradient(135deg, ${card.color || '#820ad1'}, #0f172a)`,
@@ -252,7 +252,7 @@ export const FaturaPage: React.FC<FaturaPageProps> = ({
                     </div>
 
                     {/* Rodapé do Cartão com Vencimento Escolhido */}
-                    <div className="flex items-center justify-between text-xs font-semibold pt-2 border-t border-white/20 opacity-90">
+                    <div className="flex items-center justify-between text-xs font-semibold pt-2 opacity-90">
                       <span>{card.accountNumber || 'Final 8421'}</span>
                       <div className="flex items-center gap-2">
                         <span>Vencimento dia {card.dueDay || 10}</span>
