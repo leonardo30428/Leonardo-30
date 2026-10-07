@@ -43,6 +43,12 @@ export interface BankAccount {
   color: string;
   status: 'connected' | 'syncing' | 'error';
   accountNumber?: string;
+  dueDay?: number;
+  closingDay?: number;
+  paymentAccountId?: string;
+  flag?: string;
+  dueOnBusinessDays?: boolean;
+  closingDayMovesToNextInvoice?: boolean;
 }
 
 export interface SavingGoal {

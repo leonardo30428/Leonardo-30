@@ -2,17 +2,15 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { 
   CreditCard, 
   CheckCircle2, 
-  TrendingDown,
-  ChevronLeft,
-  ChevronRight,
-  Plus,
-  X,
-  Check,
+  ChevronLeft, 
+  ChevronRight, 
+  Plus, 
   Trash2
 } from 'lucide-react';
 import { BankAccount, Transaction } from '../types';
 import { formatCurrency, formatDate } from '../utils/finance';
 import { getCategoryVisual } from '../utils/categoryIcons';
+import { AddCardModal } from './AddCardModal';
 
 interface FaturaPageProps {
   cards: BankAccount[];
@@ -27,19 +25,6 @@ interface FaturaPageProps {
   onDeleteCard?: (cardId: string) => void;
 }
 
-const BANK_COLOR_PRESETS = [
-  { name: 'Nubank', hex: '#820ad1' },
-  { name: 'Inter', hex: '#ff7a00' },
-  { name: 'Itaú', hex: '#003399' },
-  { name: 'C6 Bank', hex: '#1e293b' },
-  { name: 'Santander', hex: '#cc0000' },
-  { name: 'XP', hex: '#09090b' },
-  { name: 'Esmeralda', hex: '#10b981' },
-  { name: 'Dourado BB', hex: '#ca8a04' },
-];
-
-const POPULAR_INSTITUTIONS = ['Nubank', 'Inter', 'Itaú', 'Santander', 'Bradesco', 'C6 Bank', 'XP'];
-
 export const FaturaPage: React.FC<FaturaPageProps> = ({
   cards,
   transactions,
@@ -48,14 +33,8 @@ export const FaturaPage: React.FC<FaturaPageProps> = ({
   onAddCard,
   onDeleteCard,
 }) => {
-  // Modal de adicionar novo cartão
+  // Modal de adicionar novo cartão (estilo IMG_3628.png)
   const [isAddCardModalOpen, setIsAddCardModalOpen] = useState(false);
-  const [newCardName, setNewCardName] = useState('');
-  const [newCardInstitution, setNewCardInstitution] = useState('Nubank');
-  const [newCardLimit, setNewCardLimit] = useState('');
-  const [newCardNumber, setNewCardNumber] = useState('');
-  const [newCardColor, setNewCardColor] = useState(BANK_COLOR_PRESETS[0].hex);
-  const [addCardError, setAddCardError] = useState('');
 
   // Lista de cartões de crédito (inicia com apenas 1 único cartão)
   const creditCards = useMemo(() => {
@@ -73,6 +52,8 @@ export const FaturaPage: React.FC<FaturaPageProps> = ({
         color: '#820ad1',
         status: 'connected' as const,
         accountNumber: 'Final 8421',
+        dueDay: 10,
+        closingDay: 1,
       },
     ];
   }, [cards]);
@@ -133,34 +114,7 @@ export const FaturaPage: React.FC<FaturaPageProps> = ({
     }
   };
 
-  const handleSaveNewCard = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newCardName.trim()) {
-      setAddCardError('Por favor, digite o nome do cartão.');
-      return;
-    }
-
-    const cleanLimitStr = newCardLimit.replace(/[^\d.,]/g, '').replace(',', '.');
-    const parsedLimit = parseFloat(cleanLimitStr) || 5000;
-
-    const cleanNum = newCardNumber.replace(/\D/g, '');
-    const accountStr = cleanNum.length >= 4 
-      ? `Final ${cleanNum.slice(-4)}` 
-      : (newCardNumber.trim() ? `Final ${newCardNumber.trim()}` : 'Final 8421');
-
-    const newCard: BankAccount = {
-      id: `card-${Date.now()}`,
-      name: newCardName.trim(),
-      institution: newCardInstitution.trim() || 'Cartão de Crédito',
-      type: 'credit_card',
-      balance: 0,
-      availableLimit: parsedLimit,
-      lastSync: 'Recém-adicionado',
-      color: newCardColor,
-      status: 'connected',
-      accountNumber: accountStr,
-    };
-
+  const handleSaveCard = (newCard: BankAccount) => {
     onAddCard?.(newCard);
     setIsAddCardModalOpen(false);
     setTimeout(() => {
@@ -182,15 +136,7 @@ export const FaturaPage: React.FC<FaturaPageProps> = ({
         <button
           type="button"
           id="btn-adicionar-cartao-fatura"
-          onClick={() => {
-            setNewCardName('');
-            setNewCardInstitution('Nubank');
-            setNewCardLimit('5000');
-            setNewCardNumber('');
-            setNewCardColor(BANK_COLOR_PRESETS[0].hex);
-            setAddCardError('');
-            setIsAddCardModalOpen(true);
-          }}
+          onClick={() => setIsAddCardModalOpen(true)}
           className="absolute right-0 top-1/2 -translate-y-1/2 w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 flex items-center justify-center border border-slate-200/90 dark:border-slate-700 shadow-2xs hover:scale-105 active:scale-95 transition-all cursor-pointer"
           title="Adicionar novo cartão"
           aria-label="Adicionar novo cartão"
@@ -228,7 +174,7 @@ export const FaturaPage: React.FC<FaturaPageProps> = ({
                         </span>
                       </div>
                       <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-xs">
-                        {card.institution || 'Crédito'}
+                        {card.flag || card.institution || 'Crédito'}
                       </span>
                     </div>
 
@@ -245,10 +191,10 @@ export const FaturaPage: React.FC<FaturaPageProps> = ({
                       </span>
                     </div>
 
-                    {/* Rodapé do Cartão */}
+                    {/* Rodapé do Cartão com Vencimento Escolhido */}
                     <div className="flex items-center justify-between text-xs font-semibold pt-2 border-t border-white/20 opacity-90">
                       <span>{card.accountNumber || 'Final 8421'}</span>
-                      <span>Vencimento dia 20</span>
+                      <span>Vencimento dia {card.dueDay || 10}</span>
                     </div>
                   </div>
                 );
@@ -288,7 +234,7 @@ export const FaturaPage: React.FC<FaturaPageProps> = ({
                         </span>
                       </div>
                       <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-white/20 backdrop-blur-xs">
-                        {card.institution || 'Crédito'}
+                        {card.flag || card.institution || 'Crédito'}
                       </span>
                     </div>
 
@@ -305,11 +251,11 @@ export const FaturaPage: React.FC<FaturaPageProps> = ({
                       </span>
                     </div>
 
-                    {/* Rodapé do Cartão */}
+                    {/* Rodapé do Cartão com Vencimento Escolhido */}
                     <div className="flex items-center justify-between text-xs font-semibold pt-2 border-t border-white/20 opacity-90">
                       <span>{card.accountNumber || 'Final 8421'}</span>
                       <div className="flex items-center gap-2">
-                        <span>Vencimento dia 20</span>
+                        <span>Vencimento dia {card.dueDay || 10}</span>
                         {onDeleteCard && (
                           <button
                             type="button"
@@ -393,22 +339,22 @@ export const FaturaPage: React.FC<FaturaPageProps> = ({
             </span>
           </div>
 
-          {/* Datas de Fechamento e Vencimento */}
+          {/* Datas de Fechamento e Vencimento Dinâmicas do Cartão Ativo */}
           <div className="grid grid-cols-2 gap-2.5 sm:gap-3 mt-4">
             <div className="p-3 bg-white/80 dark:bg-slate-900/80 rounded-2xl border border-slate-200/80 dark:border-slate-800 transition-colors">
               <span className="text-[11px] text-slate-500 dark:text-slate-400 font-bold block">
                 Fechamento da fatura
               </span>
               <span className="text-sm sm:text-base font-black text-slate-900 dark:text-white">
-                Dia 13
+                Dia {activeCard.closingDay || 1}
               </span>
             </div>
             <div className="p-3 bg-white/80 dark:bg-slate-900/80 rounded-2xl border border-slate-200/80 dark:border-slate-800 transition-colors">
               <span className="text-[11px] text-slate-500 dark:text-slate-400 font-bold block">
-                Vencimento
+                Vencimento do cartão
               </span>
               <span className="text-sm sm:text-base font-black text-slate-900 dark:text-white">
-                Dia 20
+                Dia {activeCard.dueDay || 10}
               </span>
             </div>
           </div>
@@ -506,180 +452,13 @@ export const FaturaPage: React.FC<FaturaPageProps> = ({
         )}
       </div>
 
-      {/* MODAL: ADICIONAR NOVO CARTÃO */}
-      {isAddCardModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-fadeIn">
-          <div 
-            className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden transition-all"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center border border-indigo-200/60 dark:border-indigo-800/60">
-                  <CreditCard className="w-5 h-5 stroke-[2.2]" />
-                </div>
-                <div>
-                  <h2 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight">
-                    Adicionar Novo Cartão
-                  </h2>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                    Cadastre um cartão para gerenciar limites e faturas
-                  </p>
-                </div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => setIsAddCardModalOpen(false)}
-                className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Form */}
-            <form onSubmit={handleSaveNewCard} className="p-6 space-y-4">
-              {addCardError && (
-                <div className="p-2.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-xs font-semibold text-rose-600 dark:text-rose-400">
-                  {addCardError}
-                </div>
-              )}
-
-              {/* Prévia do Cartão */}
-              <div className="flex flex-col items-center justify-center py-1">
-                <div 
-                  className="w-full h-24 rounded-2xl p-3.5 text-white flex flex-col justify-between shadow-md select-none transition-all"
-                  style={{ background: `linear-gradient(135deg, ${newCardColor}, #0f172a)` }}
-                >
-                  <div className="flex items-center justify-between text-xs font-bold">
-                    <span>{newCardName || 'Nome do Cartão'}</span>
-                    <span className="opacity-80 text-[10px] uppercase">{newCardInstitution}</span>
-                  </div>
-                  <div className="flex items-center justify-between text-[11px] opacity-90">
-                    <span>Final {newCardNumber.replace(/\D/g, '').slice(-4) || '••••'}</span>
-                    <span>Limite: {formatCurrency(parseFloat(newCardLimit) || 5000)}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Nome do Cartão */}
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  Nome do Cartão *
-                </label>
-                <input
-                  type="text"
-                  value={newCardName}
-                  onChange={(e) => setNewCardName(e.target.value)}
-                  placeholder="Ex: Nubank Ultravioleta, Inter Black..."
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 text-slate-900 dark:text-white text-sm font-semibold focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
-                  autoFocus
-                />
-              </div>
-
-              {/* Instituição / Banco */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  Instituição / Banco
-                </label>
-                <div className="flex flex-wrap gap-1.5">
-                  {POPULAR_INSTITUTIONS.map((inst) => (
-                    <button
-                      key={inst}
-                      type="button"
-                      onClick={() => {
-                        setNewCardInstitution(inst);
-                        if (!newCardName) setNewCardName(`Cartão ${inst}`);
-                        const preset = BANK_COLOR_PRESETS.find(p => p.name.includes(inst));
-                        if (preset) setNewCardColor(preset.hex);
-                      }}
-                      className={`px-2.5 py-1 text-xs font-bold rounded-lg border transition-all cursor-pointer ${
-                        newCardInstitution === inst
-                          ? 'bg-slate-900 dark:bg-white text-white dark:text-slate-900 border-slate-900 dark:border-white shadow-2xs'
-                          : 'bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:border-slate-300'
-                      }`}
-                    >
-                      {inst}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Limite e Final do Cartão */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                    Limite Total (R$)
-                  </label>
-                  <input
-                    type="number"
-                    value={newCardLimit}
-                    onChange={(e) => setNewCardLimit(e.target.value)}
-                    placeholder="5000"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 text-slate-900 dark:text-white text-sm font-semibold focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                    Últimos 4 Dígitos
-                  </label>
-                  <input
-                    type="text"
-                    maxLength={4}
-                    value={newCardNumber}
-                    onChange={(e) => setNewCardNumber(e.target.value.replace(/\D/g, ''))}
-                    placeholder="Ex: 8421"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200/90 dark:border-slate-700 text-slate-900 dark:text-white text-sm font-semibold focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
-                  />
-                </div>
-              </div>
-
-              {/* Paleta de Cores do Cartão */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
-                  Cor do Cartão
-                </label>
-                <div className="flex items-center gap-2 overflow-x-auto pb-1">
-                  {BANK_COLOR_PRESETS.map((p) => (
-                    <button
-                      key={p.hex}
-                      type="button"
-                      onClick={() => setNewCardColor(p.hex)}
-                      className={`w-7 h-7 rounded-xl shrink-0 transition-all flex items-center justify-center cursor-pointer ${
-                        newCardColor === p.hex ? 'ring-2 ring-offset-2 ring-slate-900 dark:ring-white scale-110' : 'opacity-80 hover:opacity-100'
-                      }`}
-                      style={{ backgroundColor: p.hex }}
-                      title={p.name}
-                    >
-                      {newCardColor === p.hex && <Check className="w-3.5 h-3.5 text-white stroke-[3]" />}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Botões */}
-              <div className="flex items-center gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => setIsAddCardModalOpen(false)}
-                  className="flex-1 py-2.5 px-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs rounded-xl transition-colors cursor-pointer"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-xs transition-colors cursor-pointer"
-                >
-                  Salvar Cartão
-                </button>
-              </div>
-
-            </form>
-          </div>
-        </div>
-      )}
+      {/* NOVO MODAL: ADICIONAR NOVO CARTÃO (DESIGN FIEL A IMG_3628.png) */}
+      <AddCardModal
+        isOpen={isAddCardModalOpen}
+        onClose={() => setIsAddCardModalOpen(false)}
+        onSaveCard={handleSaveCard}
+        availableAccounts={cards.filter((c) => c.type === 'checking')}
+      />
 
     </div>
   );

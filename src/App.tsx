@@ -19,6 +19,7 @@ import { MonthlyReportModal } from './components/MonthlyReportModal';
 import { MaisTab } from './components/MaisTab';
 import { FaturaPage } from './components/FaturaPage';
 import { UserProfileModal } from './components/UserProfileModal';
+import { EmailLoginScreen } from './components/EmailLoginScreen';
 import { ChoiceModalType } from './components/TransactionTypeChoiceModal';
 import { 
   Transaction, 
@@ -143,6 +144,16 @@ export default function App() {
   }, [profiles, activeProfileId]);
 
   const [isUserProfileModalOpen, setIsUserProfileModalOpen] = useState(false);
+  
+  // Controle de login por e-mail na tela inicial
+  const [isLoggedOut, setIsLoggedOut] = useState<boolean>(() => {
+    try {
+      const loggedEmail = localStorage.getItem('finansmart_logged_email');
+      return !loggedEmail;
+    } catch {
+      return true;
+    }
+  });
 
   // Month navigation: includes 2026 and 2027 with seamless December to January rollover
   const months = DEFAULT_MONTHS_LIST;
@@ -409,6 +420,74 @@ export default function App() {
     if (activeProfileId === profileId) {
       handleSelectProfile(updatedProfiles[0].id);
     }
+  };
+
+  const handleEmailLogin = (email: string, name?: string) => {
+    const cleanEmail = email.trim().toLowerCase();
+    localStorage.setItem('finansmart_logged_email', cleanEmail);
+
+    let targetProfile = profiles.find((p) => p.email?.toLowerCase() === cleanEmail);
+
+    if (!targetProfile) {
+      const defaultName = name || cleanEmail.split('@')[0] || 'Usuário';
+      const formattedName = defaultName.charAt(0).toUpperCase() + defaultName.slice(1);
+      const newId = `profile-${Date.now()}`;
+      const newProf: UserProfile = {
+        id: newId,
+        name: formattedName,
+        email: cleanEmail,
+        avatarEmoji: formattedName.slice(0, 2).toUpperCase(),
+        color: '#0d9488',
+        createdAt: new Date().toISOString(),
+      };
+      targetProfile = newProf;
+      const updatedProfiles = [...profiles, newProf];
+      setProfiles(updatedProfiles);
+      localStorage.setItem('finansmart_user_profiles_v1', JSON.stringify(updatedProfiles));
+
+      // Cria contas e cartões separados para este novo perfil de e-mail
+      const initialAccs: BankAccount[] = [
+        {
+          id: `card-${newId}`,
+          name: `Cartão Nubank - ${formattedName}`,
+          institution: 'Nubank',
+          type: 'credit_card',
+          balance: 0,
+          availableLimit: 5000,
+          lastSync: 'Recém-adicionado',
+          color: '#820ad1',
+          status: 'connected',
+          accountNumber: 'Final 8421',
+          dueDay: 10,
+          closingDay: 1,
+        },
+        {
+          id: `bank-${newId}`,
+          name: `Conta Corrente - ${formattedName}`,
+          institution: 'Nubank',
+          type: 'checking',
+          balance: 0,
+          lastSync: 'Sincronizado',
+          color: '#0d9488',
+          status: 'connected',
+          accountNumber: 'Conta 0001',
+        },
+      ];
+
+      localStorage.setItem(`finansmart_user_${newId}_transactions`, JSON.stringify([]));
+      localStorage.setItem(`finansmart_user_${newId}_bank_accounts`, JSON.stringify(initialAccs));
+      localStorage.setItem(`finansmart_user_${newId}_saving_goals`, JSON.stringify([]));
+      localStorage.setItem(`finansmart_user_${newId}_bill_reminders`, JSON.stringify([]));
+    }
+
+    handleSelectProfile(targetProfile.id);
+    setIsLoggedOut(false);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('finansmart_logged_email');
+    setIsLoggedOut(true);
+    setIsUserProfileModalOpen(false);
   };
 
   // Notifications State - initialized clean
@@ -1054,6 +1133,17 @@ export default function App() {
 
   const unreadNotificationsCount = notifications.filter((n) => n.unread).length;
 
+  // Tela Inicial de Login / Identificação por E-mail
+  if (isLoggedOut) {
+    return (
+      <EmailLoginScreen
+        onLogin={handleEmailLogin}
+        existingProfiles={profiles}
+        onDeleteProfile={handleDeleteProfile}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-16 font-sans selection:bg-emerald-500 selection:text-white transition-colors">
       
@@ -1222,6 +1312,7 @@ export default function App() {
             }}
             onOpenProfiles={() => setIsUserProfileModalOpen(true)}
             onNavigateComparativo={() => setActiveAppTab('balanceamento')}
+            onLogout={handleLogout}
           />
         )}
 
@@ -1369,6 +1460,7 @@ export default function App() {
         onCreateProfile={handleCreateProfile}
         onUpdateProfile={handleUpdateProfile}
         onDeleteProfile={handleDeleteProfile}
+        onLogout={handleLogout}
       />
 
     </div>

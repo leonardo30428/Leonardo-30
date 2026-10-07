@@ -13,7 +13,8 @@ import {
   SlidersHorizontal,
   FileSpreadsheet,
   Users,
-  BarChart3
+  BarChart3,
+  LogOut
 } from 'lucide-react';
 import { useTheme, ThemeMode } from '../context/ThemeContext';
 import { Transaction } from '../types';
@@ -37,6 +38,7 @@ interface MaisTabProps {
   onSelectMonth?: (month: string) => void;
   onOpenProfiles?: () => void;
   onNavigateComparativo?: () => void;
+  onLogout?: () => void;
 }
 
 export const MaisTab: React.FC<MaisTabProps> = ({
@@ -56,6 +58,7 @@ export const MaisTab: React.FC<MaisTabProps> = ({
   onSelectMonth,
   onOpenProfiles,
   onNavigateComparativo,
+  onLogout,
 }) => {
   const { themeMode, setThemeMode } = useTheme();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -217,6 +220,30 @@ export const MaisTab: React.FC<MaisTabProps> = ({
                 </div>
               </div>
               <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-violet-600 dark:group-hover:text-violet-400 group-hover:translate-x-1 transition-all" />
+            </div>
+          )}
+
+          {/* Opção 5: Trocar de Usuário / Sair para Login por E-mail */}
+          {onLogout && (
+            <div
+              id="card-opcao-trocar-usuario"
+              onClick={onLogout}
+              className="bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-3xl border border-slate-200/90 dark:border-slate-800 shadow-2xs hover:border-teal-300 dark:hover:border-teal-800/80 hover:shadow-xs transition-all cursor-pointer group flex items-center justify-between"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-teal-50 dark:bg-teal-950/60 border border-teal-200/80 dark:border-teal-800/60 text-teal-700 dark:text-teal-400 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                  <LogOut className="w-6 h-6 stroke-[2.2]" />
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-slate-900 dark:text-white group-hover:text-teal-700 dark:group-hover:text-teal-400 transition-colors">
+                    Trocar de Usuário / Sair
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    Entrar com outro e-mail e acessar outra conta
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-teal-600 dark:group-hover:text-teal-400 group-hover:translate-x-1 transition-all" />
             </div>
           )}
 

@@ -61,9 +61,16 @@ export const Header: React.FC<HeaderProps> = ({
                 >
                   {activeProfile.avatarEmoji || <User className="w-3.5 h-3.5" />}
                 </div>
-                <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 max-w-[100px] sm:max-w-[140px] truncate">
-                  {activeProfile.name}
-                </span>
+                <div className="flex flex-col text-left">
+                  <span className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 max-w-[100px] sm:max-w-[140px] truncate leading-tight">
+                    {activeProfile.name}
+                  </span>
+                  {activeProfile.email && (
+                    <span className="text-[10px] text-slate-400 dark:text-slate-400 max-w-[100px] sm:max-w-[140px] truncate hidden sm:block leading-tight">
+                      {activeProfile.email}
+                    </span>
+                  )}
+                </div>
                 <ChevronDown className="w-3.5 h-3.5 text-slate-400 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors shrink-0" />
               </button>
             )}

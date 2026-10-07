@@ -8,7 +8,9 @@ import {
   Edit3, 
   ShieldCheck, 
   Users,
-  Sparkles
+  Sparkles,
+  Mail,
+  LogOut
 } from 'lucide-react';
 import { UserProfile } from '../types';
 
@@ -21,6 +23,7 @@ interface UserProfileModalProps {
   onCreateProfile: (profile: Omit<UserProfile, 'id' | 'createdAt'>) => void;
   onUpdateProfile: (profile: UserProfile) => void;
   onDeleteProfile: (profileId: string) => void;
+  onLogout?: () => void;
 }
 
 const EMOJI_OPTIONS = ['👤', '💼', '🏠', '👩', '👨', '🌟', '💳', '🛒', '🎯', '🚀', '💰', '🏖️'];
@@ -44,6 +47,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   onCreateProfile,
   onUpdateProfile,
   onDeleteProfile,
+  onLogout,
 }) => {
   const [view, setView] = useState<'list' | 'create' | 'edit'>('list');
   const [editingProfile, setEditingProfile] = useState<UserProfile | null>(null);
@@ -245,6 +249,18 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 <Plus className="w-4 h-4" />
                 <span>Adicionar Novo Perfil de Usuário</span>
               </button>
+
+              {/* Botão de Trocar Usuário / Entrar com outro e-mail */}
+              {onLogout && (
+                <button
+                  type="button"
+                  onClick={onLogout}
+                  className="w-full py-2.5 px-4 rounded-xl bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                >
+                  <Mail className="w-3.5 h-3.5 text-teal-500" />
+                  <span>Trocar de Usuário / Entrar com outro e-mail</span>
+                </button>
+              )}
             </div>
           )}
 
